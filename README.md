@@ -13,4 +13,5 @@ Report bugs to the issues section or direct message me via discord @ ic3#0001
 - [ ] Save the PlaceId content
 - [ ] Add the games section
 
+# Preview
 ![github-large](Images/Image1.png)
