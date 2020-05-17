@@ -10,5 +10,7 @@ Report bugs to the issues section or direct message me via discord @ ic3#0001
 # TO DO
 - [ ] Add privateServerLinkCode to the VIP server functionality
 - [ ] Fix rbx-join not working with hide usernames on
+- [ ] Save the PlaceId content
+- [ ] Add the games section
 
 ![github-large](Images/Image1.png)
