@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RBX Alt Manager", "RBX Alt Manager\RBX Alt Manager.csproj", "{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rbx-join", "rbx-join\rbx-join.csproj", "{683C0F96-797B-4055-AD30-4EC76DD68A3D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RegisterRbxJoinProtocol", "RegisterRbxJoinProtocol\RegisterRbxJoinProtocol.csproj", "{665EE40F-0931-4FFA-883E-23A20A19E734}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Debug|x86.ActiveCfg = Debug|x86
+		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Debug|x86.Build.0 = Debug|x86
+		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Release|x86.ActiveCfg = Release|x86
+		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Release|x86.Build.0 = Release|x86
+		{683C0F96-797B-4055-AD30-4EC76DD68A3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{683C0F96-797B-4055-AD30-4EC76DD68A3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{683C0F96-797B-4055-AD30-4EC76DD68A3D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{683C0F96-797B-4055-AD30-4EC76DD68A3D}.Debug|x86.Build.0 = Debug|Any CPU
+		{683C0F96-797B-4055-AD30-4EC76DD68A3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{683C0F96-797B-4055-AD30-4EC76DD68A3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{683C0F96-797B-4055-AD30-4EC76DD68A3D}.Release|x86.ActiveCfg = Release|Any CPU
+		{683C0F96-797B-4055-AD30-4EC76DD68A3D}.Release|x86.Build.0 = Release|Any CPU
+		{665EE40F-0931-4FFA-883E-23A20A19E734}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{665EE40F-0931-4FFA-883E-23A20A19E734}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{665EE40F-0931-4FFA-883E-23A20A19E734}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{665EE40F-0931-4FFA-883E-23A20A19E734}.Debug|x86.Build.0 = Debug|Any CPU
+		{665EE40F-0931-4FFA-883E-23A20A19E734}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{665EE40F-0931-4FFA-883E-23A20A19E734}.Release|Any CPU.Build.0 = Release|Any CPU
+		{665EE40F-0931-4FFA-883E-23A20A19E734}.Release|x86.ActiveCfg = Release|Any CPU
+		{665EE40F-0931-4FFA-883E-23A20A19E734}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9B3DC6F1-7CF0-4DE5-BC4A-90FABD30BA03}
+	EndGlobalSection
+EndGlobal
