@@ -5,6 +5,8 @@ Useful for games that require grinding off other players, or storage accounts th
 
 You are welcome to edit the code and create pull requests if it'll benefit this project.
 
+Report bugs to the issues section or direct message me via discord @ ic3#0001
+
 # TO DO
 - [ ] Add privateServerLinkCode to the VIP server functionality
 - [ ] Fix rbx-join not working with hide usernames on
