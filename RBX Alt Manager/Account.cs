@@ -43,7 +43,7 @@ namespace RBX_Alt_Manager
 
         public string Validate(string Token, string UserData)
         {
-            if (!string.IsNullOrEmpty (UserData)&& UserData.Contains("UserEmail"))
+            if (!string.IsNullOrEmpty(UserData) && UserData.Contains("UserEmail"))
             {
                 Valid = true;
                 SecurityToken = Token;
@@ -97,13 +97,14 @@ namespace RBX_Alt_Manager
                 if (!Directory.Exists(RPath))
                     RPath = Path.Combine(Environment.GetEnvironmentVariable("LocalAppData"), @"Roblox\Versions\" + CurrentVersion);
                 if (!Directory.Exists(RPath))
-                    return "ERROR: Failed to find ROBLOX executable";
+                    return "ERROR: Failed to find ROBLOX executable, either restart the account manager or make sure your roblox is updated";
 
                 RPath = RPath + @"\RobloxPlayerBeta.exe";
                 ProcessStartInfo Roblox = new ProcessStartInfo(RPath);
                 if (JoinVIP)
                 {
-                    Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}\"", Token, PlaceID, JobID);
+                    string LinkCode = "";
+                    Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode=\"", Token, PlaceID, JobID, LinkCode);
                 }
                 else if (FollowUser)
                     Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}\"", Token, PlaceID);

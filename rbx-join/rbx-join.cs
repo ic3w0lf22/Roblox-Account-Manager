@@ -74,6 +74,7 @@ namespace rbx_join
 
                         lm.Text = (Hide ? Regex.Replace(Name, ".", "*") : Name) + (!string.IsNullOrWhiteSpace(Alias) ? ": " + Alias : "");
                         lm.ToolTipText = Alias;
+                        lm.Name = Name;
                         AccountsView.Items.Add(lm);
                     }
                 }
@@ -119,7 +120,7 @@ namespace rbx_join
 
                 string Account = self.Text.Contains(":") ? self.Text.Substring(0, self.Text.IndexOf(":")) : self.Text;
 
-                byte[] bytes = Encoding.Default.GetBytes("play-" + Account + "-" + PlaceId + (!string.IsNullOrEmpty(JobId) ? "-" + JobId : ""));
+                byte[] bytes = Encoding.Default.GetBytes("play-" + self.Name + "-" + PlaceId + (!string.IsNullOrEmpty(JobId) ? "-" + JobId : ""));
                 pipe.Write(bytes, 0, bytes.Length);
 
                 this.Close();

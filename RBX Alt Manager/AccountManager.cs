@@ -12,6 +12,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -151,21 +152,20 @@ namespace RBX_Alt_Manager
             if (HandleKey == null || HandleKey.GetValue("EulaAccepted") == null || (int)HandleKey.GetValue("EulaAccepted") != 1)
                 Process.Start("handle.exe");
 
-            ManagerKey = Registry.CurrentUser.OpenSubKey(ManagerKeyName);
+            ManagerKey = Registry.CurrentUser.OpenSubKey(ManagerKeyName, RegistryKeyPermissionCheck.ReadWriteSubTree);
 
             if (ManagerKey == null)
-                ManagerKey = Registry.CurrentUser.CreateSubKey(ManagerKeyName);
+                ManagerKey = Registry.CurrentUser.CreateSubKey(ManagerKeyName, RegistryKeyPermissionCheck.ReadWriteSubTree);
+
+            PlaceID.Text = ManagerKey.GetValue("SavedPlaceId", 3016661674).ToString();
 
             SetupNamedPipe();
 
             aaform = new AccountAdder();
             ServerListForm = new ServerList();
 
-#if DEBUG
-
-#endif
             AccountsView.Items.Clear();
-            
+
             RobloxProcessTimer.Start();
 
             apiclient = new RestClient("https://api.roblox.com/");
@@ -182,6 +182,27 @@ namespace RBX_Alt_Manager
             JObject j = JObject.Parse(VersionJSON);
             if (j.TryGetValue("clientVersionUpload", out JToken token))
                 CurrentVersion = token.Value<string>();
+
+            Task.Run(() =>
+            {
+                try
+                {
+                    Assembly assembly = Assembly.GetExecutingAssembly();
+                    FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+                    string version = fvi.FileVersion.Substring(0, 3);
+                    WC.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36";
+                    string Releases = WC.DownloadString("https://api.github.com/repos/ic3w0lf22/Roblox-Account-Manager/releases/latest");
+                    Match match = Regex.Match(Releases, @"""tag_name"":\s*""?([^""]+)");
+                    if (match.Success && match.Groups[1].Value != version)
+                    {
+                        DialogResult result = MessageBox.Show("An update is available, click ok to be redirected to the download page", "Roblox Account Manager", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
+
+                        if (result == DialogResult.OK)
+                            Process.Start("https://github.com/ic3w0lf22/Roblox-Account-Manager/releases");
+                    }
+                }
+                catch { }
+            });
         }
 
         private void AccountManager_Shown(object sender, EventArgs e)
@@ -409,9 +430,11 @@ namespace RBX_Alt_Manager
 
         private void RobloxProcessTimer_Tick(object sender, EventArgs e)
         {
+            List<RbxProcess> Processes = RbxProcesses.ToList();
+
             foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
             {
-                if (!RbxProcesses.Any(x => x.RobloxProcess.MainWindowHandle == p.MainWindowHandle))
+                if (!Processes.Any(x => x.RobloxProcess.MainWindowHandle == p.MainWindowHandle))
                 {
                     RbxProcess rbx = new RbxProcess(p);
                     RbxProcesses.Add(rbx);
@@ -543,6 +566,11 @@ namespace RBX_Alt_Manager
                 Clipboard.SetText(string.Format("<rbx-join://{0}/{1}>", rbx.PlaceId, rbx.JobId));
                 MessageBox.Show("Copied to Clipboard!");
             }
+        }
+
+        private void AccountManager_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            ManagerKey.SetValue("SavedPlaceId", PlaceID.Text);
         }
     }
 }

@@ -173,7 +173,6 @@
             this.ServerListView.TabIndex = 5;
             this.ServerListView.UseCompatibleStateImageBehavior = false;
             this.ServerListView.View = System.Windows.Forms.View.Details;
-            this.ServerListView.BeforeSorting += new System.EventHandler<BrightIdeasSoftware.BeforeSortingEventArgs>(this.ServerListView_BeforeSorting);
             this.ServerListView.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ServerListView_MouseDoubleClick);
             // 
             // JobId
@@ -237,7 +236,7 @@
             this.GamesTab.Location = new System.Drawing.Point(4, 22);
             this.GamesTab.Name = "GamesTab";
             this.GamesTab.Padding = new System.Windows.Forms.Padding(3);
-            this.GamesTab.Size = new System.Drawing.Size(485, 281);
+            this.GamesTab.Size = new System.Drawing.Size(476, 281);
             this.GamesTab.TabIndex = 1;
             this.GamesTab.Text = "Games";
             this.GamesTab.UseVisualStyleBackColor = true;

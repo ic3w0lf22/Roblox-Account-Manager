@@ -341,6 +341,7 @@
             this.MinimumSize = new System.Drawing.Size(649, 340);
             this.Name = "AccountManager";
             this.Text = "Roblox Account Manager";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.AccountManager_FormClosed);
             this.Load += new System.EventHandler(this.AccountManager_Load);
             this.Shown += new System.EventHandler(this.AccountManager_Shown);
             this.AccountsStrip.ResumeLayout(false);

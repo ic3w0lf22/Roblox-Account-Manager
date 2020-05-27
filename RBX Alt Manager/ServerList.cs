@@ -57,7 +57,7 @@ namespace RBX_Alt_Manager
             {
                 while (publicInfo.nextPageCursor != null)
                 {
-                    RestRequest request = new RestRequest("v1/games/" + Program.MainForm.PlaceID.Text + " /servers/public?sortOrder=Asc&limit=100" + (string.IsNullOrEmpty(publicInfo.nextPageCursor) ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
+                    RestRequest request = new RestRequest("v1/games/" + Program.MainForm.PlaceID.Text + " /servers/public?sortOrder=Asc&limit=50." + (string.IsNullOrEmpty(publicInfo.nextPageCursor) ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
                     response = gamesclient.Execute(request);
 
                     if (response.StatusCode == HttpStatusCode.OK)
@@ -76,7 +76,7 @@ namespace RBX_Alt_Manager
                 {
                     while (vipInfo.nextPageCursor != null)
                     {
-                        RestRequest request = new RestRequest("v1/games/" + Program.MainForm.PlaceID.Text + " /servers/VIP?sortOrder=Asc&limit=100" + (string.IsNullOrEmpty(vipInfo.nextPageCursor) ? "" : "&cursor=" + vipInfo.nextPageCursor), Method.GET);
+                        RestRequest request = new RestRequest("v1/games/" + Program.MainForm.PlaceID.Text + " /servers/VIP?sortOrder=Asc&limit=25" + (string.IsNullOrEmpty(vipInfo.nextPageCursor) ? "" : "&cursor=" + vipInfo.nextPageCursor), Method.GET);
                         request.AddCookie(".ROBLOSECURITY", AccountManager.SelectedAccount.SecurityToken);
                         request.AddHeader("Accept", "application/json");
                         response = gamesclient.Execute(request);
@@ -222,11 +222,6 @@ namespace RBX_Alt_Manager
         {
             if (this.ServerListView.SelectedItem != null)
                 Clipboard.SetText("<rbx-join://" + PlaceId.ToString() + "/" + this.ServerListView.SelectedItem.Text + ">");
-        }
-
-        private void ServerListView_BeforeSorting(object sender, BeforeSortingEventArgs e)
-        {
-
         }
     }
 }
