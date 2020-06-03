@@ -13,6 +13,8 @@ namespace RBX_Alt_Manager
     {
         private delegate void SafeCallDelegate();
         private string SecurityToken;
+        public bool BrowserMode = false;
+        public string SetUsername = "";
 
         public AccountAdder()
         {
@@ -72,6 +74,12 @@ namespace RBX_Alt_Manager
 
         private async void OnPageLoaded(object sender, FrameLoadEndEventArgs args)
         {
+            if (!string.IsNullOrEmpty(SetUsername))
+            {
+                chromeBrowser.ExecuteScriptAsyncWhenPageLoaded($"document.getElementById('login-username').value='{SetUsername}'");
+                SetUsername = "";
+            }
+
             if (args.Url.Contains("my/account/json"))
             {
                 string src = await args.Frame.GetSourceAsync();
@@ -86,7 +94,7 @@ namespace RBX_Alt_Manager
         {
             string url = args.Address;
 
-            if (url.Contains("/home"))
+            if (!BrowserMode && url.Contains("/home"))
             {
                 var cookieManager = Cef.GetGlobalCookieManager();
 

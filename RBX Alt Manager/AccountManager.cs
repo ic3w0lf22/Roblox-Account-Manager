@@ -119,12 +119,18 @@ namespace RBX_Alt_Manager
         public static void AddAccount(string SecurityToken, string UserData)
         {
             Account account = new Account();
-
+            
             string res = account.Validate(SecurityToken, UserData);
 
             if (res == "Success")
             {
-                AccountsList.Add(account);
+                Account exists = AccountsList.FirstOrDefault(acc => acc.UserID == account.UserID);
+
+                if (exists != null)
+                    exists.SecurityToken = account.SecurityToken;
+                else
+                    AccountsList.Add(account);
+
                 Program.MainForm.AddAccountToList(account);
                 SaveAccounts();
             }
@@ -230,6 +236,7 @@ namespace RBX_Alt_Manager
             if (aaform != null && aaform.Visible)
                 aaform.HideForm();
 
+            aaform.BrowserMode = false;
             aaform.ShowForm();
         }
 
@@ -571,6 +578,35 @@ namespace RBX_Alt_Manager
         private void AccountManager_FormClosed(object sender, FormClosedEventArgs e)
         {
             ManagerKey.SetValue("SavedPlaceId", PlaceID.Text);
+        }
+
+        private void BrowserButton_Click(object sender, EventArgs e)
+        {
+            if (SelectedAccount == null) return;
+
+            if (aaform != null && aaform.Visible)
+                aaform.HideForm();
+
+            aaform.ShowForm();
+            aaform.BrowserMode = true;
+            CefSharp.Cookie ck = new CefSharp.Cookie();
+            ck.Name = ".ROBLOSECURITY";
+            ck.Value = SelectedAccount.SecurityToken;
+            CefSharp.Cef.GetGlobalCookieManager().SetCookie("https://www.roblox.com", ck);
+            aaform.chromeBrowser.Load("https://www.roblox.com/home");
+        }
+
+        private void reAuthToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (SelectedAccount == null) return;
+
+            if (aaform != null && aaform.Visible)
+                aaform.HideForm();
+
+            aaform.BrowserMode = false;
+            aaform.ShowForm();
+
+            aaform.SetUsername = SelectedAccount.Username;
         }
     }
 }

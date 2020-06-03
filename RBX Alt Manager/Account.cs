@@ -76,10 +76,10 @@ namespace RBX_Alt_Manager
             if (result != null)
                 Token = (string)result.Value;
             else
-                return "ERROR: Account Session Expired, right click the account and press re-auth. (1)";
+                return "ERROR: Account Session Expired, right click the account and press re-auth or try again. (1)";
 
             if (string.IsNullOrEmpty(Token) || result == null)
-                return "ERROR: Account Session Expired, right click the account and press re-auth. (2)";
+                return "ERROR: Account Session Expired, right click the account and press re-auth or try again. (2)";
 
             request = new RestRequest("/v1/authentication-ticket/", Method.POST);
             request.AddCookie(".ROBLOSECURITY", SecurityToken);

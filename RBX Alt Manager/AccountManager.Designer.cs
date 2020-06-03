@@ -56,6 +56,8 @@
             this.HideUsernamesCheckbox = new System.Windows.Forms.CheckBox();
             this.InviteLinks = new System.Windows.Forms.ComboBox();
             this.RobloxProcessTimer = new System.Windows.Forms.Timer(this.components);
+            this.BrowserButton = new System.Windows.Forms.Button();
+            this.reAuthToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AccountsStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -103,7 +105,7 @@
             this.Add.Location = new System.Drawing.Point(13, 266);
             this.Add.Name = "Add";
             this.Add.Size = new System.Drawing.Size(95, 23);
-            this.Add.TabIndex = 11;
+            this.Add.TabIndex = 12;
             this.Add.Text = "Add Account";
             this.Add.UseVisualStyleBackColor = true;
             this.Add.Click += new System.EventHandler(this.Add_Click);
@@ -135,7 +137,7 @@
             this.SetDescription.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.SetDescription.Location = new System.Drawing.Point(503, 264);
             this.SetDescription.Name = "SetDescription";
-            this.SetDescription.Size = new System.Drawing.Size(267, 23);
+            this.SetDescription.Size = new System.Drawing.Size(133, 23);
             this.SetDescription.TabIndex = 10;
             this.SetDescription.Text = "Set Description";
             this.SetDescription.UseVisualStyleBackColor = true;
@@ -232,7 +234,7 @@
             this.AccountsView.MultiSelect = false;
             this.AccountsView.Name = "AccountsView";
             this.AccountsView.Size = new System.Drawing.Size(484, 247);
-            this.AccountsView.TabIndex = 17;
+            this.AccountsView.TabIndex = 16;
             this.AccountsView.UseCompatibleStateImageBehavior = false;
             this.AccountsView.View = System.Windows.Forms.View.Details;
             this.AccountsView.SelectedIndexChanged += new System.EventHandler(this.AccountsView_SelectedIndexChanged);
@@ -258,28 +260,29 @@
             this.AccountsStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addAccountsToolStripMenuItem,
             this.removeAccountToolStripMenuItem,
+            this.reAuthToolStripMenuItem,
             this.infoToolStripMenuItem});
             this.AccountsStrip.Name = "contextMenuStrip1";
-            this.AccountsStrip.Size = new System.Drawing.Size(166, 70);
+            this.AccountsStrip.Size = new System.Drawing.Size(181, 114);
             // 
             // addAccountsToolStripMenuItem
             // 
             this.addAccountsToolStripMenuItem.Name = "addAccountsToolStripMenuItem";
-            this.addAccountsToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.addAccountsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.addAccountsToolStripMenuItem.Text = "Add Account";
             this.addAccountsToolStripMenuItem.Click += new System.EventHandler(this.addAccountsToolStripMenuItem_Click);
             // 
             // removeAccountToolStripMenuItem
             // 
             this.removeAccountToolStripMenuItem.Name = "removeAccountToolStripMenuItem";
-            this.removeAccountToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.removeAccountToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.removeAccountToolStripMenuItem.Text = "Remove Account";
             this.removeAccountToolStripMenuItem.Click += new System.EventHandler(this.removeAccountToolStripMenuItem_Click);
             // 
             // infoToolStripMenuItem
             // 
             this.infoToolStripMenuItem.Name = "infoToolStripMenuItem";
-            this.infoToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.infoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.infoToolStripMenuItem.Text = "Info";
             this.infoToolStripMenuItem.Click += new System.EventHandler(this.infoToolStripMenuItem_Click);
             // 
@@ -290,7 +293,7 @@
             this.HideUsernamesCheckbox.Location = new System.Drawing.Point(215, 270);
             this.HideUsernamesCheckbox.Name = "HideUsernamesCheckbox";
             this.HideUsernamesCheckbox.Size = new System.Drawing.Size(104, 17);
-            this.HideUsernamesCheckbox.TabIndex = 18;
+            this.HideUsernamesCheckbox.TabIndex = 14;
             this.HideUsernamesCheckbox.Text = "Hide Usernames";
             this.HideUsernamesCheckbox.UseVisualStyleBackColor = true;
             this.HideUsernamesCheckbox.CheckedChanged += new System.EventHandler(this.HideUsernamesCheckbox_CheckedChanged);
@@ -303,7 +306,7 @@
             this.InviteLinks.Location = new System.Drawing.Point(325, 267);
             this.InviteLinks.Name = "InviteLinks";
             this.InviteLinks.Size = new System.Drawing.Size(172, 21);
-            this.InviteLinks.TabIndex = 14;
+            this.InviteLinks.TabIndex = 15;
             this.InviteLinks.Text = "Copy Invite Link";
             this.InviteLinks.SelectedIndexChanged += new System.EventHandler(this.InviteLinks_SelectedIndexChanged);
             this.InviteLinks.TextUpdate += new System.EventHandler(this.InviteLinks_TextUpdate);
@@ -313,11 +316,30 @@
             this.RobloxProcessTimer.Interval = 2500;
             this.RobloxProcessTimer.Tick += new System.EventHandler(this.RobloxProcessTimer_Tick);
             // 
+            // BrowserButton
+            // 
+            this.BrowserButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.BrowserButton.Location = new System.Drawing.Point(638, 264);
+            this.BrowserButton.Name = "BrowserButton";
+            this.BrowserButton.Size = new System.Drawing.Size(133, 23);
+            this.BrowserButton.TabIndex = 11;
+            this.BrowserButton.Text = "Open Browser";
+            this.BrowserButton.UseVisualStyleBackColor = true;
+            this.BrowserButton.Click += new System.EventHandler(this.BrowserButton_Click);
+            // 
+            // reAuthToolStripMenuItem
+            // 
+            this.reAuthToolStripMenuItem.Name = "reAuthToolStripMenuItem";
+            this.reAuthToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.reAuthToolStripMenuItem.Text = "Re-Auth";
+            this.reAuthToolStripMenuItem.Click += new System.EventHandler(this.reAuthToolStripMenuItem_Click);
+            // 
             // AccountManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(783, 301);
+            this.Controls.Add(this.BrowserButton);
             this.Controls.Add(this.InviteLinks);
             this.Controls.Add(this.HideUsernamesCheckbox);
             this.Controls.Add(this.AccountsView);
@@ -377,5 +399,7 @@
         private System.Windows.Forms.CheckBox HideUsernamesCheckbox;
         private System.Windows.Forms.ComboBox InviteLinks;
         private System.Windows.Forms.Timer RobloxProcessTimer;
+        private System.Windows.Forms.Button BrowserButton;
+        private System.Windows.Forms.ToolStripMenuItem reAuthToolStripMenuItem;
     }
 }

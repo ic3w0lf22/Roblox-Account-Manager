@@ -118,7 +118,7 @@ namespace rbx_join
                 pipe.Connect(5000);
                 pipe.ReadMode = PipeTransmissionMode.Message;
 
-                string Account = self.Text.Contains(":") ? self.Text.Substring(0, self.Text.IndexOf(":")) : self.Text;
+                // string Account = self.Text.Contains(":") ? self.Text.Substring(0, self.Text.IndexOf(":")) : self.Text;
 
                 byte[] bytes = Encoding.Default.GetBytes("play-" + self.Name + "-" + PlaceId + (!string.IsNullOrEmpty(JobId) ? "-" + JobId : ""));
                 pipe.Write(bytes, 0, bytes.Length);
