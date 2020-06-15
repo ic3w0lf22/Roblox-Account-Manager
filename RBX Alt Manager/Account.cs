@@ -1,9 +1,11 @@
-﻿using RestSharp;
+﻿using Microsoft.Win32;
+using RestSharp;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace RBX_Alt_Manager
 {
@@ -15,6 +17,7 @@ namespace RBX_Alt_Manager
         private string _Alias = "";
         private string _Description = "";
         public int UserID;
+        private Random rand;
 
         public string Alias
         {
@@ -57,9 +60,23 @@ namespace RBX_Alt_Manager
             return "false";
         }
 
+        long LongRandom(long min, long max, Random rand)
+        {
+            long result = rand.Next((Int32)(min >> 32), (Int32)(max >> 32));
+            result = (result << 32);
+            result = result | (long)rand.Next((Int32)min, (Int32)max);
+            return result;
+        }
+
         public string JoinServer(long PlaceID, string JobID = "", bool FollowUser = false, bool JoinVIP = false)
         {
+            Random r = new Random();
+            RegistryKey RbxCmdPath = Registry.ClassesRoot.OpenSubKey(@"roblox-player\shell\open\command", RegistryKeyPermissionCheck.ReadSubTree);
+            
+            string LaunchPath = RbxCmdPath.GetValue("").ToString();
             string CurrentVersion = AccountManager.CurrentVersion;
+
+            bool UseRegistryPath = !string.IsNullOrEmpty(LaunchPath);
 
             if (string.IsNullOrEmpty(CurrentVersion)) return "ERROR: No Roblox Version";
 
@@ -92,26 +109,68 @@ namespace RBX_Alt_Manager
             if (Ticket != null)
             {
                 Token = (string)Ticket.Value;
-                string RPath = @"C:\Program Files (x86)\Roblox\Versions\" + CurrentVersion;
 
-                if (!Directory.Exists(RPath))
-                    RPath = Path.Combine(Environment.GetEnvironmentVariable("LocalAppData"), @"Roblox\Versions\" + CurrentVersion);
-                if (!Directory.Exists(RPath))
-                    return "ERROR: Failed to find ROBLOX executable, either restart the account manager or make sure your roblox is updated";
+                string LinkCode = Regex.Match(JobID, "privateServerLinkCode=(.+)")?.Groups[1]?.Value;
+                string AccessCode = JobID;
 
-                RPath = RPath + @"\RobloxPlayerBeta.exe";
-                ProcessStartInfo Roblox = new ProcessStartInfo(RPath);
-                if (JoinVIP)
-                {
-                    string LinkCode = "";
-                    Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode=\"", Token, PlaceID, JobID, LinkCode);
+                if (!string.IsNullOrEmpty(LinkCode))
+                { 
+                    request = new RestRequest(string.Format("/games/{0}?privateServerLinkCode={1}", PlaceID, LinkCode), Method.GET);
+                    request.AddCookie(".ROBLOSECURITY", SecurityToken);
+                    request.AddHeader("X-CSRF-TOKEN", Token);
+                    request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+
+                    response = AccountManager.mainclient.Execute(request);
+
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        string pattern = "Roblox.GameLauncher.joinPrivateGame\\(\\d+,'(\\w+\\-\\w+\\-\\w+\\-\\w+\\-\\w+)";
+                        Regex regex = new Regex(pattern);
+                        MatchCollection matches = regex.Matches(response.Content);
+
+                        if (matches.Count > 0 && matches[0].Groups.Count > 0)
+                        {
+                            JoinVIP = true;
+                            AccessCode = matches[0].Groups[1].Value;
+                        }
+                    }
                 }
-                else if (FollowUser)
-                    Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}\"", Token, PlaceID);
-                else
-                    Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}&isPlayTogetherGame=false\"", Token, PlaceID, "&gameId=" + JobID, string.IsNullOrEmpty(JobID) ? "" : "Job");
-                Process.Start(Roblox);
-                return "Success";
+
+                if (UseRegistryPath)
+                {
+                    if (JoinVIP)
+                    {
+                        string Argument = string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{4}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode={3}+browsertrackerid:{5}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, AccessCode, LinkCode, DateTime.Now.Ticks, LongRandom(50000000000, 60000000000, r));
+
+                        Process.Start(Argument);
+                    }
+                    else if (FollowUser)
+                        Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{2}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}+browsertrackerid:{3}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, DateTime.Now.Ticks, LongRandom(50000000000, 60000000000, r)));
+                    else
+                        Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{4}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}+browsertrackerid:{5}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, "&gameId=" + JobID, string.IsNullOrEmpty(JobID) ? "" : "Job", DateTime.Now.Ticks, LongRandom(50000000000, 60000000000, r)));
+
+                    return "Success";
+                }
+                else // probably will never happen
+                {
+                    string RPath = @"C:\Program Files (x86)\Roblox\Versions\" + CurrentVersion;
+
+                    if (!Directory.Exists(RPath))
+                        RPath = Path.Combine(Environment.GetEnvironmentVariable("LocalAppData"), @"Roblox\Versions\" + CurrentVersion);
+                    if (!Directory.Exists(RPath))
+                        return "ERROR: Failed to find ROBLOX executable, either restart the account manager or make sure your roblox is updated";
+
+                    RPath = RPath + @"\RobloxPlayerBeta.exe";
+                    ProcessStartInfo Roblox = new ProcessStartInfo(RPath);
+                    if (JoinVIP)
+                        Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode=\"", Token, PlaceID, JobID, LinkCode);
+                    else if (FollowUser)
+                        Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}\"", Token, PlaceID);
+                    else
+                        Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}&isPlayTogetherGame=false\"", Token, PlaceID, "&gameId=" + JobID, string.IsNullOrEmpty(JobID) ? "" : "Job");
+                    Process.Start(Roblox);
+                    return "Success";
+                }
             }
             else
                 return "ERROR: Invalid Authentication Ticket";

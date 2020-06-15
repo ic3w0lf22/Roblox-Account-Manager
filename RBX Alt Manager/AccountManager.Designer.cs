@@ -52,12 +52,12 @@
             this.AccountsStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addAccountsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeAccountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reAuthToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.infoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.HideUsernamesCheckbox = new System.Windows.Forms.CheckBox();
             this.InviteLinks = new System.Windows.Forms.ComboBox();
             this.RobloxProcessTimer = new System.Windows.Forms.Timer(this.components);
             this.BrowserButton = new System.Windows.Forms.Button();
-            this.reAuthToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AccountsStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -238,6 +238,9 @@
             this.AccountsView.UseCompatibleStateImageBehavior = false;
             this.AccountsView.View = System.Windows.Forms.View.Details;
             this.AccountsView.SelectedIndexChanged += new System.EventHandler(this.AccountsView_SelectedIndexChanged);
+            this.AccountsView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.AccountsView_MouseDown);
+            this.AccountsView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.AccountsView_MouseMove);
+            this.AccountsView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.AccountsView_MouseUp);
             // 
             // AccountName
             // 
@@ -263,26 +266,33 @@
             this.reAuthToolStripMenuItem,
             this.infoToolStripMenuItem});
             this.AccountsStrip.Name = "contextMenuStrip1";
-            this.AccountsStrip.Size = new System.Drawing.Size(181, 114);
+            this.AccountsStrip.Size = new System.Drawing.Size(166, 92);
             // 
             // addAccountsToolStripMenuItem
             // 
             this.addAccountsToolStripMenuItem.Name = "addAccountsToolStripMenuItem";
-            this.addAccountsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.addAccountsToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.addAccountsToolStripMenuItem.Text = "Add Account";
             this.addAccountsToolStripMenuItem.Click += new System.EventHandler(this.addAccountsToolStripMenuItem_Click);
             // 
             // removeAccountToolStripMenuItem
             // 
             this.removeAccountToolStripMenuItem.Name = "removeAccountToolStripMenuItem";
-            this.removeAccountToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.removeAccountToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.removeAccountToolStripMenuItem.Text = "Remove Account";
             this.removeAccountToolStripMenuItem.Click += new System.EventHandler(this.removeAccountToolStripMenuItem_Click);
+            // 
+            // reAuthToolStripMenuItem
+            // 
+            this.reAuthToolStripMenuItem.Name = "reAuthToolStripMenuItem";
+            this.reAuthToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.reAuthToolStripMenuItem.Text = "Re-Auth";
+            this.reAuthToolStripMenuItem.Click += new System.EventHandler(this.reAuthToolStripMenuItem_Click);
             // 
             // infoToolStripMenuItem
             // 
             this.infoToolStripMenuItem.Name = "infoToolStripMenuItem";
-            this.infoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.infoToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.infoToolStripMenuItem.Text = "Info";
             this.infoToolStripMenuItem.Click += new System.EventHandler(this.infoToolStripMenuItem_Click);
             // 
@@ -326,13 +336,6 @@
             this.BrowserButton.Text = "Open Browser";
             this.BrowserButton.UseVisualStyleBackColor = true;
             this.BrowserButton.Click += new System.EventHandler(this.BrowserButton_Click);
-            // 
-            // reAuthToolStripMenuItem
-            // 
-            this.reAuthToolStripMenuItem.Name = "reAuthToolStripMenuItem";
-            this.reAuthToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.reAuthToolStripMenuItem.Text = "Re-Auth";
-            this.reAuthToolStripMenuItem.Click += new System.EventHandler(this.reAuthToolStripMenuItem_Click);
             // 
             // AccountManager
             // 

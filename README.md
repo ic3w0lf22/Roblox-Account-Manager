@@ -17,7 +17,7 @@ To use rbx-join, make sure to run RegisterRbxJoinProtocol.exe first and if you h
 - [x] Fix rbx-join not working with hide usernames on
 - [x] Save the PlaceId content
 - [ ] Add the games section
-- [ ] Add Re-auth option to accounts context menu
+- [x] Add Re-auth option to accounts context menu
 
 # Preview
 ![github-large](Images/Image1.png)

@@ -28,6 +28,7 @@ namespace RBX_Alt_Manager
         public static List<Account> AccountsList = new List<Account>();
         public static Account SelectedAccount;
         public static string CurrentVersion;
+        public static RestClient mainclient;
         public static RestClient apiclient;
         public static RestClient client;
         public static RestClient econclient;
@@ -41,6 +42,8 @@ namespace RBX_Alt_Manager
         private string CommandValue;
         private RegistryKey ManagerKey;
         private string ManagerKeyName = "RbxAccountManager";
+        private ListViewItem DraggingItem;
+        private DateTime DragTime = DateTime.MinValue;
 
         private delegate void SafeCallDelegateAccount(Account account);
         private delegate void SafeCallDelegateRemoveAt(int Index);
@@ -119,7 +122,7 @@ namespace RBX_Alt_Manager
         public static void AddAccount(string SecurityToken, string UserData)
         {
             Account account = new Account();
-            
+
             string res = account.Validate(SecurityToken, UserData);
 
             if (res == "Success")
@@ -173,6 +176,9 @@ namespace RBX_Alt_Manager
             AccountsView.Items.Clear();
 
             RobloxProcessTimer.Start();
+
+            mainclient = new RestClient("https://www.roblox.com/");
+            mainclient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
             apiclient = new RestClient("https://api.roblox.com/");
             apiclient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
@@ -298,7 +304,7 @@ namespace RBX_Alt_Manager
             if (SelectedAccount == null) return;
 
             bool VIPServer = JobID.TextLength > 4 ? JobID.Text.Substring(0, 4) == "VIP:" : false;
-            Console.WriteLine(VIPServer);
+
             string res = SelectedAccount.JoinServer(Convert.ToInt64(PlaceID.Text), VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer);
 
             if (!res.Contains("Success"))
@@ -441,31 +447,34 @@ namespace RBX_Alt_Manager
 
             foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
             {
-                if (!Processes.Any(x => x.RobloxProcess.MainWindowHandle == p.MainWindowHandle))
-                {
-                    RbxProcess rbx = new RbxProcess(p);
-                    RbxProcesses.Add(rbx);
-
-                    Task.Run(() =>
+                try
+                { // this is stupid but error spam is also stupid and so am i
+                    if (!Processes.Any(x => x.RobloxProcess.MainWindowHandle == p.MainWindowHandle))
                     {
-                        Task.Delay(1000);
-                        DateTime setupTime = DateTime.Now;
-                        rbx.Setup();
+                        RbxProcess rbx = new RbxProcess(p);
+                        RbxProcesses.Add(rbx);
 
-                        do
-                            Task.Delay(500);
-                        while (string.IsNullOrEmpty(rbx.UserName) && (DateTime.Now - setupTime).TotalSeconds < 5.0);
-
-                        if (rbx.Working && p.Responding)
+                        Task.Run(() =>
                         {
-                            p.EnableRaisingEvents = true;
-                            p.Exited += new EventHandler(RobloxProcess_Exited);
-                            rbx.Index = AddInviteLinkItem(rbx.UserName);
-                        }
-                        else
-                            RbxProcesses.Remove(rbx);
-                    });
-                }
+                            Task.Delay(1000);
+                            DateTime setupTime = DateTime.Now;
+                            rbx.Setup();
+
+                            do
+                                Task.Delay(500);
+                            while (string.IsNullOrEmpty(rbx.UserName) && (DateTime.Now - setupTime).TotalSeconds < 5.0);
+
+                            if (rbx.Working && p.Responding)
+                            {
+                                p.EnableRaisingEvents = true;
+                                p.Exited += new EventHandler(RobloxProcess_Exited);
+                                rbx.Index = AddInviteLinkItem(rbx.UserName);
+                            }
+                            else
+                                RbxProcesses.Remove(rbx);
+                        });
+                    }
+                } catch { }
             }
         }
 
@@ -478,7 +487,6 @@ namespace RBX_Alt_Manager
             if (process == null) return;
 
             RbxProcesses.Remove(process);
-            Console.WriteLine(process.Index);
 
             for (int Index = 0; Index < InviteLinks.Items.Count; Index++)
             {
@@ -607,6 +615,65 @@ namespace RBX_Alt_Manager
             aaform.ShowForm();
 
             aaform.SetUsername = SelectedAccount.Username;
+        }
+
+        private void AccountsView_MouseDown(object sender, MouseEventArgs e)
+        {
+            DraggingItem = AccountsView.GetItemAt(e.X, e.Y);
+            DragTime = DateTime.Now;
+        }
+
+        private void AccountsView_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (DraggingItem == null || (DateTime.Now - DragTime).TotalMilliseconds < 200) return;
+
+            Cursor = Cursors.Hand;
+        }
+
+        private void AccountsView_MouseUp(object sender, MouseEventArgs e)
+        {
+            if ((DateTime.Now - DragTime).TotalMilliseconds < 200) DraggingItem = null;
+            
+            Cursor = Cursors.Default;
+
+            if (DraggingItem == null) return;
+
+            ListViewItem HoveringItem = AccountsView.GetItemAt(0, e.Y);
+
+            if (HoveringItem == null) return;
+
+            Rectangle rc = HoveringItem.GetBounds(ItemBoundsPortion.Entire);
+
+            bool InsertBefore = (e.Y < rc.Top + (rc.Height / 2));
+
+            if (DraggingItem != HoveringItem)
+            {
+                string Item = DraggingItem.SubItems[3].Text;
+                Account account = AccountsList.FirstOrDefault(x => Item.Length >= x.Username.Length && x.Username == Item.Substring(0, x.Username.Length));
+
+                if (account == null) { MessageBox.Show("Something went wrong!", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
+
+                if (InsertBefore)
+                {
+                    AccountsView.Items.Remove(DraggingItem);
+                    AccountsView.Items.Insert(HoveringItem.Index, DraggingItem);
+
+                    AccountsList.Remove(account);
+                    AccountsList.Insert(HoveringItem.Index - 1, account);
+                }
+                else
+                {
+                    AccountsView.Items.Remove(DraggingItem);
+                    AccountsView.Items.Insert(HoveringItem.Index + 1, DraggingItem);
+
+                    AccountsList.Remove(account);
+                    AccountsList.Insert(HoveringItem.Index, account);
+                }
+
+                DraggingItem = null;
+
+                SaveAccounts();
+            }
         }
     }
 }
