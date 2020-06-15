@@ -13,7 +13,7 @@ To install this, head over to the [Releases](https://github.com/ic3w0lf22/Roblox
 To use rbx-join, make sure to run RegisterRbxJoinProtocol.exe first and if you haven't accepted the handle EULA, run handle.exe and it'll automatically close after clicking accept.
 
 # TO DO
-- [ ] Add privateServerLinkCode to the VIP server functionality
+- [x] Add privateServerLinkCode to the VIP server functionality
 - [x] Fix rbx-join not working with hide usernames on
 - [x] Save the PlaceId content
 - [ ] Add the games section
