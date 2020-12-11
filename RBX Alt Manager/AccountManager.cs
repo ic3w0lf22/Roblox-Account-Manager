@@ -93,7 +93,7 @@ namespace RBX_Alt_Manager
             File.WriteAllText(SaveFilePath, SaveData);
         }
 
-        public static int GetUserID(string Username)
+        public static long GetUserID(string Username)
         {
             RestRequest request = new RestRequest("users/get-by-username?username=" + Username, Method.GET);
             request.AddHeader("Accept", "application/json");
@@ -330,7 +330,7 @@ namespace RBX_Alt_Manager
         {
             if (SelectedAccount == null) return;
 
-            int UserId = GetUserID(UserID.Text);
+            long UserId = GetUserID(UserID.Text);
 
             if (UserId < 0)
             {

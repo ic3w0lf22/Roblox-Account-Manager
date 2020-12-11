@@ -2,7 +2,7 @@
 {
     public class UsernameReponse
     {
-        public int Id;
+        public long Id;
         public string Username;
         public string AvatarUni;
         public string AvatarFinal;

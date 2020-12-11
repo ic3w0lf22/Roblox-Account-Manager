@@ -127,7 +127,7 @@ namespace RBX_Alt_Manager
                 return;
             }
 
-            int UserID = AccountManager.GetUserID(Username.Text);
+            long UserID = AccountManager.GetUserID(Username.Text);
 
             if (UserID < 0)
             {

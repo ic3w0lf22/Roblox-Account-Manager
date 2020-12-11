@@ -52,7 +52,7 @@ namespace RBX_Alt_Manager
                 Match MUsername = Regex.Match(UserData, @"""Name"":""(\w+)""");
                 Match MUserID = Regex.Match(UserData, @"""UserId"":(\d+)");
                 if (MUsername.Success && MUsername.Groups.Count >= 2) Username = MUsername.Groups[1].ToString();
-                if (MUserID.Success && MUserID.Groups.Count >= 2) UserID = Convert.ToInt32(MUserID.Groups[1].Value);
+                if (MUserID.Success && MUserID.Groups.Count >= 2) UserID = Convert.ToInt64(MUserID.Groups[1].Value);
                 return "Success";
             }
 
