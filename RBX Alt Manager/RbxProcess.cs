@@ -48,7 +48,7 @@ namespace RBX_Alt_Manager
             Console.WriteLine(output);
 #endif
 
-            Match LogMatch = Regex.Match(output, @"\w+: File\s+(\w+:.+\\Roblox\\logs\\log_\w+_\d+.txt)");
+            Match LogMatch = Regex.Match(output, @"\w+: File\s+(\w+:.+\\Roblox\\logs\\log_\w+_\w+.txt)");
 
 #if DEBUG
             Console.WriteLine("Getting Logs File Path");

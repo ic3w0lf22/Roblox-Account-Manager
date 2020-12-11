@@ -16,8 +16,7 @@ namespace RBX_Alt_Manager
         public string Username;
         private string _Alias = "";
         private string _Description = "";
-        public int UserID;
-        private Random rand;
+        public long UserID;
 
         public string Alias
         {
@@ -60,7 +59,7 @@ namespace RBX_Alt_Manager
             return "false";
         }
 
-        long LongRandom(long min, long max, Random rand)
+        public static long LongRandom(long min, long max, Random rand)
         {
             long result = rand.Next((Int32)(min >> 32), (Int32)(max >> 32));
             result = (result << 32);
@@ -136,7 +135,7 @@ namespace RBX_Alt_Manager
                     }
                 }
 
-                if (UseRegistryPath)
+                if (UseRegistryPath && !AccountManager.UseOldJoin)
                 {
                     if (JoinVIP)
                     {
@@ -147,7 +146,7 @@ namespace RBX_Alt_Manager
                     else if (FollowUser)
                         Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{2}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}+browsertrackerid:{3}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, DateTime.Now.Ticks, LongRandom(50000000000, 60000000000, r)));
                     else
-                        Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{4}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}+browsertrackerid:{5}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, "&gameId=" + JobID, string.IsNullOrEmpty(JobID) ? "" : "Job", DateTime.Now.Ticks, LongRandom(50000000000, 60000000000, r)));
+                        Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{4}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}{6}+browsertrackerid:{5}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, "&gameId=" + JobID, string.IsNullOrEmpty(JobID) ? "" : "Job", DateTime.Now.Ticks, LongRandom(50000000000, 60000000000, r), AccountManager.IsTeleport ? "&isTeleport=true" : ""));
 
                     return "Success";
                 }

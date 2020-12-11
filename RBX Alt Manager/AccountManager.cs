@@ -33,8 +33,11 @@ namespace RBX_Alt_Manager
         public static RestClient client;
         public static RestClient econclient;
         private AccountAdder aaform;
+        private ArgumentsForm afform;
         private ServerList ServerListForm;
         private static DateTime startTime = DateTime.Now;
+        public static bool IsTeleport = false;
+        public static bool UseOldJoin = false;
         public ListViewItem SelectedAccountItem;
         // public Account SelectedAccount;
         private ListViewItem LastViewItem;
@@ -116,7 +119,7 @@ namespace RBX_Alt_Manager
                 AccountsView.Invoke(addItem, new object[] { account });
             }
             else
-                AccountsView.Items.Add(new ListViewItem(new string[] { account.Username, account.Alias, account.Description.Replace("\n", ""), account.Username }));
+                AccountsView.Items.Add(new ListViewItem(new string[] { account.Username, account.Alias, account.Description.Replace("\n", " "), account.Username }));
         }
 
         public static void AddAccount(string SecurityToken, string UserData)
@@ -132,9 +135,11 @@ namespace RBX_Alt_Manager
                 if (exists != null)
                     exists.SecurityToken = account.SecurityToken;
                 else
+                {
                     AccountsList.Add(account);
+                    Program.MainForm.AddAccountToList(account);
+                }
 
-                Program.MainForm.AddAccountToList(account);
                 SaveAccounts();
             }
             else MessageBox.Show(res);
@@ -148,6 +153,15 @@ namespace RBX_Alt_Manager
             {
                 MessageBox.Show("Failed to find rbx-join executable", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 Close();
+            }
+
+            if (!File.Exists("dev.mode"))
+            {
+                AccountsStrip.Items.Remove(getAuthenticationTicketToolStripMenuItem);
+                AccountsStrip.Items.Remove(copyRbxplayerLinkToolStripMenuItem);
+                AccountsStrip.Items.Remove(copySecurityTokenToolStripMenuItem);
+                ArgumentsB.Visible = false;
+                JoinServer.Size = new Size(197, 23);
             }
 
             RegistryKey MainKey = Registry.ClassesRoot.OpenSubKey("rbx-join");
@@ -171,11 +185,12 @@ namespace RBX_Alt_Manager
             SetupNamedPipe();
 
             aaform = new AccountAdder();
+            afform = new ArgumentsForm();
             ServerListForm = new ServerList();
 
             AccountsView.Items.Clear();
 
-            RobloxProcessTimer.Start();
+            // RobloxProcessTimer.Start();
 
             mainclient = new RestClient("https://www.roblox.com/");
             mainclient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
@@ -447,23 +462,23 @@ namespace RBX_Alt_Manager
 
             foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
             {
-                try
-                { // this is stupid but error spam is also stupid and so am i
-                    if (!Processes.Any(x => x.RobloxProcess.MainWindowHandle == p.MainWindowHandle))
+                if (!Processes.Any(x => x.RobloxProcess.MainWindowHandle == p.MainWindowHandle))
+                {
+                    RbxProcess rbx = new RbxProcess(p);
+                    RbxProcesses.Add(rbx);
+
+                    Task.Run(() =>
                     {
-                        RbxProcess rbx = new RbxProcess(p);
-                        RbxProcesses.Add(rbx);
+                        Task.Delay(1000);
+                        DateTime setupTime = DateTime.Now;
+                        rbx.Setup();
 
-                        Task.Run(() =>
-                        {
-                            Task.Delay(1000);
-                            DateTime setupTime = DateTime.Now;
-                            rbx.Setup();
+                        do
+                            Task.Delay(500);
+                        while (string.IsNullOrEmpty(rbx.UserName) && (DateTime.Now - setupTime).TotalSeconds < 5.0);
 
-                            do
-                                Task.Delay(500);
-                            while (string.IsNullOrEmpty(rbx.UserName) && (DateTime.Now - setupTime).TotalSeconds < 5.0);
-
+                        try
+                        { // this is stupid but error spam is also stupid and so am i
                             if (rbx.Working && p.Responding)
                             {
                                 p.EnableRaisingEvents = true;
@@ -472,9 +487,10 @@ namespace RBX_Alt_Manager
                             }
                             else
                                 RbxProcesses.Remove(rbx);
-                        });
-                    }
-                } catch { }
+                        }
+                        catch { RbxProcesses.Remove(rbx); }
+                    });
+                }
             }
         }
 
@@ -674,6 +690,111 @@ namespace RBX_Alt_Manager
 
                 SaveAccounts();
             }
+        }
+
+        private void getAuthenticationTicketToolStripMenuItem_Click(object sender, EventArgs e) // shouldn't be available to public releases
+        {
+            if (SelectedAccount == null) return;
+
+            RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
+
+            request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
+            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+
+            IRestResponse response = client.Execute(request);
+            Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
+
+            string Token = "";
+
+            if (result != null)
+                Token = (string)result.Value;
+            else
+                return;
+
+            if (string.IsNullOrEmpty(Token) || result == null)
+                return;
+
+            request = new RestRequest("/v1/authentication-ticket/", Method.POST);
+            request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
+            request.AddHeader("X-CSRF-TOKEN", Token);
+            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+            response = client.Execute(request);
+
+            Parameter Ticket = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
+
+            if (Ticket != null)
+                Clipboard.SetText((string)Ticket.Value);
+        }
+
+        private void copyRbxplayerLinkToolStripMenuItem_Click(object sender, EventArgs e) // shouldn't be available to public releases
+        {
+            if (SelectedAccount == null) return;
+
+            RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
+
+            request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
+            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+
+            IRestResponse response = client.Execute(request);
+            Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
+
+            string Token = "";
+
+            if (result != null)
+                Token = (string)result.Value;
+            else
+                return;
+
+            if (string.IsNullOrEmpty(Token) || result == null)
+                return;
+
+            request = new RestRequest("/v1/authentication-ticket/", Method.POST);
+            request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
+            request.AddHeader("X-CSRF-TOKEN", Token);
+            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+            response = client.Execute(request);
+
+            Parameter Ticket = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
+
+            if (Ticket != null)
+            {
+                Token = (string)Ticket.Value;
+                bool HasJobId = string.IsNullOrEmpty(JobID.Text);
+
+                Clipboard.SetText(string.Format("<roblox-player://1/1+launchmode:play+gameinfo:{0}+launchtime:{4}+browsertrackerid:{5}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}+robloxLocale:en_us+gameLocale:en_us>", Token, PlaceID.Text, HasJobId ? "" : ("&gameId=" + JobID.Text), HasJobId ? "" : "Job", DateTime.Now.Ticks, Account.LongRandom(50000000000, 60000000000, new Random())));
+            }
+        }
+
+        private void ArgumentsB_Click(object sender, EventArgs e)
+        {
+            if (afform != null && afform.Visible)
+                afform.HideForm();
+
+            afform.ShowForm();
+        }
+
+        private DateTime LastRefresh = DateTime.MinValue;
+
+        private void RefreshLinks_Click(object sender, EventArgs e)
+        {
+            if ((DateTime.Now - LastRefresh).TotalSeconds < 3) return; // prevent spam clicking button . . .
+
+            LastRefresh = DateTime.Now;
+            RobloxProcessTimer_Tick(sender, e); // lazy
+        }
+
+        private void copySecurityTokenToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (SelectedAccount == null) return;
+
+            Clipboard.SetText(SelectedAccount.SecurityToken);
+        }
+
+        private void copyUsernameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (SelectedAccount == null) return;
+
+            Clipboard.SetText(SelectedAccount.Username);
         }
     }
 }

@@ -57,7 +57,7 @@ namespace RBX_Alt_Manager
             {
                 while (publicInfo.nextPageCursor != null)
                 {
-                    RestRequest request = new RestRequest("v1/games/" + Program.MainForm.PlaceID.Text + " /servers/public?sortOrder=Asc&limit=50." + (string.IsNullOrEmpty(publicInfo.nextPageCursor) ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
+                    RestRequest request = new RestRequest("v1/games/" + Program.MainForm.PlaceID.Text + "/servers/public?sortOrder=Asc&limit=50." + (string.IsNullOrEmpty(publicInfo.nextPageCursor) ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
                     response = gamesclient.Execute(request);
 
                     if (response.StatusCode == HttpStatusCode.OK)

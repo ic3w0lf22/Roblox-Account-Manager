@@ -51,10 +51,17 @@
             this.Tabs = new System.Windows.Forms.TabControl();
             this.ServersTab = new System.Windows.Forms.TabPage();
             this.GamesTab = new System.Windows.Forms.TabPage();
+            this.objectListView1 = new BrightIdeasSoftware.ObjectListView();
+            this.olvColumn1 = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.olvColumn2 = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.olvColumn3 = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.olvColumn4 = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.ServerListStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ServerListView)).BeginInit();
             this.Tabs.SuspendLayout();
             this.ServersTab.SuspendLayout();
+            this.GamesTab.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.objectListView1)).BeginInit();
             this.SuspendLayout();
             // 
             // RefreshServers
@@ -233,6 +240,7 @@
             // 
             // GamesTab
             // 
+            this.GamesTab.Controls.Add(this.objectListView1);
             this.GamesTab.Location = new System.Drawing.Point(4, 22);
             this.GamesTab.Name = "GamesTab";
             this.GamesTab.Padding = new System.Windows.Forms.Padding(3);
@@ -240,6 +248,56 @@
             this.GamesTab.TabIndex = 1;
             this.GamesTab.Text = "Games";
             this.GamesTab.UseVisualStyleBackColor = true;
+            // 
+            // objectListView1
+            // 
+            this.objectListView1.AllColumns.Add(this.olvColumn1);
+            this.objectListView1.AllColumns.Add(this.olvColumn2);
+            this.objectListView1.AllColumns.Add(this.olvColumn3);
+            this.objectListView1.AllColumns.Add(this.FPSColumn);
+            this.objectListView1.AllColumns.Add(this.olvColumn4);
+            this.objectListView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.objectListView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.olvColumn1,
+            this.olvColumn2,
+            this.olvColumn3,
+            this.olvColumn4});
+            this.objectListView1.ContextMenuStrip = this.ServerListStrip;
+            this.objectListView1.Cursor = System.Windows.Forms.Cursors.Default;
+            this.objectListView1.GridLines = true;
+            this.objectListView1.HideSelection = false;
+            this.objectListView1.Location = new System.Drawing.Point(11, 22);
+            this.objectListView1.MultiSelect = false;
+            this.objectListView1.Name = "objectListView1";
+            this.objectListView1.ShowGroups = false;
+            this.objectListView1.Size = new System.Drawing.Size(455, 236);
+            this.objectListView1.TabIndex = 6;
+            this.objectListView1.UseCompatibleStateImageBehavior = false;
+            this.objectListView1.View = System.Windows.Forms.View.Details;
+            // 
+            // olvColumn1
+            // 
+            this.olvColumn1.AspectName = "id";
+            this.olvColumn1.Text = "Job ID";
+            this.olvColumn1.Width = 226;
+            // 
+            // olvColumn2
+            // 
+            this.olvColumn2.AspectName = "playing";
+            this.olvColumn2.Text = "Playing";
+            // 
+            // olvColumn3
+            // 
+            this.olvColumn3.AspectName = "ping";
+            this.olvColumn3.Text = "Ping";
+            // 
+            // olvColumn4
+            // 
+            this.olvColumn4.AspectName = "type";
+            this.olvColumn4.Text = "Type";
+            this.olvColumn4.Width = 45;
             // 
             // ServerList
             // 
@@ -258,6 +316,8 @@
             this.Tabs.ResumeLayout(false);
             this.ServersTab.ResumeLayout(false);
             this.ServersTab.PerformLayout();
+            this.GamesTab.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.objectListView1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -285,5 +345,10 @@
         private System.Windows.Forms.TabControl Tabs;
         private System.Windows.Forms.TabPage ServersTab;
         private System.Windows.Forms.TabPage GamesTab;
+        private BrightIdeasSoftware.ObjectListView objectListView1;
+        private BrightIdeasSoftware.OLVColumn olvColumn1;
+        private BrightIdeasSoftware.OLVColumn olvColumn2;
+        private BrightIdeasSoftware.OLVColumn olvColumn3;
+        private BrightIdeasSoftware.OLVColumn olvColumn4;
     }
 }
