@@ -11,9 +11,10 @@ Report bugs to the issues section or direct message me via discord @ ic3#0001
 Extra features can be enabled by adding a file called "dev.mode" to the same folder as the executable.
 Beware of the risks that you are taking if you accidentally send something to someone.
 
-If someone asks you to generate an "rbx-player link", **DO NOT** do it, they can use these to join any game using your account, or even launch roblox studio with one of your games.
-
 If you ever want a friend to join a game using your account, make sure you have the PlaceId and JobId correctly entered, then right click an account, and click "Copy rbx-player link", DO NOT do this if someone asks you for it.
+
+# WARNING
+If someone asks you to generate an "rbx-player link", **DO NOT** do it, they can use these to join any game using your account, or even launch roblox studio with one of your games. They can do many things in game such as spend your robux or even do things that can get your account terminated. **USE THESE FEATURES ARE YOUR OWN RISK**
 
 # Download
 To install this, head over to the [Releases](https://github.com/ic3w0lf22/Roblox-Account-Manager/releases) section and download the rar file at the very top, once downloaded, extract the files into a folder on your desktop and run RBX Alt Manager.exe.
