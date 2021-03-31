@@ -32,7 +32,6 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AccountManager));
             this.PlaceID = new System.Windows.Forms.TextBox();
             this.JobID = new System.Windows.Forms.TextBox();
-            this.LabelPlaceID = new System.Windows.Forms.Label();
             this.LabelJobID = new System.Windows.Forms.Label();
             this.Add = new System.Windows.Forms.Button();
             this.Remove = new System.Windows.Forms.Button();
@@ -52,55 +51,59 @@
             this.AccountsStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addAccountsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeAccountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.reAuthToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyUsernameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.moveGroupUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.moveToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.moveUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.moveDownToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.infoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.getAuthenticationTicketToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copySecurityTokenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyRbxplayerLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.HideUsernamesCheckbox = new System.Windows.Forms.CheckBox();
             this.InviteLinks = new System.Windows.Forms.ComboBox();
             this.RobloxProcessTimer = new System.Windows.Forms.Timer(this.components);
+            this.RefreshTip = new System.Windows.Forms.ToolTip(this.components);
+            this.RefreshLinks = new System.Windows.Forms.Button();
             this.BrowserButton = new System.Windows.Forms.Button();
             this.ArgumentsB = new System.Windows.Forms.Button();
-            this.RefreshLinks = new System.Windows.Forms.Button();
-            this.RefreshTip = new System.Windows.Forms.ToolTip(this.components);
-            this.copyUsernameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.copySecurityTokenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helloToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helloV2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.hiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.securityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.setPasswordToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.MainStrip = new System.Windows.Forms.MenuStrip();
+            this.CurrentPlace = new System.Windows.Forms.Label();
+            this.LabelPlaceID = new System.Windows.Forms.Label();
+            this.PlaceTimer = new System.Windows.Forms.Timer(this.components);
             this.AccountsStrip.SuspendLayout();
+            this.MainStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // PlaceID
             // 
             this.PlaceID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.PlaceID.Location = new System.Drawing.Point(503, 27);
+            this.PlaceID.Location = new System.Drawing.Point(503, 43);
             this.PlaceID.Name = "PlaceID";
             this.PlaceID.Size = new System.Drawing.Size(84, 20);
             this.PlaceID.TabIndex = 1;
             this.PlaceID.Text = "3016661674";
+            this.PlaceID.TextChanged += new System.EventHandler(this.PlaceID_TextChanged);
             this.PlaceID.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.PlaceID_KeyPress);
             // 
             // JobID
             // 
             this.JobID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.JobID.Location = new System.Drawing.Point(593, 27);
+            this.JobID.Location = new System.Drawing.Point(593, 43);
             this.JobID.Name = "JobID";
             this.JobID.Size = new System.Drawing.Size(178, 20);
             this.JobID.TabIndex = 2;
-            // 
-            // LabelPlaceID
-            // 
-            this.LabelPlaceID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.LabelPlaceID.AutoSize = true;
-            this.LabelPlaceID.Location = new System.Drawing.Point(504, 11);
-            this.LabelPlaceID.Name = "LabelPlaceID";
-            this.LabelPlaceID.Size = new System.Drawing.Size(48, 13);
-            this.LabelPlaceID.TabIndex = 3;
-            this.LabelPlaceID.Text = "Place ID";
             // 
             // LabelJobID
             // 
             this.LabelJobID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.LabelJobID.AutoSize = true;
-            this.LabelJobID.Location = new System.Drawing.Point(590, 11);
+            this.LabelJobID.Location = new System.Drawing.Point(590, 27);
             this.LabelJobID.Name = "LabelJobID";
             this.LabelJobID.Size = new System.Drawing.Size(38, 13);
             this.LabelJobID.TabIndex = 4;
@@ -131,7 +134,7 @@
             // JoinServer
             // 
             this.JoinServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.JoinServer.Location = new System.Drawing.Point(503, 53);
+            this.JoinServer.Location = new System.Drawing.Point(503, 69);
             this.JoinServer.Name = "JoinServer";
             this.JoinServer.Size = new System.Drawing.Size(168, 23);
             this.JoinServer.TabIndex = 3;
@@ -153,16 +156,16 @@
             // DescriptionBox
             // 
             this.DescriptionBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.DescriptionBox.Location = new System.Drawing.Point(503, 135);
+            this.DescriptionBox.Location = new System.Drawing.Point(503, 150);
             this.DescriptionBox.Name = "DescriptionBox";
-            this.DescriptionBox.Size = new System.Drawing.Size(268, 124);
+            this.DescriptionBox.Size = new System.Drawing.Size(268, 109);
             this.DescriptionBox.TabIndex = 10;
             this.DescriptionBox.Text = "Description";
             // 
             // SetAlias
             // 
             this.SetAlias.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.SetAlias.Location = new System.Drawing.Point(715, 106);
+            this.SetAlias.Location = new System.Drawing.Point(715, 122);
             this.SetAlias.Name = "SetAlias";
             this.SetAlias.Size = new System.Drawing.Size(56, 23);
             this.SetAlias.TabIndex = 9;
@@ -174,7 +177,7 @@
             // Alias
             // 
             this.Alias.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Alias.Location = new System.Drawing.Point(503, 108);
+            this.Alias.Location = new System.Drawing.Point(503, 124);
             this.Alias.MaxLength = 30;
             this.Alias.Name = "Alias";
             this.Alias.Size = new System.Drawing.Size(206, 20);
@@ -184,7 +187,7 @@
             // Follow
             // 
             this.Follow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Follow.Location = new System.Drawing.Point(715, 80);
+            this.Follow.Location = new System.Drawing.Point(715, 96);
             this.Follow.Name = "Follow";
             this.Follow.Size = new System.Drawing.Size(56, 23);
             this.Follow.TabIndex = 7;
@@ -195,7 +198,7 @@
             // UserID
             // 
             this.UserID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.UserID.Location = new System.Drawing.Point(565, 82);
+            this.UserID.Location = new System.Drawing.Point(565, 98);
             this.UserID.Name = "UserID";
             this.UserID.Size = new System.Drawing.Size(144, 20);
             this.UserID.TabIndex = 6;
@@ -204,7 +207,7 @@
             // 
             this.LabelUserID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.LabelUserID.AutoSize = true;
-            this.LabelUserID.Location = new System.Drawing.Point(504, 85);
+            this.LabelUserID.Location = new System.Drawing.Point(504, 101);
             this.LabelUserID.Name = "LabelUserID";
             this.LabelUserID.Size = new System.Drawing.Size(55, 13);
             this.LabelUserID.TabIndex = 14;
@@ -213,7 +216,7 @@
             // ServerList
             // 
             this.ServerList.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ServerList.Location = new System.Drawing.Point(706, 53);
+            this.ServerList.Location = new System.Drawing.Point(706, 69);
             this.ServerList.Name = "ServerList";
             this.ServerList.Size = new System.Drawing.Size(65, 23);
             this.ServerList.TabIndex = 5;
@@ -271,7 +274,7 @@
             this.addAccountsToolStripMenuItem,
             this.removeAccountToolStripMenuItem,
             this.copyUsernameToolStripMenuItem,
-            this.reAuthToolStripMenuItem,
+            this.moveGroupUpToolStripMenuItem,
             this.infoToolStripMenuItem,
             this.getAuthenticationTicketToolStripMenuItem,
             this.copySecurityTokenToolStripMenuItem,
@@ -293,12 +296,43 @@
             this.removeAccountToolStripMenuItem.Text = "Remove Account";
             this.removeAccountToolStripMenuItem.Click += new System.EventHandler(this.removeAccountToolStripMenuItem_Click);
             // 
-            // reAuthToolStripMenuItem
+            // copyUsernameToolStripMenuItem
             // 
-            this.reAuthToolStripMenuItem.Name = "reAuthToolStripMenuItem";
-            this.reAuthToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            this.reAuthToolStripMenuItem.Text = "Re-Auth";
-            this.reAuthToolStripMenuItem.Click += new System.EventHandler(this.reAuthToolStripMenuItem_Click);
+            this.copyUsernameToolStripMenuItem.Name = "copyUsernameToolStripMenuItem";
+            this.copyUsernameToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.copyUsernameToolStripMenuItem.Text = "Copy Username";
+            this.copyUsernameToolStripMenuItem.Click += new System.EventHandler(this.copyUsernameToolStripMenuItem_Click);
+            // 
+            // moveGroupUpToolStripMenuItem
+            // 
+            this.moveGroupUpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.moveToToolStripMenuItem,
+            this.moveUpToolStripMenuItem,
+            this.moveDownToolStripMenuItem});
+            this.moveGroupUpToolStripMenuItem.Name = "moveGroupUpToolStripMenuItem";
+            this.moveGroupUpToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.moveGroupUpToolStripMenuItem.Text = "Groups";
+            // 
+            // moveToToolStripMenuItem
+            // 
+            this.moveToToolStripMenuItem.Name = "moveToToolStripMenuItem";
+            this.moveToToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.moveToToolStripMenuItem.Text = "Move Account To";
+            this.moveToToolStripMenuItem.Click += new System.EventHandler(this.moveToToolStripMenuItem_Click);
+            // 
+            // moveUpToolStripMenuItem
+            // 
+            this.moveUpToolStripMenuItem.Name = "moveUpToolStripMenuItem";
+            this.moveUpToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.moveUpToolStripMenuItem.Text = "Move Group Up";
+            this.moveUpToolStripMenuItem.Click += new System.EventHandler(this.moveUpToolStripMenuItem_Click);
+            // 
+            // moveDownToolStripMenuItem
+            // 
+            this.moveDownToolStripMenuItem.Name = "moveDownToolStripMenuItem";
+            this.moveDownToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.moveDownToolStripMenuItem.Text = "Move Group Down";
+            this.moveDownToolStripMenuItem.Click += new System.EventHandler(this.moveDownToolStripMenuItem_Click);
             // 
             // infoToolStripMenuItem
             // 
@@ -313,6 +347,13 @@
             this.getAuthenticationTicketToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.getAuthenticationTicketToolStripMenuItem.Text = "Get Authentication Ticket";
             this.getAuthenticationTicketToolStripMenuItem.Click += new System.EventHandler(this.getAuthenticationTicketToolStripMenuItem_Click);
+            // 
+            // copySecurityTokenToolStripMenuItem
+            // 
+            this.copySecurityTokenToolStripMenuItem.Name = "copySecurityTokenToolStripMenuItem";
+            this.copySecurityTokenToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.copySecurityTokenToolStripMenuItem.Text = "Copy Security Token";
+            this.copySecurityTokenToolStripMenuItem.Click += new System.EventHandler(this.copySecurityTokenToolStripMenuItem_Click);
             // 
             // copyRbxplayerLinkToolStripMenuItem
             // 
@@ -351,27 +392,10 @@
             this.RobloxProcessTimer.Interval = 2500;
             this.RobloxProcessTimer.Tick += new System.EventHandler(this.RobloxProcessTimer_Tick);
             // 
-            // BrowserButton
+            // RefreshTip
             // 
-            this.BrowserButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BrowserButton.Location = new System.Drawing.Point(638, 266);
-            this.BrowserButton.Name = "BrowserButton";
-            this.BrowserButton.Size = new System.Drawing.Size(133, 23);
-            this.BrowserButton.TabIndex = 12;
-            this.BrowserButton.Text = "Open Browser";
-            this.BrowserButton.UseVisualStyleBackColor = true;
-            this.BrowserButton.Click += new System.EventHandler(this.BrowserButton_Click);
-            // 
-            // ArgumentsB
-            // 
-            this.ArgumentsB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ArgumentsB.Location = new System.Drawing.Point(677, 53);
-            this.ArgumentsB.Name = "ArgumentsB";
-            this.ArgumentsB.Size = new System.Drawing.Size(23, 23);
-            this.ArgumentsB.TabIndex = 4;
-            this.ArgumentsB.Text = "A";
-            this.ArgumentsB.UseVisualStyleBackColor = true;
-            this.ArgumentsB.Click += new System.EventHandler(this.ArgumentsB_Click);
+            this.RefreshTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
+            this.RefreshTip.ToolTipTitle = "Refresh";
             // 
             // RefreshLinks
             // 
@@ -386,30 +410,108 @@
             this.RefreshLinks.UseVisualStyleBackColor = true;
             this.RefreshLinks.Click += new System.EventHandler(this.RefreshLinks_Click);
             // 
-            // RefreshTip
+            // BrowserButton
             // 
-            this.RefreshTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
-            this.RefreshTip.ToolTipTitle = "Refresh";
+            this.BrowserButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.BrowserButton.Location = new System.Drawing.Point(638, 266);
+            this.BrowserButton.Name = "BrowserButton";
+            this.BrowserButton.Size = new System.Drawing.Size(133, 23);
+            this.BrowserButton.TabIndex = 12;
+            this.BrowserButton.Text = "Open Account Utilities";
+            this.BrowserButton.UseVisualStyleBackColor = true;
+            this.BrowserButton.Click += new System.EventHandler(this.BrowserButton_Click);
             // 
-            // copyUsernameToolStripMenuItem
+            // ArgumentsB
             // 
-            this.copyUsernameToolStripMenuItem.Name = "copyUsernameToolStripMenuItem";
-            this.copyUsernameToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            this.copyUsernameToolStripMenuItem.Text = "Copy Username";
-            this.copyUsernameToolStripMenuItem.Click += new System.EventHandler(this.copyUsernameToolStripMenuItem_Click);
+            this.ArgumentsB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ArgumentsB.Location = new System.Drawing.Point(677, 69);
+            this.ArgumentsB.Name = "ArgumentsB";
+            this.ArgumentsB.Size = new System.Drawing.Size(23, 23);
+            this.ArgumentsB.TabIndex = 4;
+            this.ArgumentsB.Text = "A";
+            this.ArgumentsB.UseVisualStyleBackColor = true;
+            this.ArgumentsB.Click += new System.EventHandler(this.ArgumentsB_Click);
             // 
-            // copySecurityTokenToolStripMenuItem
+            // helloToolStripMenuItem
             // 
-            this.copySecurityTokenToolStripMenuItem.Name = "copySecurityTokenToolStripMenuItem";
-            this.copySecurityTokenToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            this.copySecurityTokenToolStripMenuItem.Text = "Copy Security Token";
-            this.copySecurityTokenToolStripMenuItem.Click += new System.EventHandler(this.copySecurityTokenToolStripMenuItem_Click);
+            this.helloToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.helloV2ToolStripMenuItem,
+            this.hiToolStripMenuItem});
+            this.helloToolStripMenuItem.Name = "helloToolStripMenuItem";
+            this.helloToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
+            this.helloToolStripMenuItem.Text = "Hello";
+            // 
+            // helloV2ToolStripMenuItem
+            // 
+            this.helloV2ToolStripMenuItem.Name = "helloV2ToolStripMenuItem";
+            this.helloV2ToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+            this.helloV2ToolStripMenuItem.Text = "Hello v2";
+            // 
+            // hiToolStripMenuItem
+            // 
+            this.hiToolStripMenuItem.Name = "hiToolStripMenuItem";
+            this.hiToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+            this.hiToolStripMenuItem.Text = "Hi";
+            // 
+            // securityToolStripMenuItem
+            // 
+            this.securityToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.setPasswordToolStripMenuItem});
+            this.securityToolStripMenuItem.Name = "securityToolStripMenuItem";
+            this.securityToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.securityToolStripMenuItem.Text = "Security";
+            // 
+            // setPasswordToolStripMenuItem
+            // 
+            this.setPasswordToolStripMenuItem.Name = "setPasswordToolStripMenuItem";
+            this.setPasswordToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
+            this.setPasswordToolStripMenuItem.Text = "Set Master Password";
+            // 
+            // MainStrip
+            // 
+            this.MainStrip.Enabled = false;
+            this.MainStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.helloToolStripMenuItem,
+            this.securityToolStripMenuItem});
+            this.MainStrip.Location = new System.Drawing.Point(0, 0);
+            this.MainStrip.Name = "MainStrip";
+            this.MainStrip.Size = new System.Drawing.Size(783, 24);
+            this.MainStrip.TabIndex = 20;
+            this.MainStrip.Text = "MainStrip";
+            this.MainStrip.Visible = false;
+            // 
+            // CurrentPlace
+            // 
+            this.CurrentPlace.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.CurrentPlace.AutoSize = true;
+            this.CurrentPlace.Location = new System.Drawing.Point(503, 12);
+            this.CurrentPlace.Name = "CurrentPlace";
+            this.CurrentPlace.Size = new System.Drawing.Size(71, 13);
+            this.CurrentPlace.TabIndex = 21;
+            this.CurrentPlace.Text = "Current Place";
+            // 
+            // LabelPlaceID
+            // 
+            this.LabelPlaceID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.LabelPlaceID.AutoSize = true;
+            this.LabelPlaceID.Location = new System.Drawing.Point(504, 27);
+            this.LabelPlaceID.Name = "LabelPlaceID";
+            this.LabelPlaceID.Size = new System.Drawing.Size(48, 13);
+            this.LabelPlaceID.TabIndex = 3;
+            this.LabelPlaceID.Text = "Place ID";
+            // 
+            // PlaceTimer
+            // 
+            this.PlaceTimer.Interval = 400;
+            this.PlaceTimer.Tick += new System.EventHandler(this.PlaceTimer_Tick);
             // 
             // AccountManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(783, 301);
+            this.Controls.Add(this.CurrentPlace);
+            this.Controls.Add(this.MainStrip);
             this.Controls.Add(this.RefreshLinks);
             this.Controls.Add(this.ArgumentsB);
             this.Controls.Add(this.BrowserButton);
@@ -432,6 +534,7 @@
             this.Controls.Add(this.JobID);
             this.Controls.Add(this.PlaceID);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MainMenuStrip = this.MainStrip;
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(649, 340);
             this.Name = "AccountManager";
@@ -440,6 +543,8 @@
             this.Load += new System.EventHandler(this.AccountManager_Load);
             this.Shown += new System.EventHandler(this.AccountManager_Shown);
             this.AccountsStrip.ResumeLayout(false);
+            this.MainStrip.ResumeLayout(false);
+            this.MainStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -448,7 +553,6 @@
         #endregion
         public System.Windows.Forms.TextBox PlaceID;
         public System.Windows.Forms.TextBox JobID;
-        private System.Windows.Forms.Label LabelPlaceID;
         private System.Windows.Forms.Label LabelJobID;
         private System.Windows.Forms.Button Add;
         private System.Windows.Forms.Button Remove;
@@ -472,14 +576,26 @@
         private System.Windows.Forms.CheckBox HideUsernamesCheckbox;
         private System.Windows.Forms.ComboBox InviteLinks;
         private System.Windows.Forms.Timer RobloxProcessTimer;
-        private System.Windows.Forms.Button BrowserButton;
-        private System.Windows.Forms.ToolStripMenuItem reAuthToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem getAuthenticationTicketToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyRbxplayerLinkToolStripMenuItem;
-        private System.Windows.Forms.Button ArgumentsB;
-        private System.Windows.Forms.Button RefreshLinks;
         private System.Windows.Forms.ToolTip RefreshTip;
         private System.Windows.Forms.ToolStripMenuItem copyUsernameToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copySecurityTokenToolStripMenuItem;
+        private System.Windows.Forms.Button BrowserButton;
+        private System.Windows.Forms.Button ArgumentsB;
+        private System.Windows.Forms.Button RefreshLinks;
+        private System.Windows.Forms.ToolStripMenuItem helloToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem helloV2ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem hiToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem securityToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem setPasswordToolStripMenuItem;
+        private System.Windows.Forms.MenuStrip MainStrip;
+        private System.Windows.Forms.Label CurrentPlace;
+        private System.Windows.Forms.Label LabelPlaceID;
+        private System.Windows.Forms.Timer PlaceTimer;
+        private System.Windows.Forms.ToolStripMenuItem moveGroupUpToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem moveToToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem moveUpToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem moveDownToolStripMenuItem;
     }
 }

@@ -3,9 +3,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -13,12 +12,12 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
+#pragma warning disable CS0618 // stupid parameter warnings
 
 namespace RBX_Alt_Manager
 {
@@ -32,9 +31,11 @@ namespace RBX_Alt_Manager
         public static RestClient apiclient;
         public static RestClient client;
         public static RestClient econclient;
+        public static RestClient AccountClient;
         private AccountAdder aaform;
         private ArgumentsForm afform;
         private ServerList ServerListForm;
+        private AccountUtils UtilsForm;
         private static DateTime startTime = DateTime.Now;
         public static bool IsTeleport = false;
         public static bool UseOldJoin = false;
@@ -49,6 +50,7 @@ namespace RBX_Alt_Manager
         private DateTime DragTime = DateTime.MinValue;
 
         private delegate void SafeCallDelegateAccount(Account account);
+        private delegate void SafeCallDelegateGroup(string Group, ListViewItem Item = null);
         private delegate void SafeCallDelegateRemoveAt(int Index);
         private delegate int SafeCallDelegateInvite(object Item);
 
@@ -85,6 +87,7 @@ namespace RBX_Alt_Manager
             string SaveData = JsonConvert.SerializeObject(AccountsList);
             int OldSize = Encoding.Unicode.GetByteCount(OldInfo);
             int NewSize = Encoding.Unicode.GetByteCount(SaveData);
+
             FileInfo OldFile = new FileInfo(SaveFilePath);
 
             if (OldFile.Exists && NewSize < OldSize || (OldFile.Exists && (DateTime.Now - OldFile.LastWriteTime).TotalHours > 36))
@@ -119,7 +122,45 @@ namespace RBX_Alt_Manager
                 AccountsView.Invoke(addItem, new object[] { account });
             }
             else
-                AccountsView.Items.Add(new ListViewItem(new string[] { account.Username, account.Alias, account.Description.Replace("\n", " "), account.Username }));
+            {
+                ListViewItem Item = new ListViewItem(new string[] { account.Username, account.Alias, account.Description.Replace("\n", " "), account.Username });
+
+                AccountsView.Items.Add(Item);
+
+                if (!string.IsNullOrEmpty(account.Group)) AddGroupToList(account.Group, Item);
+            }
+        }
+
+        public void AddGroupToList(string GroupName, ListViewItem Item = null)
+        {
+            bool CreateGroup = true;
+            ListViewGroup GroupItem = null;
+
+            foreach (ListViewGroup g in AccountsView.Groups)
+            {
+                if (g.Header == GroupName)
+                {
+                    GroupItem = g;
+                    CreateGroup = false;
+                }
+            }
+
+            if (GroupItem == null && !string.IsNullOrEmpty(GroupName))
+                GroupItem = new ListViewGroup(GroupName);
+
+            if (GroupItem != null) AccountsView.ShowGroups = true;
+            if (CreateGroup && GroupItem != null) AccountsView.Groups.Add(GroupItem);
+
+            if (Item != null)
+                Item.Group = GroupItem;
+            else if (SelectedAccount != null && SelectedAccountItem != null)
+            {
+                SelectedAccount.Group = GroupName;
+                SelectedAccountItem.Group = GroupItem;
+                AccountsList.Remove(SelectedAccount);
+                AccountsList.Insert(AccountsList.Count, SelectedAccount); // move to end of account list
+                SaveAccounts();
+            }
         }
 
         public static void AddAccount(string SecurityToken, string UserData)
@@ -145,6 +186,31 @@ namespace RBX_Alt_Manager
             else MessageBox.Show(res);
         }
 
+        public static string ShowDialog(string text, string caption) //tbh pasted from stackoverflow
+        {
+            Form prompt = new Form()
+            {
+                Width = 270,
+                Height = 125,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                Text = caption,
+                StartPosition = FormStartPosition.CenterScreen
+            };
+
+            Label textLabel = new Label() { Left = 15, Top = 10, Text = text };
+            TextBox textBox = new TextBox() { Left = 15, Top = 25, Width = 220 };
+            Button confirmation = new Button() { Text = "OK", Left = 15, Width = 100, Top = 50, DialogResult = DialogResult.OK };
+
+            confirmation.Click += (sender, e) => { prompt.Close(); };
+            prompt.Controls.Add(textBox);
+            prompt.Controls.Add(confirmation);
+            prompt.Controls.Add(textLabel);
+            prompt.AcceptButton = confirmation;
+
+            return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "";
+        }
+
         private void AccountManager_Load(object sender, EventArgs e)
         {
             CommandValue = RbxJoinPath + " \"%1\"";
@@ -160,9 +226,19 @@ namespace RBX_Alt_Manager
                 AccountsStrip.Items.Remove(getAuthenticationTicketToolStripMenuItem);
                 AccountsStrip.Items.Remove(copyRbxplayerLinkToolStripMenuItem);
                 AccountsStrip.Items.Remove(copySecurityTokenToolStripMenuItem);
-                ArgumentsB.Visible = false;
-                JoinServer.Size = new Size(197, 23);
             }
+
+            if (File.Exists("AU.exe"))
+            {
+                if (File.Exists("Auto Update.exe"))
+                    File.Delete("Auto Update.exe");
+
+                File.Copy("AU.exe", "Auto Update.exe");
+                File.Delete("AU.exe");
+            }
+
+            ArgumentsB.Visible = false; // has no use right now
+            JoinServer.Size = new Size(197, 23);
 
             RegistryKey MainKey = Registry.ClassesRoot.OpenSubKey("rbx-join");
             RegistryKey CommandKey = Registry.ClassesRoot.OpenSubKey(@"rbx-join\shell\open\command");
@@ -187,6 +263,7 @@ namespace RBX_Alt_Manager
             aaform = new AccountAdder();
             afform = new ArgumentsForm();
             ServerListForm = new ServerList();
+            UtilsForm = new AccountUtils();
 
             AccountsView.Items.Clear();
 
@@ -204,11 +281,16 @@ namespace RBX_Alt_Manager
             econclient = new RestClient("https://economy.roblox.com/");
             econclient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
+            AccountClient = new RestClient("https://accountsettings.roblox.com/");
+            AccountClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
+
             WebClient WC = new WebClient();
             string VersionJSON = WC.DownloadString("https://clientsettings.roblox.com/v1/client-version/WindowsPlayer");
             JObject j = JObject.Parse(VersionJSON);
             if (j.TryGetValue("clientVersionUpload", out JToken token))
                 CurrentVersion = token.Value<string>();
+
+            PlaceID_TextChanged(PlaceID, new EventArgs());
 
             Task.Run(() =>
             {
@@ -220,15 +302,27 @@ namespace RBX_Alt_Manager
                     WC.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36";
                     string Releases = WC.DownloadString("https://api.github.com/repos/ic3w0lf22/Roblox-Account-Manager/releases/latest");
                     Match match = Regex.Match(Releases, @"""tag_name"":\s*""?([^""]+)");
+
                     if (match.Success && match.Groups[1].Value != version)
                     {
-                        DialogResult result = MessageBox.Show("An update is available, click ok to be redirected to the download page", "Roblox Account Manager", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
+                        DialogResult result = MessageBox.Show("An update is available, click yes to run the auto updater or no to be redirected to the download page.", "Roblox Account Manager", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
 
-                        if (result == DialogResult.OK)
+                        if (result == DialogResult.Yes)
+                        {
+                            string AFN = Path.Combine(Directory.GetCurrentDirectory(), "Auto Update.exe");
+
+                            if (File.Exists(AFN)) Process.Start(AFN);
+                            else
+                            {
+                                MessageBox.Show("You do not have the auto updater downloaded, go to the github page and download the latest release.");
+                                Process.Start("https://github.com/ic3w0lf22/Roblox-Account-Manager/releases");
+                            }
+                        }
+                        else if (result == DialogResult.No)
                             Process.Start("https://github.com/ic3w0lf22/Roblox-Account-Manager/releases");
                     }
                 }
-                catch { }
+                catch { } 
             });
         }
 
@@ -241,7 +335,7 @@ namespace RBX_Alt_Manager
         {
             if (SelectedAccount == null) return;
 
-            DialogResult result = MessageBox.Show("Are you sure?", "Remove", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            DialogResult result = MessageBox.Show($"Are you sure you want to remove {SelectedAccount.Username}?", "Remove Account", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
             if (result == DialogResult.Yes)
             {
@@ -285,7 +379,7 @@ namespace RBX_Alt_Manager
             try
             {
                 string Item = SelectedAccountItem.SubItems[3].Text;
-                Account account = AccountsList.FirstOrDefault(x => Item.Length >= x.Username.Length && x.Username == Item.Substring(0, x.Username.Length));
+                Account account = AccountsList.FirstOrDefault(x => x.Username == Item);
 
                 if (account != null)
                 {
@@ -349,16 +443,16 @@ namespace RBX_Alt_Manager
             e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
         }
 
-        private void OpenBrowser_Click(object sender, EventArgs e)
+        private void OpenBrowser_Click(object sender, EventArgs e) // not used i forgot this was here
         {
-            if (SelectedAccount == null) return;
+            if (1==1 || SelectedAccount == null) return;
 
             RestRequest tokenrequest = new RestRequest("v1/authentication-ticket/", Method.POST);
 
             tokenrequest.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
             tokenrequest.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
 
-            IRestResponse response = AccountManager.client.Execute(tokenrequest);
+            IRestResponse response = client.Execute(tokenrequest);
             Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
 
             string Token = "";
@@ -398,6 +492,7 @@ namespace RBX_Alt_Manager
             foreach (ListViewItem Item in AccountsView.Items)
             {
                 Account account = AccountsList.FirstOrDefault(x => Item.SubItems[3].Text.Length >= x.Username.Length && x.Username == Item.SubItems[3].Text.Substring(0, x.Username.Length));
+
                 Item.Text = HideUsernamesCheckbox.Checked ? Regex.Replace(account.Username, ".", "*") : account.Username;
             }
         }
@@ -419,8 +514,8 @@ namespace RBX_Alt_Manager
             if (result == DialogResult.Yes)
             {
                 AccountsView.Items.Remove(SelectedAccountItem);
-
                 AccountsList.RemoveAll(x => x == SelectedAccount);
+
                 SaveAccounts();
             }
         }
@@ -601,23 +696,35 @@ namespace RBX_Alt_Manager
 
         private void AccountManager_FormClosed(object sender, FormClosedEventArgs e)
         {
+            if (ManagerKey == null || PlaceID == null || string.IsNullOrEmpty(PlaceID.Text)) return;
+
             ManagerKey.SetValue("SavedPlaceId", PlaceID.Text);
         }
 
         private void BrowserButton_Click(object sender, EventArgs e)
         {
-            if (SelectedAccount == null) return;
+            if (SelectedAccount == null)
+            {
+                MessageBox.Show("No Account Selected!");
+                return;
+            }
 
-            if (aaform != null && aaform.Visible)
+            UtilsForm.Show();
+
+            /*if (aaform != null && aaform.Visible)
                 aaform.HideForm();
 
             aaform.ShowForm();
             aaform.BrowserMode = true;
-            CefSharp.Cookie ck = new CefSharp.Cookie();
-            ck.Name = ".ROBLOSECURITY";
-            ck.Value = SelectedAccount.SecurityToken;
-            CefSharp.Cef.GetGlobalCookieManager().SetCookie("https://www.roblox.com", ck);
-            aaform.chromeBrowser.Load("https://www.roblox.com/home");
+            CefSharp.Cookie seccookie = new CefSharp.Cookie();
+            seccookie.Name = ".ROBLOSECURITY";
+            seccookie.Value = SelectedAccount.SecurityToken;
+            /*CefSharp.Cookie idcookie = new CefSharp.Cookie();
+            idcookie.Name = "RBXAppDeviceIdentifier";
+            idcookie.Value = "AppDeviceIdentifier=ROBLOX UWP";*/
+            // CefSharp.Cef.GetGlobalCookieManager().SetCookie("https://www.roblox.com", seccookie);
+            // CefSharp.Cef.GetGlobalCookieManager().SetCookie("https://www.roblox.com", idcookie);
+            // aaform.chromeBrowser.Load("https://www.roblox.com/home");
         }
 
         private void reAuthToolStripMenuItem_Click(object sender, EventArgs e)
@@ -635,20 +742,22 @@ namespace RBX_Alt_Manager
 
         private void AccountsView_MouseDown(object sender, MouseEventArgs e)
         {
+            if (AccountsView.Groups.Count > 0) return; 
+
             DraggingItem = AccountsView.GetItemAt(e.X, e.Y);
             DragTime = DateTime.Now;
         }
 
         private void AccountsView_MouseMove(object sender, MouseEventArgs e)
         {
-            if (DraggingItem == null || (DateTime.Now - DragTime).TotalMilliseconds < 200) return;
+            if (DraggingItem == null || (DateTime.Now - DragTime).TotalMilliseconds < 120) return;
 
             Cursor = Cursors.Hand;
         }
 
         private void AccountsView_MouseUp(object sender, MouseEventArgs e)
         {
-            if ((DateTime.Now - DragTime).TotalMilliseconds < 200) DraggingItem = null;
+            if ((DateTime.Now - DragTime).TotalMilliseconds < 120) DraggingItem = null;
             
             Cursor = Cursors.Default;
 
@@ -795,6 +904,133 @@ namespace RBX_Alt_Manager
             if (SelectedAccount == null) return;
 
             Clipboard.SetText(SelectedAccount.Username);
+        }
+
+        private void PlaceID_TextChanged(object sender, EventArgs e)
+        {
+            if (PlaceTimer.Enabled) PlaceTimer.Stop();
+
+            PlaceTimer.Start();
+        }
+
+        private void PlaceTimer_Tick(object sender, EventArgs e)
+        {
+            if (apiclient == null) return;
+
+            PlaceTimer.Stop();
+
+            RestRequest request = new RestRequest("Marketplace/ProductInfo?assetId=" + PlaceID.Text, Method.GET);
+            request.AddHeader("Accept", "application/json");
+            IRestResponse response = response = apiclient.Execute(request);
+
+            if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
+            {
+                ProductInfo placeInfo = JsonConvert.DeserializeObject<ProductInfo>(response.Content);
+
+                CurrentPlace.Text = placeInfo.Name;
+            }
+        }
+
+        private void moveToToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string GroupName = ShowDialog("Group Name", "Move Account to Group");
+
+            if (string.IsNullOrEmpty(GroupName)) return;
+
+            bool CreateGroup = true;
+
+            if (AccountsView.Groups.Count == 0) {
+                DialogResult res = MessageBox.Show("Creating groups prevents accounts from being moved! Continue?", "Groups", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                if (res == DialogResult.No)
+                    CreateGroup = false;
+            }
+
+            if (CreateGroup)
+                AddGroupToList(GroupName);
+        }
+
+        private void MoveAccounts(ListViewGroup Group1, ListViewGroup Group2 = null)
+        {
+            List<Account> AccountsToMove = new List<Account>();
+            int Index = -1;
+
+            foreach (Account acc in AccountsList)
+            {
+                if (acc.Group == Group1.Header)
+                    AccountsToMove.Add(acc);
+
+                if (Group2 != null && acc.Group == Group2.Header)
+                    Index = AccountsList.IndexOf(acc);
+            }
+
+            Index -= AccountsToMove.Count; if (Index < 0) Index = 0;
+
+            AccountsList.RemoveAll(x => AccountsToMove.Contains(x));
+            AccountsList.InsertRange(Index, AccountsToMove.ToArray());
+
+            SaveAccounts();
+        }
+
+        private void moveUpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (SelectedAccountItem != null && SelectedAccountItem.Group != null)
+            {
+                ListViewGroup Group = SelectedAccountItem.Group;
+                int Index = AccountsView.Groups.IndexOf(Group);
+
+                if (Index > 0)
+                {
+                    List<ListViewGroup> gs = new List<ListViewGroup>();
+                    ListViewGroup GroupAbove = null;
+
+                    foreach (ListViewGroup group in AccountsView.Groups)
+                    {
+                        if (group == Group) continue;
+
+                        gs.Insert(gs.Count, group);
+                    }
+
+                    if (Index > 0) GroupAbove = gs[Index - 1];
+
+                    gs.Insert(Index - 1, Group);
+
+                    MoveAccounts(Group, GroupAbove);
+
+                    AccountsView.BeginUpdate();
+                    AccountsView.Groups.Clear();
+                    AccountsView.Groups.AddRange(gs.ToArray());
+                    AccountsView.EndUpdate();
+                }
+            }
+        }
+
+        private void moveDownToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (SelectedAccountItem != null && SelectedAccountItem.Group != null)
+            {
+                ListViewGroup Group = SelectedAccountItem.Group;
+                int Index = AccountsView.Groups.IndexOf(Group);
+
+                if (Index < AccountsView.Groups.Count - 1)
+                {
+                    List<ListViewGroup> gs = new List<ListViewGroup>();
+
+                    foreach (ListViewGroup group in AccountsView.Groups)
+                    {
+                        if (group == Group) continue;
+
+                        gs.Insert(gs.Count, group);
+                    }
+
+                    gs.Insert(Index + 1, Group);
+
+                    AccountsView.BeginUpdate();
+                    AccountsView.Groups.Clear();
+                    AccountsView.Groups.AddRange(gs.ToArray());
+                    AccountsView.EndUpdate();
+                }
+            }
         }
     }
 }

@@ -1,14 +1,25 @@
 ﻿using Microsoft.Win32;
+using Newtonsoft.Json;
 using RestSharp;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
+#pragma warning disable CS0618
+
 namespace RBX_Alt_Manager
 {
+    public class PinStatus
+    {
+        public bool isEnabled{ get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public double unlockedUntil { get; set; }
+    }
+
     public class Account
     {
         public bool Valid;
@@ -16,7 +27,11 @@ namespace RBX_Alt_Manager
         public string Username;
         private string _Alias = "";
         private string _Description = "";
+        public string Group { get; set; }
         public long UserID;
+        [JsonIgnore] public DateTime PinUnlocked;
+        [JsonIgnore] public DateTime TokenSet;
+        [JsonIgnore] public string CSRFToken;
 
         public string Alias
         {
@@ -67,6 +82,232 @@ namespace RBX_Alt_Manager
             return result;
         }
 
+        public string GetCSRFToken()
+        {
+            if ((DateTime.Now - TokenSet).TotalMinutes < 5) return CSRFToken;
+
+            RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
+
+            request.AddCookie(".ROBLOSECURITY", SecurityToken);
+            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+
+            IRestResponse response = AccountManager.client.Execute(request);
+            Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
+
+            string Token = "";
+
+            if (result != null)
+                Token = (string)result.Value;
+
+            CSRFToken = Token;
+
+            return Token;
+        }
+
+        public bool CheckPin(bool Internal = false)
+        {
+            string Token = GetCSRFToken();
+
+            if (string.IsNullOrEmpty(Token))
+            {
+                if (!Internal) MessageBox.Show("Invalid Account Session!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                return false;
+            }
+
+            if (DateTime.Now < PinUnlocked) {
+                return true;
+            }
+
+            RestRequest request = new RestRequest("v1/account/pin/", Method.GET);
+
+            request.AddCookie(".ROBLOSECURITY", SecurityToken);
+            request.AddHeader("Referer", "https://www.roblox.com/");
+
+            IRestResponse response = AccountManager.client.Execute(request);
+
+            if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
+            {
+                PinStatus pinInfo = JsonConvert.DeserializeObject<PinStatus>(response.Content);
+
+                if (!pinInfo.isEnabled) return true;
+                if (pinInfo.isEnabled && pinInfo.unlockedUntil > 0) return true;
+            }
+
+            if (!Internal) MessageBox.Show("Pin required!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            return false;
+        }
+        
+        public bool UnlockPin(string Pin)
+        {
+            if (Pin.Length != 4) return false;
+            if (CheckPin(true)) return true;
+
+            RestRequest request = new RestRequest("v1/account/pin/unlock", Method.POST);
+
+            request.AddCookie(".ROBLOSECURITY", SecurityToken);
+            request.AddHeader("Referer", "https://www.roblox.com/");
+            request.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
+            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+            request.AddParameter("pin", Pin);
+
+            IRestResponse response = AccountManager.client.Execute(request);
+
+            if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
+            {
+                PinStatus pinInfo = JsonConvert.DeserializeObject<PinStatus>(response.Content);
+
+                if (pinInfo.isEnabled && pinInfo.unlockedUntil > 0)
+                    PinUnlocked = DateTime.Now.AddSeconds(pinInfo.unlockedUntil);
+
+                if (PinUnlocked > DateTime.Now)
+                {
+                    MessageBox.Show("Pin unlocked for 5 minutes", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool SetFollowPrivacy(int Privacy)
+        {
+            if (!CheckPin()) return false;
+
+            RestRequest request = new RestRequest("account/settings/follow-me-privacy", Method.POST);
+
+            request.AddCookie(".ROBLOSECURITY", SecurityToken);
+            request.AddHeader("Referer", "https://www.roblox.com/my/account");
+            request.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
+            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            switch (Privacy)
+            {
+                case 0:
+                    request.AddParameter("FollowMePrivacy", "All");
+                    break;
+                case 1:
+                    request.AddParameter("FollowMePrivacy", "Followers");
+                    break;
+                case 2:
+                    request.AddParameter("FollowMePrivacy", "Following");
+                    break;
+                case 3:
+                    request.AddParameter("FollowMePrivacy", "Friends");
+                    break;
+                case 4:
+                    request.AddParameter("FollowMePrivacy", "NoOne");
+                    break;
+            }
+
+            IRestResponse response = AccountManager.mainclient.Execute(request);
+
+            if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK) return true;
+
+            return false;
+        }
+
+        public bool ChangePassword(string Current, string New)
+        {
+            if (!CheckPin()) return false;
+
+            RestRequest request = new RestRequest("v2/user/passwords/change", Method.POST);
+
+            request.AddCookie(".ROBLOSECURITY", SecurityToken);
+            request.AddHeader("Referer", "https://www.roblox.com/");
+            request.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
+            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+            request.AddParameter("currentPassword", Current);
+            request.AddParameter("newPassword", New);
+
+            IRestResponse response = AccountManager.client.Execute(request);
+
+            if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
+            {
+                RestResponseCookie SToken = response.Cookies.FirstOrDefault(x => x.Name == ".ROBLOSECURITY");
+
+                if (SToken != null)
+                {
+                    SecurityToken = SToken.Value;
+                    AccountManager.SaveAccounts();
+                }
+                else
+                    MessageBox.Show("An error occured while changing passwords, you will need to re-login with your new password!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                MessageBox.Show("Password changed!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                return true;
+            }
+
+            MessageBox.Show("Failed to change password!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            return false;
+        }
+
+        public bool ChangeEmail(string Password, string NewEmail)
+        {
+            if (!CheckPin()) return false;
+
+            RestRequest request = new RestRequest("v1/email", Method.POST);
+
+            request.AddCookie(".ROBLOSECURITY", SecurityToken);
+            request.AddHeader("Referer", "https://www.roblox.com/");
+            request.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
+            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+            request.AddParameter("password", Password);
+            request.AddParameter("emailAddress", NewEmail);
+
+            IRestResponse response = AccountManager.AccountClient.Execute(request);
+
+            if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
+            {
+                MessageBox.Show("Email changed!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                return true;
+            }
+
+            MessageBox.Show("Failed to change email, maybe your password is incorrect!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            return false;
+        }
+
+        public bool LogOutOfOtherSessions()
+        {
+            if (!CheckPin()) return false;
+
+            RestRequest request = new RestRequest("authentication/signoutfromallsessionsandreauthenticate", Method.POST);
+
+            request.AddCookie(".ROBLOSECURITY", SecurityToken);
+            request.AddHeader("Referer", "https://www.roblox.com/");
+            request.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
+            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            IRestResponse response = AccountManager.mainclient.Execute(request);
+
+            if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
+            {
+                RestResponseCookie SToken = response.Cookies.FirstOrDefault(x => x.Name == ".ROBLOSECURITY");
+
+                if (SToken != null)
+                {
+                    SecurityToken = SToken.Value;
+                    AccountManager.SaveAccounts();
+                }
+                else
+                    MessageBox.Show("An error occured, you will need to re-login!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                MessageBox.Show("Signed out of all other sessions!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                return true;
+            }
+
+            MessageBox.Show("Failed to log out of other sessions!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            return false;
+        }
+
         public string JoinServer(long PlaceID, string JobID = "", bool FollowUser = false, bool JoinVIP = false)
         {
             Random r = new Random();
@@ -84,24 +325,17 @@ namespace RBX_Alt_Manager
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
             request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
 
-            IRestResponse response = AccountManager.client.Execute(request);
-            Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
+            string Token = GetCSRFToken();
 
-            string Token = "";
-
-            if (result != null)
-                Token = (string)result.Value;
-            else
-                return "ERROR: Account Session Expired, right click the account and press re-auth or try again. (1)";
-
-            if (string.IsNullOrEmpty(Token) || result == null)
-                return "ERROR: Account Session Expired, right click the account and press re-auth or try again. (2)";
+            if (string.IsNullOrEmpty(Token))
+                return "ERROR: Account Session Expired, re-add the account or try again. (1)";
 
             request = new RestRequest("/v1/authentication-ticket/", Method.POST);
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
             request.AddHeader("X-CSRF-TOKEN", Token);
             request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
-            response = AccountManager.client.Execute(request);
+
+            IRestResponse response = AccountManager.client.Execute(request);
 
             Parameter Ticket = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
 
@@ -137,6 +371,8 @@ namespace RBX_Alt_Manager
 
                 if (UseRegistryPath && !AccountManager.UseOldJoin)
                 {
+                    long BrowserTrackerID = LongRandom(50000000000, 60000000000, r);
+
                     if (JoinVIP)
                     {
                         string Argument = string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{4}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode={3}+browsertrackerid:{5}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, AccessCode, LinkCode, DateTime.Now.Ticks, LongRandom(50000000000, 60000000000, r));
@@ -146,7 +382,7 @@ namespace RBX_Alt_Manager
                     else if (FollowUser)
                         Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{2}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}+browsertrackerid:{3}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, DateTime.Now.Ticks, LongRandom(50000000000, 60000000000, r)));
                     else
-                        Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{4}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}{6}+browsertrackerid:{5}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, "&gameId=" + JobID, string.IsNullOrEmpty(JobID) ? "" : "Job", DateTime.Now.Ticks, LongRandom(50000000000, 60000000000, r), AccountManager.IsTeleport ? "&isTeleport=true" : ""));
+                        Process.Start($"roblox-player:1+launchmode:play+gameinfo:{Token}+launchtime:{DateTime.Now.Ticks}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{ (string.IsNullOrEmpty(JobID) ? "" : "Job") }&browserTrackerId={BrowserTrackerID}&placeId={PlaceID}{(string.IsNullOrEmpty(JobID) ? "" : ("&gameId=" + JobID))}&isPlayTogetherGame=false{(AccountManager.IsTeleport ? "&isTeleport=true" : "")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us");
 
                     return "Success";
                 }

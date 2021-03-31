@@ -20,7 +20,7 @@ namespace RBX_Alt_Manager
         {
             InitializeComponent();
             CefSettings settings = new CefSettings();
-            settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36";
+            settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36"; // just your normal browser visiting your website @ roblox! dont hurt alt manager pls : )
             // Initialize cef with the provided settings
             Cef.EnableHighDPISupport();
             Cef.Initialize(settings);
@@ -94,6 +94,17 @@ namespace RBX_Alt_Manager
         private async void OnNavigated(object sender, AddressChangedEventArgs args)
         {
             string url = args.Address;
+
+            await Cef.GetGlobalCookieManager().VisitAllCookiesAsync().ContinueWith(t =>
+            {
+                if (t.Status == TaskStatus.RanToCompletion)
+                {
+                    List<Cookie> cookies = t.Result;
+
+                    foreach (Cookie c in cookies)
+                        Console.WriteLine(c.Name + " " + c.Value);
+                }
+            });
 
             if (!BrowserMode && url.Contains("/home"))
             {

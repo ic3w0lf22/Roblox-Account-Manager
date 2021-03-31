@@ -46,22 +46,44 @@
             this.JobId = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.Playing = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.PingColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
-            this.FPSColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.ServerTypeColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.Tabs = new System.Windows.Forms.TabControl();
             this.ServersTab = new System.Windows.Forms.TabPage();
             this.GamesTab = new System.Windows.Forms.TabPage();
-            this.objectListView1 = new BrightIdeasSoftware.ObjectListView();
-            this.olvColumn1 = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
-            this.olvColumn2 = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
-            this.olvColumn3 = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
-            this.olvColumn4 = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.GamesControl = new System.Windows.Forms.TabControl();
+            this.ListPage = new System.Windows.Forms.TabPage();
+            this.label1 = new System.Windows.Forms.Label();
+            this.PageNum = new System.Windows.Forms.NumericUpDown();
+            this.Search = new System.Windows.Forms.Button();
+            this.Term = new System.Windows.Forms.TextBox();
+            this.GamesListView = new BrightIdeasSoftware.ObjectListView();
+            this.name = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.playerCount = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.likeRatio = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.GamesStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.joinGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addToFavoritesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.FavoritesPage = new System.Windows.Forms.TabPage();
+            this.FavoritesListView = new BrightIdeasSoftware.ObjectListView();
+            this.GameName = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.ID = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.FavoritesStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ServerListStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ServerListView)).BeginInit();
             this.Tabs.SuspendLayout();
             this.ServersTab.SuspendLayout();
             this.GamesTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.objectListView1)).BeginInit();
+            this.GamesControl.SuspendLayout();
+            this.ListPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.PageNum)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.GamesListView)).BeginInit();
+            this.GamesStrip.SuspendLayout();
+            this.FavoritesPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.FavoritesListView)).BeginInit();
+            this.FavoritesStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // RefreshServers
@@ -158,7 +180,6 @@
             this.ServerListView.AllColumns.Add(this.JobId);
             this.ServerListView.AllColumns.Add(this.Playing);
             this.ServerListView.AllColumns.Add(this.PingColumn);
-            this.ServerListView.AllColumns.Add(this.FPSColumn);
             this.ServerListView.AllColumns.Add(this.ServerTypeColumn);
             this.ServerListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
@@ -198,14 +219,6 @@
             this.PingColumn.AspectName = "ping";
             this.PingColumn.Text = "Ping";
             // 
-            // FPSColumn
-            // 
-            this.FPSColumn.AspectName = "fps";
-            this.FPSColumn.DisplayIndex = 3;
-            this.FPSColumn.IsVisible = false;
-            this.FPSColumn.Text = "FPS";
-            this.FPSColumn.Width = 61;
-            // 
             // ServerTypeColumn
             // 
             this.ServerTypeColumn.AspectName = "type";
@@ -240,7 +253,7 @@
             // 
             // GamesTab
             // 
-            this.GamesTab.Controls.Add(this.objectListView1);
+            this.GamesTab.Controls.Add(this.GamesControl);
             this.GamesTab.Location = new System.Drawing.Point(4, 22);
             this.GamesTab.Name = "GamesTab";
             this.GamesTab.Padding = new System.Windows.Forms.Padding(3);
@@ -249,55 +262,206 @@
             this.GamesTab.Text = "Games";
             this.GamesTab.UseVisualStyleBackColor = true;
             // 
-            // objectListView1
+            // GamesControl
             // 
-            this.objectListView1.AllColumns.Add(this.olvColumn1);
-            this.objectListView1.AllColumns.Add(this.olvColumn2);
-            this.objectListView1.AllColumns.Add(this.olvColumn3);
-            this.objectListView1.AllColumns.Add(this.FPSColumn);
-            this.objectListView1.AllColumns.Add(this.olvColumn4);
-            this.objectListView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.GamesControl.Controls.Add(this.ListPage);
+            this.GamesControl.Controls.Add(this.FavoritesPage);
+            this.GamesControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GamesControl.Location = new System.Drawing.Point(3, 3);
+            this.GamesControl.Name = "GamesControl";
+            this.GamesControl.SelectedIndex = 0;
+            this.GamesControl.Size = new System.Drawing.Size(470, 275);
+            this.GamesControl.TabIndex = 7;
+            // 
+            // ListPage
+            // 
+            this.ListPage.Controls.Add(this.label1);
+            this.ListPage.Controls.Add(this.PageNum);
+            this.ListPage.Controls.Add(this.Search);
+            this.ListPage.Controls.Add(this.Term);
+            this.ListPage.Controls.Add(this.GamesListView);
+            this.ListPage.Location = new System.Drawing.Point(4, 22);
+            this.ListPage.Name = "ListPage";
+            this.ListPage.Padding = new System.Windows.Forms.Padding(3);
+            this.ListPage.Size = new System.Drawing.Size(462, 249);
+            this.ListPage.TabIndex = 0;
+            this.ListPage.Text = "List";
+            this.ListPage.UseVisualStyleBackColor = true;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(336, 8);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(20, 13);
+            this.label1.TabIndex = 10;
+            this.label1.Text = "Pg";
+            // 
+            // PageNum
+            // 
+            this.PageNum.Location = new System.Drawing.Point(356, 6);
+            this.PageNum.Name = "PageNum";
+            this.PageNum.Size = new System.Drawing.Size(40, 20);
+            this.PageNum.TabIndex = 9;
+            // 
+            // Search
+            // 
+            this.Search.Location = new System.Drawing.Point(402, 5);
+            this.Search.Name = "Search";
+            this.Search.Size = new System.Drawing.Size(54, 22);
+            this.Search.TabIndex = 8;
+            this.Search.Text = "Search";
+            this.Search.UseVisualStyleBackColor = true;
+            this.Search.Click += new System.EventHandler(this.Search_Click);
+            // 
+            // Term
+            // 
+            this.Term.Location = new System.Drawing.Point(6, 6);
+            this.Term.Name = "Term";
+            this.Term.Size = new System.Drawing.Size(330, 20);
+            this.Term.TabIndex = 7;
+            // 
+            // GamesListView
+            // 
+            this.GamesListView.AllColumns.Add(this.name);
+            this.GamesListView.AllColumns.Add(this.playerCount);
+            this.GamesListView.AllColumns.Add(this.likeRatio);
+            this.GamesListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.objectListView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.olvColumn1,
-            this.olvColumn2,
-            this.olvColumn3,
-            this.olvColumn4});
-            this.objectListView1.ContextMenuStrip = this.ServerListStrip;
-            this.objectListView1.Cursor = System.Windows.Forms.Cursors.Default;
-            this.objectListView1.GridLines = true;
-            this.objectListView1.HideSelection = false;
-            this.objectListView1.Location = new System.Drawing.Point(11, 22);
-            this.objectListView1.MultiSelect = false;
-            this.objectListView1.Name = "objectListView1";
-            this.objectListView1.ShowGroups = false;
-            this.objectListView1.Size = new System.Drawing.Size(455, 236);
-            this.objectListView1.TabIndex = 6;
-            this.objectListView1.UseCompatibleStateImageBehavior = false;
-            this.objectListView1.View = System.Windows.Forms.View.Details;
+            this.GamesListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.name,
+            this.playerCount,
+            this.likeRatio});
+            this.GamesListView.ContextMenuStrip = this.GamesStrip;
+            this.GamesListView.Cursor = System.Windows.Forms.Cursors.Default;
+            this.GamesListView.FullRowSelect = true;
+            this.GamesListView.GridLines = true;
+            this.GamesListView.HideSelection = false;
+            this.GamesListView.Location = new System.Drawing.Point(3, 31);
+            this.GamesListView.MultiSelect = false;
+            this.GamesListView.Name = "GamesListView";
+            this.GamesListView.SelectAllOnControlA = false;
+            this.GamesListView.ShowGroups = false;
+            this.GamesListView.Size = new System.Drawing.Size(456, 215);
+            this.GamesListView.TabIndex = 6;
+            this.GamesListView.UseCompatibleStateImageBehavior = false;
+            this.GamesListView.View = System.Windows.Forms.View.Details;
+            this.GamesListView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.GamesListView_MouseClick);
             // 
-            // olvColumn1
+            // name
             // 
-            this.olvColumn1.AspectName = "id";
-            this.olvColumn1.Text = "Job ID";
-            this.olvColumn1.Width = 226;
+            this.name.AspectName = "name";
+            this.name.Text = "Game Name";
+            this.name.Width = 310;
             // 
-            // olvColumn2
+            // playerCount
             // 
-            this.olvColumn2.AspectName = "playing";
-            this.olvColumn2.Text = "Playing";
+            this.playerCount.AspectName = "playerCount";
+            this.playerCount.Text = "Players";
             // 
-            // olvColumn3
+            // likeRatio
             // 
-            this.olvColumn3.AspectName = "ping";
-            this.olvColumn3.Text = "Ping";
+            this.likeRatio.AspectName = "likeRatio";
+            this.likeRatio.Text = "Like %";
             // 
-            // olvColumn4
+            // GamesStrip
             // 
-            this.olvColumn4.AspectName = "type";
-            this.olvColumn4.Text = "Type";
-            this.olvColumn4.Width = 45;
+            this.GamesStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.joinGameToolStripMenuItem,
+            this.addToFavoritesToolStripMenuItem});
+            this.GamesStrip.Name = "GamesStrip";
+            this.GamesStrip.Size = new System.Drawing.Size(130, 48);
+            // 
+            // joinGameToolStripMenuItem
+            // 
+            this.joinGameToolStripMenuItem.Name = "joinGameToolStripMenuItem";
+            this.joinGameToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
+            this.joinGameToolStripMenuItem.Text = "Join Game";
+            this.joinGameToolStripMenuItem.Click += new System.EventHandler(this.joinGameToolStripMenuItem_Click);
+            // 
+            // addToFavoritesToolStripMenuItem
+            // 
+            this.addToFavoritesToolStripMenuItem.Name = "addToFavoritesToolStripMenuItem";
+            this.addToFavoritesToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
+            this.addToFavoritesToolStripMenuItem.Text = "Favorite";
+            this.addToFavoritesToolStripMenuItem.Click += new System.EventHandler(this.addToFavoritesToolStripMenuItem_Click);
+            // 
+            // FavoritesPage
+            // 
+            this.FavoritesPage.Controls.Add(this.FavoritesListView);
+            this.FavoritesPage.Location = new System.Drawing.Point(4, 22);
+            this.FavoritesPage.Name = "FavoritesPage";
+            this.FavoritesPage.Padding = new System.Windows.Forms.Padding(3);
+            this.FavoritesPage.Size = new System.Drawing.Size(462, 249);
+            this.FavoritesPage.TabIndex = 1;
+            this.FavoritesPage.Text = "Favorites";
+            this.FavoritesPage.UseVisualStyleBackColor = true;
+            // 
+            // FavoritesListView
+            // 
+            this.FavoritesListView.AllColumns.Add(this.GameName);
+            this.FavoritesListView.AllColumns.Add(this.ID);
+            this.FavoritesListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.GameName});
+            this.FavoritesListView.ContextMenuStrip = this.FavoritesStrip;
+            this.FavoritesListView.Cursor = System.Windows.Forms.Cursors.Default;
+            this.FavoritesListView.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.FavoritesListView.FullRowSelect = true;
+            this.FavoritesListView.GridLines = true;
+            this.FavoritesListView.HideSelection = false;
+            this.FavoritesListView.Location = new System.Drawing.Point(3, 6);
+            this.FavoritesListView.MultiSelect = false;
+            this.FavoritesListView.Name = "FavoritesListView";
+            this.FavoritesListView.ShowGroups = false;
+            this.FavoritesListView.Size = new System.Drawing.Size(456, 240);
+            this.FavoritesListView.TabIndex = 7;
+            this.FavoritesListView.UseCompatibleStateImageBehavior = false;
+            this.FavoritesListView.View = System.Windows.Forms.View.Details;
+            this.FavoritesListView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.FavoritesListView_MouseClick);
+            // 
+            // GameName
+            // 
+            this.GameName.AspectName = "Name";
+            this.GameName.Text = "Game Name";
+            this.GameName.Width = 330;
+            // 
+            // ID
+            // 
+            this.ID.AspectName = "PlaceID";
+            this.ID.DisplayIndex = 1;
+            this.ID.IsVisible = false;
+            this.ID.Text = "PlaceID";
+            // 
+            // FavoritesStrip
+            // 
+            this.FavoritesStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem1,
+            this.toolStripMenuItem2,
+            this.removeToolStripMenuItem});
+            this.FavoritesStrip.Name = "GamesStrip";
+            this.FavoritesStrip.Size = new System.Drawing.Size(130, 70);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(129, 22);
+            this.toolStripMenuItem1.Text = "Join Game";
+            this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(129, 22);
+            this.toolStripMenuItem2.Text = "Rename";
+            this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
+            // 
+            // removeToolStripMenuItem
+            // 
+            this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
+            this.removeToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
+            this.removeToolStripMenuItem.Text = "Remove";
+            this.removeToolStripMenuItem.Click += new System.EventHandler(this.removeToolStripMenuItem_Click);
             // 
             // ServerList
             // 
@@ -317,7 +481,15 @@
             this.ServersTab.ResumeLayout(false);
             this.ServersTab.PerformLayout();
             this.GamesTab.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.objectListView1)).EndInit();
+            this.GamesControl.ResumeLayout(false);
+            this.ListPage.ResumeLayout(false);
+            this.ListPage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.PageNum)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.GamesListView)).EndInit();
+            this.GamesStrip.ResumeLayout(false);
+            this.FavoritesPage.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.FavoritesListView)).EndInit();
+            this.FavoritesStrip.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -338,17 +510,32 @@
         private BrightIdeasSoftware.OLVColumn JobId;
         private BrightIdeasSoftware.OLVColumn Playing;
         private BrightIdeasSoftware.OLVColumn PingColumn;
-        private BrightIdeasSoftware.OLVColumn FPSColumn;
         private System.Windows.Forms.ToolStripMenuItem copyJobIdToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyJoinLinkToolStripMenuItem;
         private BrightIdeasSoftware.OLVColumn ServerTypeColumn;
         private System.Windows.Forms.TabControl Tabs;
         private System.Windows.Forms.TabPage ServersTab;
         private System.Windows.Forms.TabPage GamesTab;
-        private BrightIdeasSoftware.ObjectListView objectListView1;
-        private BrightIdeasSoftware.OLVColumn olvColumn1;
-        private BrightIdeasSoftware.OLVColumn olvColumn2;
-        private BrightIdeasSoftware.OLVColumn olvColumn3;
-        private BrightIdeasSoftware.OLVColumn olvColumn4;
+        private BrightIdeasSoftware.ObjectListView GamesListView;
+        private BrightIdeasSoftware.OLVColumn name;
+        private BrightIdeasSoftware.OLVColumn playerCount;
+        private BrightIdeasSoftware.OLVColumn likeRatio;
+        private System.Windows.Forms.TabControl GamesControl;
+        private System.Windows.Forms.TabPage ListPage;
+        private System.Windows.Forms.Button Search;
+        private System.Windows.Forms.TextBox Term;
+        private System.Windows.Forms.ContextMenuStrip GamesStrip;
+        private System.Windows.Forms.ToolStripMenuItem joinGameToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addToFavoritesToolStripMenuItem;
+        private System.Windows.Forms.TabPage FavoritesPage;
+        private BrightIdeasSoftware.ObjectListView FavoritesListView;
+        private BrightIdeasSoftware.OLVColumn GameName;
+        private BrightIdeasSoftware.OLVColumn ID;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.NumericUpDown PageNum;
+        private System.Windows.Forms.ContextMenuStrip FavoritesStrip;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem removeToolStripMenuItem;
     }
 }
