@@ -131,7 +131,7 @@ namespace Auto_Update
                     {
                         string path = Path.Combine(Directory.GetCurrentDirectory(), newFile.Name);
 
-                        if (newFile.Name == "Auto Update") path = Path.Combine(Directory.GetCurrentDirectory(), "AU.exe");
+                        if (newFile.Name == System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + ".exe") path = Path.Combine(Directory.GetCurrentDirectory(), "AU.exe");
 
                         if (File.Exists(path))
                         {

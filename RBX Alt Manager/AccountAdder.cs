@@ -95,17 +95,6 @@ namespace RBX_Alt_Manager
         {
             string url = args.Address;
 
-            await Cef.GetGlobalCookieManager().VisitAllCookiesAsync().ContinueWith(t =>
-            {
-                if (t.Status == TaskStatus.RanToCompletion)
-                {
-                    List<Cookie> cookies = t.Result;
-
-                    foreach (Cookie c in cookies)
-                        Console.WriteLine(c.Name + " " + c.Value);
-                }
-            });
-
             if (!BrowserMode && url.Contains("/home"))
             {
                 var cookieManager = Cef.GetGlobalCookieManager();

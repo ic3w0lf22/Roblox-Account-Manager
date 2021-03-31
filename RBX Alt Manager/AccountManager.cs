@@ -311,7 +311,11 @@ namespace RBX_Alt_Manager
                         {
                             string AFN = Path.Combine(Directory.GetCurrentDirectory(), "Auto Update.exe");
 
-                            if (File.Exists(AFN)) Process.Start(AFN);
+                            if (File.Exists(AFN))
+                            {
+                                Process.Start(AFN);
+                                Environment.Exit(1);
+                            }
                             else
                             {
                                 MessageBox.Show("You do not have the auto updater downloaded, go to the github page and download the latest release.");
