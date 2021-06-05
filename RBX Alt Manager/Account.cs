@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -32,6 +34,8 @@ namespace RBX_Alt_Manager
         [JsonIgnore] public DateTime PinUnlocked;
         [JsonIgnore] public DateTime TokenSet;
         [JsonIgnore] public string CSRFToken;
+
+        private string BrowserTrackerID;
 
         public string Alias
         {
@@ -308,9 +312,71 @@ namespace RBX_Alt_Manager
             return false;
         }
 
+        public bool BlockPlayer(string Username)
+        {
+            if (!CheckPin()) return false;
+
+            long BlockeeID = AccountManager.GetUserID(Username);
+            
+            RestRequest request = new RestRequest($"userblock/getblockedusers?userId={UserID}&page=1", Method.GET);
+
+            request.AddCookie(".ROBLOSECURITY", SecurityToken);
+
+            IRestResponse response = AccountManager.apiclient.Execute(request);
+
+            if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
+            {
+                if (!Regex.IsMatch(response.Content, @"\b" + BlockeeID.ToString() + @"\b"))
+                {
+                    RestRequest blockReq = new RestRequest("userblock/blockuser", Method.POST);
+
+                    blockReq.AddCookie(".ROBLOSECURITY", SecurityToken);
+                    blockReq.AddHeader("Referer", "https://www.roblox.com/");
+                    blockReq.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
+                    blockReq.AddHeader("Content-Type", "application/json");
+                    blockReq.AddJsonBody(new { blockeeId = BlockeeID.ToString() });
+
+                    IRestResponse blockRes = AccountManager.mainclient.Execute(blockReq);
+                    
+                    if (blockRes.Content.Contains(@"""success"":true"))
+                        MessageBox.Show("Blocked " + Username);
+                    else
+                        MessageBox.Show("Failed to Block " + Username);
+                }
+                else
+                {
+                    RestRequest blockReq = new RestRequest("userblock/unblockuser", Method.POST);
+
+                    blockReq.AddCookie(".ROBLOSECURITY", SecurityToken);
+                    blockReq.AddHeader("Referer", "https://www.roblox.com/");
+                    blockReq.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
+                    blockReq.AddHeader("Content-Type", "application/json");
+                    blockReq.AddJsonBody(new { blockeeId = BlockeeID.ToString() });
+
+                    IRestResponse blockRes = AccountManager.mainclient.Execute(blockReq);
+                    
+                    if (blockRes.Content.Contains(@"""success"":true"))
+                        MessageBox.Show("Unblocked " + Username);
+                    else
+                        MessageBox.Show("Failed to Unblock " + Username);
+                }
+
+                return true;
+            }
+
+            MessageBox.Show("Failed to block user!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            return false;
+        }
+
         public string JoinServer(long PlaceID, string JobID = "", bool FollowUser = false, bool JoinVIP = false)
         {
-            Random r = new Random();
+            if (string.IsNullOrEmpty(BrowserTrackerID))
+            {
+                Random r = new Random();
+                BrowserTrackerID = r.Next(500000, 600000).ToString() + r.Next(10000, 90000).ToString(); // longrandom doesnt work shrug
+            }
+
             RegistryKey RbxCmdPath = Registry.ClassesRoot.OpenSubKey(@"roblox-player\shell\open\command", RegistryKeyPermissionCheck.ReadSubTree);
             
             string LaunchPath = RbxCmdPath.GetValue("").ToString();
@@ -371,24 +437,24 @@ namespace RBX_Alt_Manager
 
                 if (UseRegistryPath && !AccountManager.UseOldJoin)
                 {
-                    long BrowserTrackerID = LongRandom(50000000000, 60000000000, r);
+                    double LaunchTime = Math.Floor((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds * 1000);
 
                     if (JoinVIP)
                     {
-                        string Argument = string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{4}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode={3}+browsertrackerid:{5}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, AccessCode, LinkCode, DateTime.Now.Ticks, LongRandom(50000000000, 60000000000, r));
+                        string Argument = string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{4}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode={3}+browsertrackerid:{5}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, AccessCode, LinkCode, LaunchTime, BrowserTrackerID);
 
                         Process.Start(Argument);
                     }
                     else if (FollowUser)
-                        Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{2}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}+browsertrackerid:{3}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, DateTime.Now.Ticks, LongRandom(50000000000, 60000000000, r)));
+                        Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{2}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}+browsertrackerid:{3}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, LaunchTime, BrowserTrackerID));
                     else
-                        Process.Start($"roblox-player:1+launchmode:play+gameinfo:{Token}+launchtime:{DateTime.Now.Ticks}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{ (string.IsNullOrEmpty(JobID) ? "" : "Job") }&browserTrackerId={BrowserTrackerID}&placeId={PlaceID}{(string.IsNullOrEmpty(JobID) ? "" : ("&gameId=" + JobID))}&isPlayTogetherGame=false{(AccountManager.IsTeleport ? "&isTeleport=true" : "")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us");
+                        Process.Start($"roblox-player:1+launchmode:play+gameinfo:{Token}+launchtime:{LaunchTime}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{ (string.IsNullOrEmpty(JobID) ? "" : "Job") }&browserTrackerId={BrowserTrackerID}&placeId={PlaceID}{(string.IsNullOrEmpty(JobID) ? "" : ("&gameId=" + JobID))}&isPlayTogetherGame=false{(AccountManager.IsTeleport ? "&isTeleport=true" : "")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us");
 
                     return "Success";
                 }
-                else // probably will never happen
+                else // probably will never happen, SHOULDNT EVER HAPPEN
                 {
-                    string RPath = @"C:\Program Files (x86)\Roblox\Versions\" + CurrentVersion;
+                    /*string RPath = @"C:\Program Files (x86)\Roblox\Versions\" + CurrentVersion;
 
                     if (!Directory.Exists(RPath))
                         RPath = Path.Combine(Environment.GetEnvironmentVariable("LocalAppData"), @"Roblox\Versions\" + CurrentVersion);
@@ -403,8 +469,8 @@ namespace RBX_Alt_Manager
                         Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}\"", Token, PlaceID);
                     else
                         Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}&isPlayTogetherGame=false\"", Token, PlaceID, "&gameId=" + JobID, string.IsNullOrEmpty(JobID) ? "" : "Job");
-                    Process.Start(Roblox);
-                    return "Success";
+                    Process.Start(Roblox);*/
+                    return "How did this happen...";
                 }
             }
             else

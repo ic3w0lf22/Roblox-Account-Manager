@@ -26,12 +26,13 @@ namespace RBX_Alt_Manager
         public static List<RbxProcess> RbxProcesses = new List<RbxProcess>();
         public static List<Account> AccountsList = new List<Account>();
         public static Account SelectedAccount;
-        public static string CurrentVersion;
         public static RestClient mainclient;
         public static RestClient apiclient;
         public static RestClient client;
         public static RestClient econclient;
         public static RestClient AccountClient;
+        public static string CurrentVersion;
+        public static string CurrentPlaceId;
         private AccountAdder aaform;
         private ArgumentsForm afform;
         private ServerList ServerListForm;
@@ -449,7 +450,7 @@ namespace RBX_Alt_Manager
 
         private void OpenBrowser_Click(object sender, EventArgs e) // not used i forgot this was here
         {
-            if (1==1 || SelectedAccount == null) return;
+            if (1 == 1 || SelectedAccount == null) return;
 
             RestRequest tokenrequest = new RestRequest("v1/authentication-ticket/", Method.POST);
 
@@ -912,6 +913,8 @@ namespace RBX_Alt_Manager
 
         private void PlaceID_TextChanged(object sender, EventArgs e)
         {
+            CurrentPlaceId = PlaceID.Text;
+
             if (PlaceTimer.Enabled) PlaceTimer.Stop();
 
             PlaceTimer.Start();
@@ -1035,6 +1038,11 @@ namespace RBX_Alt_Manager
                     AccountsView.EndUpdate();
                 }
             }
+        }
+
+        private void CurrentPlace_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

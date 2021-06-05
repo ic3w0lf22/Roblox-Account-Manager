@@ -42,6 +42,8 @@
             this.button7 = new System.Windows.Forms.Button();
             this.EmailTip = new System.Windows.Forms.ToolTip(this.components);
             this.label3 = new System.Windows.Forms.Label();
+            this.Username = new System.Windows.Forms.TextBox();
+            this.Block = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // WhoFollow
@@ -180,16 +182,35 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(12, 109);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(201, 26);
+            this.label3.Size = new System.Drawing.Size(205, 26);
             this.label3.TabIndex = 1001;
-            this.label3.Text = "The account you have selected on the\r\nalt manager is the account will be editting" +
-    "\r\n";
+            this.label3.Text = "The account you have selected on the\r\nalt manager is the account beinged edited\r\n" +
+    "";
+            // 
+            // Username
+            // 
+            this.Username.Location = new System.Drawing.Point(12, 80);
+            this.Username.Name = "Username";
+            this.Username.Size = new System.Drawing.Size(100, 20);
+            this.Username.TabIndex = 7;
+            // 
+            // Block
+            // 
+            this.Block.Location = new System.Drawing.Point(117, 79);
+            this.Block.Name = "Block";
+            this.Block.Size = new System.Drawing.Size(50, 22);
+            this.Block.TabIndex = 8;
+            this.Block.Text = "Block";
+            this.Block.UseVisualStyleBackColor = true;
+            this.Block.Click += new System.EventHandler(this.Block_Click);
             // 
             // AccountUtils
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(518, 142);
+            this.Controls.Add(this.Block);
+            this.Controls.Add(this.Username);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.button7);
             this.Controls.Add(this.textBox5);
@@ -227,5 +248,7 @@
         private System.Windows.Forms.Button button7;
         private System.Windows.Forms.ToolTip EmailTip;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox Username;
+        private System.Windows.Forms.Button Block;
     }
 }

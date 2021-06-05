@@ -71,6 +71,7 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addGameInPlaceIdToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ServerListStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ServerListView)).BeginInit();
             this.Tabs.SuspendLayout();
@@ -438,30 +439,38 @@
             this.FavoritesStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem1,
             this.toolStripMenuItem2,
-            this.removeToolStripMenuItem});
+            this.removeToolStripMenuItem,
+            this.addGameInPlaceIdToolStripMenuItem});
             this.FavoritesStrip.Name = "GamesStrip";
-            this.FavoritesStrip.Size = new System.Drawing.Size(130, 70);
+            this.FavoritesStrip.Size = new System.Drawing.Size(185, 114);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(129, 22);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(184, 22);
             this.toolStripMenuItem1.Text = "Join Game";
             this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(129, 22);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(184, 22);
             this.toolStripMenuItem2.Text = "Rename";
             this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
             // removeToolStripMenuItem
             // 
             this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            this.removeToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
+            this.removeToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
             this.removeToolStripMenuItem.Text = "Remove";
             this.removeToolStripMenuItem.Click += new System.EventHandler(this.removeToolStripMenuItem_Click);
+            // 
+            // addGameInPlaceIdToolStripMenuItem
+            // 
+            this.addGameInPlaceIdToolStripMenuItem.Name = "addGameInPlaceIdToolStripMenuItem";
+            this.addGameInPlaceIdToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.addGameInPlaceIdToolStripMenuItem.Text = "Add Game in PlaceId";
+            this.addGameInPlaceIdToolStripMenuItem.Click += new System.EventHandler(this.addGameInPlaceIdToolStripMenuItem_Click);
             // 
             // ServerList
             // 
@@ -537,5 +546,6 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem removeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addGameInPlaceIdToolStripMenuItem;
     }
 }

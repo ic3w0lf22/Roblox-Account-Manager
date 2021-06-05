@@ -449,5 +449,20 @@ namespace RBX_Alt_Manager
                 }
             }
         }
+
+        private void addGameInPlaceIdToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RestRequest request = new RestRequest("Marketplace/ProductInfo?assetId=" + AccountManager.CurrentPlaceId, Method.GET);
+            request.AddHeader("Accept", "application/json");
+            IRestResponse response = response = AccountManager.apiclient.Execute(request);
+
+            if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
+            {
+                ProductInfo placeInfo = JsonConvert.DeserializeObject<ProductInfo>(response.Content);
+
+                AddFavoriteToList(new FavoriteGame(placeInfo.Name, Convert.ToInt64(AccountManager.CurrentPlaceId)));
+                SaveFavorites();
+            }
+        }
     }
 }

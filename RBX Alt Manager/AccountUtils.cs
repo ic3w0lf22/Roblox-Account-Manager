@@ -70,5 +70,10 @@ namespace RBX_Alt_Manager
         {
             AccountManager.SelectedAccount.ChangeEmail(textBox1.Text, textBox3.Text);
         }
+
+        private void Block_Click(object sender, EventArgs e)
+        {
+            AccountManager.SelectedAccount.BlockPlayer(Username.Text);
+        }
     }
 }

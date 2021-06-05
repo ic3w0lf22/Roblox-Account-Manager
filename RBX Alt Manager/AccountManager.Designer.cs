@@ -280,7 +280,7 @@
             this.copySecurityTokenToolStripMenuItem,
             this.copyRbxplayerLinkToolStripMenuItem});
             this.AccountsStrip.Name = "contextMenuStrip1";
-            this.AccountsStrip.Size = new System.Drawing.Size(209, 202);
+            this.AccountsStrip.Size = new System.Drawing.Size(209, 180);
             // 
             // addAccountsToolStripMenuItem
             // 
@@ -316,21 +316,21 @@
             // moveToToolStripMenuItem
             // 
             this.moveToToolStripMenuItem.Name = "moveToToolStripMenuItem";
-            this.moveToToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.moveToToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
             this.moveToToolStripMenuItem.Text = "Move Account To";
             this.moveToToolStripMenuItem.Click += new System.EventHandler(this.moveToToolStripMenuItem_Click);
             // 
             // moveUpToolStripMenuItem
             // 
             this.moveUpToolStripMenuItem.Name = "moveUpToolStripMenuItem";
-            this.moveUpToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.moveUpToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
             this.moveUpToolStripMenuItem.Text = "Move Group Up";
             this.moveUpToolStripMenuItem.Click += new System.EventHandler(this.moveUpToolStripMenuItem_Click);
             // 
             // moveDownToolStripMenuItem
             // 
             this.moveDownToolStripMenuItem.Name = "moveDownToolStripMenuItem";
-            this.moveDownToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.moveDownToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
             this.moveDownToolStripMenuItem.Text = "Move Group Down";
             this.moveDownToolStripMenuItem.Click += new System.EventHandler(this.moveDownToolStripMenuItem_Click);
             // 
@@ -489,12 +489,13 @@
             this.CurrentPlace.Size = new System.Drawing.Size(71, 13);
             this.CurrentPlace.TabIndex = 21;
             this.CurrentPlace.Text = "Current Place";
+            this.CurrentPlace.Click += new System.EventHandler(this.CurrentPlace_Click);
             // 
             // LabelPlaceID
             // 
             this.LabelPlaceID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.LabelPlaceID.AutoSize = true;
-            this.LabelPlaceID.Location = new System.Drawing.Point(504, 27);
+            this.LabelPlaceID.Location = new System.Drawing.Point(503, 27);
             this.LabelPlaceID.Name = "LabelPlaceID";
             this.LabelPlaceID.Size = new System.Drawing.Size(48, 13);
             this.LabelPlaceID.TabIndex = 3;
