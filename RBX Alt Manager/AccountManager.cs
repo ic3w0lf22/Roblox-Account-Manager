@@ -214,7 +214,15 @@ namespace RBX_Alt_Manager
 
         private void AccountManager_Load(object sender, EventArgs e)
         {
-            CommandValue = RbxJoinPath + " \"%1\"";
+            if (Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName
+                .Contains(Path.GetTempPath()))
+            {
+                int Stupid = 1337;
+                MessageBox.Show("bro extract the files, don't run it in winrar");
+                Environment.Exit(Stupid);
+            }
+
+                CommandValue = RbxJoinPath + " \"%1\"";
 
             if (!File.Exists(RbxJoinPath))
             {
@@ -874,8 +882,10 @@ namespace RBX_Alt_Manager
             {
                 Token = (string)Ticket.Value;
                 bool HasJobId = string.IsNullOrEmpty(JobID.Text);
+                double LaunchTime = Math.Floor((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds * 1000);
 
-                Clipboard.SetText(string.Format("<roblox-player://1/1+launchmode:play+gameinfo:{0}+launchtime:{4}+browsertrackerid:{5}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}+robloxLocale:en_us+gameLocale:en_us>", Token, PlaceID.Text, HasJobId ? "" : ("&gameId=" + JobID.Text), HasJobId ? "" : "Job", DateTime.Now.Ticks, Account.LongRandom(50000000000, 60000000000, new Random())));
+                Random r = new Random();
+                Clipboard.SetText(string.Format("<roblox-player://1/1+launchmode:play+gameinfo:{0}+launchtime:{4}+browsertrackerid:{5}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}+robloxLocale:en_us+gameLocale:en_us>", Token, PlaceID.Text, HasJobId ? "" : ("&gameId=" + JobID.Text), HasJobId ? "" : "Job", LaunchTime, r.Next(500000, 600000).ToString() + r.Next(10000, 90000).ToString()));
             }
         }
 
@@ -1043,6 +1053,47 @@ namespace RBX_Alt_Manager
         private void CurrentPlace_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void copyAppLinkToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (SelectedAccount == null) return;
+
+            RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
+
+            request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
+            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+
+            IRestResponse response = client.Execute(request);
+            Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
+
+            string Token = "";
+
+            if (result != null)
+                Token = (string)result.Value;
+            else
+                return;
+
+            if (string.IsNullOrEmpty(Token) || result == null)
+                return;
+
+            request = new RestRequest("/v1/authentication-ticket/", Method.POST);
+            request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
+            request.AddHeader("X-CSRF-TOKEN", Token);
+            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+            response = client.Execute(request);
+
+            Parameter Ticket = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
+
+            if (Ticket != null)
+            {
+                Token = (string)Ticket.Value;
+                bool HasJobId = string.IsNullOrEmpty(JobID.Text);
+                double LaunchTime = Math.Floor((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds * 1000);
+
+                Random r = new Random();
+                Clipboard.SetText(string.Format("<roblox-player://1/1+launchmode:app+gameinfo:{0}+launchtime:{1}+browsertrackerid:{2}+robloxLocale:en_us+gameLocale:en_us>", Token, LaunchTime, r.Next(500000, 600000).ToString() + r.Next(10000, 90000).ToString()));
+            }
         }
     }
 }

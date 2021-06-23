@@ -44,6 +44,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.Username = new System.Windows.Forms.TextBox();
             this.Block = new System.Windows.Forms.Button();
+            this.OpenApp = new System.Windows.Forms.Button();
+            this.SetDisplayName = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // WhoFollow
@@ -146,7 +148,7 @@
             // textBox5
             // 
             this.textBox5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox5.Location = new System.Drawing.Point(398, 81);
+            this.textBox5.Location = new System.Drawing.Point(283, 109);
             this.textBox5.MaxLength = 4;
             this.textBox5.Name = "textBox5";
             this.textBox5.Size = new System.Drawing.Size(52, 20);
@@ -158,7 +160,7 @@
             // button7
             // 
             this.button7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button7.Location = new System.Drawing.Point(455, 80);
+            this.button7.Location = new System.Drawing.Point(341, 108);
             this.button7.Name = "button7";
             this.button7.Size = new System.Drawing.Size(51, 22);
             this.button7.TabIndex = 12;
@@ -182,21 +184,20 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(12, 109);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(205, 26);
+            this.label3.Size = new System.Drawing.Size(193, 26);
             this.label3.TabIndex = 1001;
-            this.label3.Text = "The account you have selected on the\r\nalt manager is the account beinged edited\r\n" +
-    "";
+            this.label3.Text = "The account you have selected on the\r\nalt manager is the account being edited\r\n";
             // 
             // Username
             // 
             this.Username.Location = new System.Drawing.Point(12, 80);
             this.Username.Name = "Username";
-            this.Username.Size = new System.Drawing.Size(100, 20);
+            this.Username.Size = new System.Drawing.Size(80, 20);
             this.Username.TabIndex = 7;
             // 
             // Block
             // 
-            this.Block.Location = new System.Drawing.Point(117, 79);
+            this.Block.Location = new System.Drawing.Point(98, 79);
             this.Block.Name = "Block";
             this.Block.Size = new System.Drawing.Size(50, 22);
             this.Block.TabIndex = 8;
@@ -204,11 +205,34 @@
             this.Block.UseVisualStyleBackColor = true;
             this.Block.Click += new System.EventHandler(this.Block_Click);
             // 
+            // OpenApp
+            // 
+            this.OpenApp.Location = new System.Drawing.Point(153, 79);
+            this.OpenApp.Name = "OpenApp";
+            this.OpenApp.Size = new System.Drawing.Size(65, 22);
+            this.OpenApp.TabIndex = 9;
+            this.OpenApp.Text = "Open App";
+            this.OpenApp.UseVisualStyleBackColor = true;
+            this.OpenApp.Click += new System.EventHandler(this.OpenApp_Click);
+            // 
+            // SetDisplayName
+            // 
+            this.SetDisplayName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.SetDisplayName.Location = new System.Drawing.Point(397, 79);
+            this.SetDisplayName.Name = "SetDisplayName";
+            this.SetDisplayName.Size = new System.Drawing.Size(109, 22);
+            this.SetDisplayName.TabIndex = 1003;
+            this.SetDisplayName.Text = "Set Display Name";
+            this.SetDisplayName.UseVisualStyleBackColor = true;
+            this.SetDisplayName.Click += new System.EventHandler(this.SetDisplayName_Click);
+            // 
             // AccountUtils
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(518, 142);
+            this.Controls.Add(this.SetDisplayName);
+            this.Controls.Add(this.OpenApp);
             this.Controls.Add(this.Block);
             this.Controls.Add(this.Username);
             this.Controls.Add(this.label3);
@@ -228,6 +252,7 @@
             this.Name = "AccountUtils";
             this.Text = " Account Utilities";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AccountUtils_FormClosing);
+            this.Load += new System.EventHandler(this.AccountUtils_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -250,5 +275,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox Username;
         private System.Windows.Forms.Button Block;
+        private System.Windows.Forms.Button OpenApp;
+        private System.Windows.Forms.Button SetDisplayName;
     }
 }

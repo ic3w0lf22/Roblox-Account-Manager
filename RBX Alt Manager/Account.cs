@@ -17,7 +17,7 @@ namespace RBX_Alt_Manager
 {
     public class PinStatus
     {
-        public bool isEnabled{ get; set; }
+        public bool isEnabled { get; set; }
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double unlockedUntil { get; set; }
     }
@@ -33,6 +33,7 @@ namespace RBX_Alt_Manager
         public long UserID;
         [JsonIgnore] public DateTime PinUnlocked;
         [JsonIgnore] public DateTime TokenSet;
+        [JsonIgnore] public DateTime LastAppLaunch;
         [JsonIgnore] public string CSRFToken;
 
         private string BrowserTrackerID;
@@ -119,7 +120,8 @@ namespace RBX_Alt_Manager
                 return false;
             }
 
-            if (DateTime.Now < PinUnlocked) {
+            if (DateTime.Now < PinUnlocked)
+            {
                 return true;
             }
 
@@ -142,7 +144,7 @@ namespace RBX_Alt_Manager
 
             return false;
         }
-        
+
         public bool UnlockPin(string Pin)
         {
             if (Pin.Length != 4) return false;
@@ -317,7 +319,7 @@ namespace RBX_Alt_Manager
             if (!CheckPin()) return false;
 
             long BlockeeID = AccountManager.GetUserID(Username);
-            
+
             RestRequest request = new RestRequest($"userblock/getblockedusers?userId={UserID}&page=1", Method.GET);
 
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
@@ -337,7 +339,7 @@ namespace RBX_Alt_Manager
                     blockReq.AddJsonBody(new { blockeeId = BlockeeID.ToString() });
 
                     IRestResponse blockRes = AccountManager.mainclient.Execute(blockReq);
-                    
+
                     if (blockRes.Content.Contains(@"""success"":true"))
                         MessageBox.Show("Blocked " + Username);
                     else
@@ -354,7 +356,7 @@ namespace RBX_Alt_Manager
                     blockReq.AddJsonBody(new { blockeeId = BlockeeID.ToString() });
 
                     IRestResponse blockRes = AccountManager.mainclient.Execute(blockReq);
-                    
+
                     if (blockRes.Content.Contains(@"""success"":true"))
                         MessageBox.Show("Unblocked " + Username);
                     else
@@ -378,7 +380,7 @@ namespace RBX_Alt_Manager
             }
 
             RegistryKey RbxCmdPath = Registry.ClassesRoot.OpenSubKey(@"roblox-player\shell\open\command", RegistryKeyPermissionCheck.ReadSubTree);
-            
+
             string LaunchPath = RbxCmdPath.GetValue("").ToString();
             string CurrentVersion = AccountManager.CurrentVersion;
 
@@ -413,7 +415,7 @@ namespace RBX_Alt_Manager
                 string AccessCode = JobID;
 
                 if (!string.IsNullOrEmpty(LinkCode))
-                { 
+                {
                     request = new RestRequest(string.Format("/games/{0}?privateServerLinkCode={1}", PlaceID, LinkCode), Method.GET);
                     request.AddCookie(".ROBLOSECURITY", SecurityToken);
                     request.AddHeader("X-CSRF-TOKEN", Token);
@@ -472,6 +474,59 @@ namespace RBX_Alt_Manager
                     Process.Start(Roblox);*/
                     return "How did this happen...";
                 }
+            }
+            else
+                return "ERROR: Invalid Authentication Ticket";
+        }
+
+        public string LaunchApp()
+        {
+            if ((DateTime.Now - LastAppLaunch).TotalSeconds < 15)
+                return "Woah slow down";
+
+            if (string.IsNullOrEmpty(BrowserTrackerID))
+            {
+                Random r = new Random();
+                BrowserTrackerID = r.Next(500000, 600000).ToString() + r.Next(10000, 90000).ToString(); // longrandom doesnt work shrug
+            }
+
+            RegistryKey RbxCmdPath = Registry.ClassesRoot.OpenSubKey(@"roblox-player\shell\open\command", RegistryKeyPermissionCheck.ReadSubTree);
+
+            string LaunchPath = RbxCmdPath.GetValue("").ToString();
+            string CurrentVersion = AccountManager.CurrentVersion;
+
+            bool UseRegistryPath = !string.IsNullOrEmpty(LaunchPath);
+
+            if (string.IsNullOrEmpty(CurrentVersion)) return "ERROR: No Roblox Version";
+
+            RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
+
+            request.AddCookie(".ROBLOSECURITY", SecurityToken);
+            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+
+            string Token = GetCSRFToken();
+
+            if (string.IsNullOrEmpty(Token))
+                return "ERROR: Account Session Expired, re-add the account or try again. (1)";
+
+            request = new RestRequest("/v1/authentication-ticket/", Method.POST);
+            request.AddCookie(".ROBLOSECURITY", SecurityToken);
+            request.AddHeader("X-CSRF-TOKEN", Token);
+            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+
+            IRestResponse response = AccountManager.client.Execute(request);
+
+            Parameter Ticket = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
+
+            if (Ticket != null)
+            {
+                Token = (string)Ticket.Value;
+
+                double LaunchTime = Math.Floor((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds * 1000);
+
+                Process.Start($"roblox-player:1+launchmode:app+gameinfo:{Token}+launchtime:{LaunchTime}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us");
+
+                return "Success";
             }
             else
                 return "ERROR: Invalid Authentication Ticket";

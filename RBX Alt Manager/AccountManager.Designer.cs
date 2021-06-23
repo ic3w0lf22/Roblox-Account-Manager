@@ -76,6 +76,7 @@
             this.CurrentPlace = new System.Windows.Forms.Label();
             this.LabelPlaceID = new System.Windows.Forms.Label();
             this.PlaceTimer = new System.Windows.Forms.Timer(this.components);
+            this.copyAppLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AccountsStrip.SuspendLayout();
             this.MainStrip.SuspendLayout();
             this.SuspendLayout();
@@ -278,9 +279,10 @@
             this.infoToolStripMenuItem,
             this.getAuthenticationTicketToolStripMenuItem,
             this.copySecurityTokenToolStripMenuItem,
-            this.copyRbxplayerLinkToolStripMenuItem});
+            this.copyRbxplayerLinkToolStripMenuItem,
+            this.copyAppLinkToolStripMenuItem});
             this.AccountsStrip.Name = "contextMenuStrip1";
-            this.AccountsStrip.Size = new System.Drawing.Size(209, 180);
+            this.AccountsStrip.Size = new System.Drawing.Size(209, 224);
             // 
             // addAccountsToolStripMenuItem
             // 
@@ -506,6 +508,13 @@
             this.PlaceTimer.Interval = 400;
             this.PlaceTimer.Tick += new System.EventHandler(this.PlaceTimer_Tick);
             // 
+            // copyAppLinkToolStripMenuItem
+            // 
+            this.copyAppLinkToolStripMenuItem.Name = "copyAppLinkToolStripMenuItem";
+            this.copyAppLinkToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.copyAppLinkToolStripMenuItem.Text = "Copy App Link";
+            this.copyAppLinkToolStripMenuItem.Click += new System.EventHandler(this.copyAppLinkToolStripMenuItem_Click);
+            // 
             // AccountManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -598,5 +607,6 @@
         private System.Windows.Forms.ToolStripMenuItem moveToToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem moveUpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem moveDownToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem copyAppLinkToolStripMenuItem;
     }
 }

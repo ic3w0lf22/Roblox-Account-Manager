@@ -9,6 +9,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -31,6 +32,18 @@ namespace RBX_Alt_Manager
         private DateTime startTime;
         private string FavGamesFN = Path.Combine(Environment.CurrentDirectory, "FavoriteGames.json");
         private delegate void SafeCallDelegateFavorite(FavoriteGame game);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        [DllImport("user32.dll", EntryPoint = "FindWindow", SetLastError = true)]
+        static extern IntPtr FindWindowByCaption(IntPtr ZeroOnly, string lpWindowName);
+        public static IntPtr FindWindow(string windowName)
+        {
+            var hWnd = FindWindow(windowName, null);
+            return hWnd;
+        }
+
 
         private void ServerList_Load(object sender, EventArgs e)
         {
