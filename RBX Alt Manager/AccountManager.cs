@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
@@ -58,6 +58,7 @@ namespace RBX_Alt_Manager
         public AccountManager()
         {
             InitializeComponent();
+            
         }
 
         private static string SaveFilePath = Path.Combine(Environment.CurrentDirectory, "AccountData.json");
@@ -72,11 +73,55 @@ namespace RBX_Alt_Manager
 
                     foreach (Account acc in AccountsList)
                         AddAccountToList(acc);
+                    
                 }
                 catch
                 {
                     File.WriteAllText(SaveFilePath + ".bak", File.ReadAllText(SaveFilePath));
                 }
+            }
+            string[] args = Environment.GetCommandLineArgs(); //Get command line args
+            try
+            {
+                int val;
+                if (int.TryParse(args[1], out val)) //check if command line arg its a int
+                {
+                    AccountsView.Items[val].Selected = true;    //set ListView focused on the command line int
+                    try
+                    {
+                        string job = args[2].ToString(); //job is the 2nd argument
+                        if (job == "add")    //add new acc to the program
+                        {
+                            Add.PerformClick();
+                        }
+                        if (job == "join")   //join the server
+                        {
+                            JoinServer.PerformClick();
+                            Close();
+                        }
+                        if (job == "remove")   //remove selected acc
+                        {
+                            Remove.PerformClick();
+                        }
+                        if (job == "userjoin")   //remove selected acc
+                        {
+                            UserID.Text = args[3];
+                            Follow.PerformClick();
+                            Close();
+                        }
+                    }
+                    catch { }
+
+                    //click join with the selected int
+                }
+                else
+                {
+                    MessageBox.Show("Oh, its looking you are using the API wrong, feel free to look at https://rogue.cpsoftware.es/wiki to more info about the API");
+                }
+            }
+            catch
+            {
+
             }
         }
 
@@ -726,7 +771,6 @@ namespace RBX_Alt_Manager
 
             /*if (aaform != null && aaform.Visible)
                 aaform.HideForm();
-
             aaform.ShowForm();
             aaform.BrowserMode = true;
             CefSharp.Cookie seccookie = new CefSharp.Cookie();
@@ -1094,6 +1138,11 @@ namespace RBX_Alt_Manager
                 Random r = new Random();
                 Clipboard.SetText(string.Format("<roblox-player://1/1+launchmode:app+gameinfo:{0}+launchtime:{1}+browsertrackerid:{2}+robloxLocale:en_us+gameLocale:en_us>", Token, LaunchTime, r.Next(500000, 600000).ToString() + r.Next(10000, 90000).ToString()));
             }
+        }
+
+        private void UserID_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
