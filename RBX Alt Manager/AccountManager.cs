@@ -252,8 +252,8 @@ namespace RBX_Alt_Manager
             RegistryKey MainKey = Registry.ClassesRoot.OpenSubKey("rbx-join");
             RegistryKey CommandKey = Registry.ClassesRoot.OpenSubKey(@"rbx-join\shell\open\command");
 
-            if (MainKey == null || CommandKey == null || (string)CommandKey.GetValue("") != CommandValue)
-                MessageBox.Show("The rbx-join protocol is not setup, run RegisterRbxJoinProtocol.exe to set it up", "rbx-join", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // if (MainKey == null || CommandKey == null || (string)CommandKey.GetValue("") != CommandValue)
+                // MessageBox.Show("The rbx-join protocol is not setup, run RegisterRbxJoinProtocol.exe to set it up", "rbx-join", MessageBoxButtons.OK, MessageBoxIcon.Information); // kinda annoying ngl if you want rbx-join then yea u know how
 
             RegistryKey HandleKey = Registry.CurrentUser.OpenSubKey(@"Software\Sysinternals\Handle");
 
