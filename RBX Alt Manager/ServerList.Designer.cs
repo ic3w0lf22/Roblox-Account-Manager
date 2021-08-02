@@ -63,6 +63,7 @@
             this.joinGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addToFavoritesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.FavoritesPage = new System.Windows.Forms.TabPage();
+            this.Favorite = new System.Windows.Forms.Button();
             this.FavoritesListView = new BrightIdeasSoftware.ObjectListView();
             this.GameName = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.ID = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
@@ -70,8 +71,6 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.addGameInPlaceIdToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.Favorite = new System.Windows.Forms.Button();
             this.ServerListStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ServerListView)).BeginInit();
             this.Tabs.SuspendLayout();
@@ -392,6 +391,16 @@
             this.FavoritesPage.Text = "Favorites";
             this.FavoritesPage.UseVisualStyleBackColor = true;
             // 
+            // Favorite
+            // 
+            this.Favorite.Location = new System.Drawing.Point(6, 6);
+            this.Favorite.Name = "Favorite";
+            this.Favorite.Size = new System.Drawing.Size(130, 23);
+            this.Favorite.TabIndex = 8;
+            this.Favorite.Text = "Favorite Current Game";
+            this.Favorite.UseVisualStyleBackColor = true;
+            this.Favorite.Click += new System.EventHandler(this.Favorite_Click);
+            // 
             // FavoritesListView
             // 
             this.FavoritesListView.AllColumns.Add(this.GameName);
@@ -434,47 +443,30 @@
             this.FavoritesStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem1,
             this.toolStripMenuItem2,
-            this.removeToolStripMenuItem,
-            this.addGameInPlaceIdToolStripMenuItem});
+            this.removeToolStripMenuItem});
             this.FavoritesStrip.Name = "GamesStrip";
-            this.FavoritesStrip.Size = new System.Drawing.Size(185, 92);
+            this.FavoritesStrip.Size = new System.Drawing.Size(130, 70);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(184, 22);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(129, 22);
             this.toolStripMenuItem1.Text = "Join Game";
             this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(184, 22);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(129, 22);
             this.toolStripMenuItem2.Text = "Rename";
             this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
             // removeToolStripMenuItem
             // 
             this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            this.removeToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.removeToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.removeToolStripMenuItem.Text = "Remove";
             this.removeToolStripMenuItem.Click += new System.EventHandler(this.removeToolStripMenuItem_Click);
-            // 
-            // addGameInPlaceIdToolStripMenuItem
-            // 
-            this.addGameInPlaceIdToolStripMenuItem.Name = "addGameInPlaceIdToolStripMenuItem";
-            this.addGameInPlaceIdToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
-            this.addGameInPlaceIdToolStripMenuItem.Text = "Add Game in PlaceId";
-            this.addGameInPlaceIdToolStripMenuItem.Click += new System.EventHandler(this.addGameInPlaceIdToolStripMenuItem_Click);
-            // 
-            // Favorite
-            // 
-            this.Favorite.Location = new System.Drawing.Point(6, 6);
-            this.Favorite.Name = "Favorite";
-            this.Favorite.Size = new System.Drawing.Size(130, 23);
-            this.Favorite.TabIndex = 8;
-            this.Favorite.Text = "Favorite Current Game";
-            this.Favorite.UseVisualStyleBackColor = true;
             // 
             // ServerList
             // 
@@ -549,7 +541,6 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem removeToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem addGameInPlaceIdToolStripMenuItem;
         private System.Windows.Forms.Button Favorite;
     }
 }

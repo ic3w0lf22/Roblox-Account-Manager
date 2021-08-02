@@ -450,7 +450,7 @@ namespace RBX_Alt_Manager
             }
         }
 
-        private void addGameInPlaceIdToolStripMenuItem_Click(object sender, EventArgs e)
+        private void Favorite_Click(object sender, EventArgs e)
         {
             RestRequest request = new RestRequest("Marketplace/ProductInfo?assetId=" + AccountManager.CurrentPlaceId, Method.GET);
             request.AddHeader("Accept", "application/json");
