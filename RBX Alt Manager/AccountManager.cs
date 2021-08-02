@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.IO.Pipes;
 using System.Linq;
 using System.Net;
@@ -23,7 +24,6 @@ namespace RBX_Alt_Manager
 {
     public partial class AccountManager : Form
     {
-        public static List<RbxProcess> RbxProcesses = new List<RbxProcess>();
         public static List<Account> AccountsList = new List<Account>();
         public static Account SelectedAccount;
         public static RestClient mainclient;
@@ -41,14 +41,10 @@ namespace RBX_Alt_Manager
         public static bool IsTeleport = false;
         public static bool UseOldJoin = false;
         public ListViewItem SelectedAccountItem;
-        // public Account SelectedAccount;
         private ListViewItem LastViewItem;
-        private string RbxJoinPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rbx-join.exe");
-        private string CommandValue;
-        private RegistryKey ManagerKey;
-        private string ManagerKeyName = "RbxAccountManager";
         private ListViewItem DraggingItem;
         private DateTime DragTime = DateTime.MinValue;
+        private IniFile IniSettings;
 
         private delegate void SafeCallDelegateAccount(Account account);
         private delegate void SafeCallDelegateGroup(string Group, ListViewItem Item = null);
@@ -78,6 +74,26 @@ namespace RBX_Alt_Manager
                     File.WriteAllText(SaveFilePath + ".bak", File.ReadAllText(SaveFilePath));
                 }
             }
+
+            if (AccountsList.Count == 0 && File.Exists(SaveFilePath + ".backup"))
+            {
+                DialogResult Result = MessageBox.Show("No accounts were loaded but there is a backup file, would you like to load the backup file?", "Roblox Account Manager", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+
+                if (Result == DialogResult.Yes)
+                {
+                    try
+                    {
+                        AccountsList = JsonConvert.DeserializeObject<List<Account>>(File.ReadAllText(SaveFilePath + ".backup"));
+
+                        foreach (Account acc in AccountsList)
+                            AddAccountToList(acc);
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Failed to load backup file!", "Roblox Account Manager", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                    }
+                }
+            }
         }
 
         public static void SaveAccounts()
@@ -85,7 +101,7 @@ namespace RBX_Alt_Manager
             if ((DateTime.Now - startTime).Seconds < 5 || AccountsList.Count == 0) return;
 
             string OldInfo = File.Exists(SaveFilePath) ? File.ReadAllText(SaveFilePath) : "";
-            string SaveData = JsonConvert.SerializeObject(AccountsList);
+            string SaveData =  JsonConvert.SerializeObject(AccountsList);
             int OldSize = Encoding.Unicode.GetByteCount(OldInfo);
             int NewSize = Encoding.Unicode.GetByteCount(SaveData);
 
@@ -101,7 +117,7 @@ namespace RBX_Alt_Manager
         {
             RestRequest request = new RestRequest("users/get-by-username?username=" + Username, Method.GET);
             request.AddHeader("Accept", "application/json");
-            IRestResponse response = response = apiclient.Execute(request);
+            IRestResponse response = apiclient.Execute(request);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
@@ -222,14 +238,6 @@ namespace RBX_Alt_Manager
                 Environment.Exit(Stupid);
             }
 
-                CommandValue = RbxJoinPath + " \"%1\"";
-
-            if (!File.Exists(RbxJoinPath))
-            {
-                MessageBox.Show("Failed to find rbx-join executable", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                Close();
-            }
-
             if (!File.Exists("dev.mode"))
             {
                 AccountsStrip.Items.Remove(getAuthenticationTicketToolStripMenuItem);
@@ -249,25 +257,11 @@ namespace RBX_Alt_Manager
             ArgumentsB.Visible = false; // has no use right now
             JoinServer.Size = new Size(197, 23);
 
-            RegistryKey MainKey = Registry.ClassesRoot.OpenSubKey("rbx-join");
-            RegistryKey CommandKey = Registry.ClassesRoot.OpenSubKey(@"rbx-join\shell\open\command");
+            IniSettings = new IniFile("RAMSettings.ini");
 
-            // if (MainKey == null || CommandKey == null || (string)CommandKey.GetValue("") != CommandValue)
-                // MessageBox.Show("The rbx-join protocol is not setup, run RegisterRbxJoinProtocol.exe to set it up", "rbx-join", MessageBoxButtons.OK, MessageBoxIcon.Information); // kinda annoying ngl if you want rbx-join then yea u know how
+            PlaceID.Text = IniSettings.KeyExists("SavedPlaceId", "General") ? IniSettings.Read("SavedPlaceId", "General") : "3016661674";
 
-            RegistryKey HandleKey = Registry.CurrentUser.OpenSubKey(@"Software\Sysinternals\Handle");
-
-            if (HandleKey == null || HandleKey.GetValue("EulaAccepted") == null || (int)HandleKey.GetValue("EulaAccepted") != 1)
-                Process.Start("handle.exe");
-
-            ManagerKey = Registry.CurrentUser.OpenSubKey(ManagerKeyName, RegistryKeyPermissionCheck.ReadWriteSubTree);
-
-            if (ManagerKey == null)
-                ManagerKey = Registry.CurrentUser.CreateSubKey(ManagerKeyName, RegistryKeyPermissionCheck.ReadWriteSubTree);
-
-            PlaceID.Text = ManagerKey.GetValue("SavedPlaceId", 3016661674).ToString();
-
-            SetupNamedPipe();
+            // SetupNamedPipe(); // unused now
 
             aaform = new AccountAdder();
             afform = new ArgumentsForm();
@@ -335,7 +329,7 @@ namespace RBX_Alt_Manager
                             Process.Start("https://github.com/ic3w0lf22/Roblox-Account-Manager/releases");
                     }
                 }
-                catch { } 
+                catch { }
             });
         }
 
@@ -538,91 +532,7 @@ namespace RBX_Alt_Manager
             MessageBox.Show("Roblox Account Manager created by ic3w0lf under the GNU GPLv3 license.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private int AddInviteLinkItem(object Item)
-        {
-            if (Item == null || string.IsNullOrEmpty((string)Item)) return -1;
-
-            if (InviteLinks.InvokeRequired)
-            {
-                SafeCallDelegateInvite addItem = new SafeCallDelegateInvite(AddInviteLinkItem);
-                return (int)InviteLinks.Invoke(addItem, new object[] { Item });
-            }
-            else
-                return InviteLinks.Items.Add(Item);
-        }
-
-        private void RemoveInviteLinkItem(int Index)
-        {
-            if (InviteLinks.InvokeRequired)
-            {
-                SafeCallDelegateRemoveAt removeAt = new SafeCallDelegateRemoveAt(RemoveInviteLinkItem);
-                InviteLinks.Invoke(removeAt, new object[] { Index });
-            }
-            else
-                InviteLinks.Items.RemoveAt(Index);
-        }
-
-        // some code might be scuffed cuz visual studio deleted 2 days worth of progress and got it off of dnspy
-
-        private void RobloxProcessTimer_Tick(object sender, EventArgs e)
-        {
-            List<RbxProcess> Processes = RbxProcesses.ToList();
-
-            foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
-            {
-                if (!Processes.Any(x => x.RobloxProcess.MainWindowHandle == p.MainWindowHandle))
-                {
-                    RbxProcess rbx = new RbxProcess(p);
-                    RbxProcesses.Add(rbx);
-
-                    Task.Run(() =>
-                    {
-                        Task.Delay(1000);
-                        DateTime setupTime = DateTime.Now;
-                        rbx.Setup();
-
-                        do
-                            Task.Delay(500);
-                        while (string.IsNullOrEmpty(rbx.UserName) && (DateTime.Now - setupTime).TotalSeconds < 5.0);
-
-                        try
-                        { // this is stupid but error spam is also stupid and so am i
-                            if (rbx.Working && p.Responding)
-                            {
-                                p.EnableRaisingEvents = true;
-                                p.Exited += new EventHandler(RobloxProcess_Exited);
-                                rbx.Index = AddInviteLinkItem(rbx.UserName);
-                            }
-                            else
-                                RbxProcesses.Remove(rbx);
-                        }
-                        catch { RbxProcesses.Remove(rbx); }
-                    });
-                }
-            }
-        }
-
-        private void RobloxProcess_Exited(object sender, EventArgs e)
-        {
-            Process Exited = (Process)sender;
-
-            RbxProcess process = RbxProcesses.FirstOrDefault(x => x.RobloxProcess == Exited);
-
-            if (process == null) return;
-
-            RbxProcesses.Remove(process);
-
-            for (int Index = 0; Index < InviteLinks.Items.Count; Index++)
-            {
-                if ((string)InviteLinks.Items[Index] == process.UserName)
-                {
-                    RemoveInviteLinkItem(Index);
-                    break;
-                }
-            }
-        }
-
-        private void SetupNamedPipe()
+        /*private void SetupNamedPipe()
         {
             Task.Factory.StartNew(() =>
             {
@@ -687,31 +597,13 @@ namespace RBX_Alt_Manager
                 result = ms.ToArray();
             }
             return result;
-        }
-
-        private void InviteLinks_TextUpdate(object sender, EventArgs e)
-        {
-            InviteLinks.Text = "Copy Invite Link";
-        }
-
-        private void InviteLinks_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (InviteLinks.SelectedIndex < 0 || InviteLinks.SelectedItem == null) return;
-
-            RbxProcess rbx = RbxProcesses.FirstOrDefault(x => x.UserName == (string)InviteLinks.SelectedItem);
-
-            if (rbx != null)
-            {
-                Clipboard.SetText(string.Format("<rbx-join://{0}/{1}>", rbx.PlaceId, rbx.JobId));
-                MessageBox.Show("Copied to Clipboard!");
-            }
-        }
+        }*/
 
         private void AccountManager_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (ManagerKey == null || PlaceID == null || string.IsNullOrEmpty(PlaceID.Text)) return;
+            if (PlaceID == null || string.IsNullOrEmpty(PlaceID.Text)) return;
 
-            ManagerKey.SetValue("SavedPlaceId", PlaceID.Text);
+            IniSettings.Write("SavedPlaceId", PlaceID.Text, "General");
         }
 
         private void BrowserButton_Click(object sender, EventArgs e)
@@ -723,21 +615,6 @@ namespace RBX_Alt_Manager
             }
 
             UtilsForm.Show();
-
-            /*if (aaform != null && aaform.Visible)
-                aaform.HideForm();
-
-            aaform.ShowForm();
-            aaform.BrowserMode = true;
-            CefSharp.Cookie seccookie = new CefSharp.Cookie();
-            seccookie.Name = ".ROBLOSECURITY";
-            seccookie.Value = SelectedAccount.SecurityToken;
-            /*CefSharp.Cookie idcookie = new CefSharp.Cookie();
-            idcookie.Name = "RBXAppDeviceIdentifier";
-            idcookie.Value = "AppDeviceIdentifier=ROBLOX UWP";*/
-            // CefSharp.Cef.GetGlobalCookieManager().SetCookie("https://www.roblox.com", seccookie);
-            // CefSharp.Cef.GetGlobalCookieManager().SetCookie("https://www.roblox.com", idcookie);
-            // aaform.chromeBrowser.Load("https://www.roblox.com/home");
         }
 
         private void reAuthToolStripMenuItem_Click(object sender, EventArgs e)
@@ -897,16 +774,6 @@ namespace RBX_Alt_Manager
             afform.ShowForm();
         }
 
-        private DateTime LastRefresh = DateTime.MinValue;
-
-        private void RefreshLinks_Click(object sender, EventArgs e)
-        {
-            if ((DateTime.Now - LastRefresh).TotalSeconds < 3) return; // prevent spam clicking button . . .
-
-            LastRefresh = DateTime.Now;
-            RobloxProcessTimer_Tick(sender, e); // lazy
-        }
-
         private void copySecurityTokenToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (SelectedAccount == null) return;
@@ -1050,11 +917,6 @@ namespace RBX_Alt_Manager
             }
         }
 
-        private void CurrentPlace_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void copyAppLinkToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (SelectedAccount == null) return;
@@ -1094,6 +956,11 @@ namespace RBX_Alt_Manager
                 Random r = new Random();
                 Clipboard.SetText(string.Format("<roblox-player://1/1+launchmode:app+gameinfo:{0}+launchtime:{1}+browsertrackerid:{2}+robloxLocale:en_us+gameLocale:en_us>", Token, LaunchTime, r.Next(500000, 600000).ToString() + r.Next(10000, 90000).ToString()));
             }
+        }
+
+        private void JoinDiscord_Click(object sender, EventArgs e)
+        {
+            Process.Start("https://discord.gg/MsEH7smXY8");
         }
     }
 }

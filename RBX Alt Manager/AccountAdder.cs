@@ -20,7 +20,7 @@ namespace RBX_Alt_Manager
         {
             InitializeComponent();
             CefSettings settings = new CefSettings();
-            settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36"; // just your normal browser visiting your website @ roblox! dont hurt alt manager pls : )
+            settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36"; // just your normal browser visiting your website @ roblox! dont hurt alt manager pls : )
             // Initialize cef with the provided settings
             Cef.EnableHighDPISupport();
             Cef.Initialize(settings);

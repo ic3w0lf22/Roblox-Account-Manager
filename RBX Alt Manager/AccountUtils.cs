@@ -81,11 +81,6 @@ namespace RBX_Alt_Manager
             AccountManager.SelectedAccount.LaunchApp();
         }
 
-        private void AccountUtils_Load(object sender, EventArgs e)
-        {
-
-        }
-
         private void SetDisplayName_Click(object sender, EventArgs e)
         {
             MessageBox.Show("To set your display name, click 'Open App', go to settings, account info, then change your display name there");

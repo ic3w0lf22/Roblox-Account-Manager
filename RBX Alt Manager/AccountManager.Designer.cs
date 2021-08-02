@@ -60,11 +60,10 @@
             this.getAuthenticationTicketToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copySecurityTokenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyRbxplayerLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyAppLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.HideUsernamesCheckbox = new System.Windows.Forms.CheckBox();
-            this.InviteLinks = new System.Windows.Forms.ComboBox();
             this.RobloxProcessTimer = new System.Windows.Forms.Timer(this.components);
             this.RefreshTip = new System.Windows.Forms.ToolTip(this.components);
-            this.RefreshLinks = new System.Windows.Forms.Button();
             this.BrowserButton = new System.Windows.Forms.Button();
             this.ArgumentsB = new System.Windows.Forms.Button();
             this.helloToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -76,7 +75,7 @@
             this.CurrentPlace = new System.Windows.Forms.Label();
             this.LabelPlaceID = new System.Windows.Forms.Label();
             this.PlaceTimer = new System.Windows.Forms.Timer(this.components);
-            this.copyAppLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.JoinDiscord = new System.Windows.Forms.Button();
             this.AccountsStrip.SuspendLayout();
             this.MainStrip.SuspendLayout();
             this.SuspendLayout();
@@ -282,7 +281,7 @@
             this.copyRbxplayerLinkToolStripMenuItem,
             this.copyAppLinkToolStripMenuItem});
             this.AccountsStrip.Name = "contextMenuStrip1";
-            this.AccountsStrip.Size = new System.Drawing.Size(209, 224);
+            this.AccountsStrip.Size = new System.Drawing.Size(209, 202);
             // 
             // addAccountsToolStripMenuItem
             // 
@@ -364,6 +363,13 @@
             this.copyRbxplayerLinkToolStripMenuItem.Text = "Copy rbx-player Link";
             this.copyRbxplayerLinkToolStripMenuItem.Click += new System.EventHandler(this.copyRbxplayerLinkToolStripMenuItem_Click);
             // 
+            // copyAppLinkToolStripMenuItem
+            // 
+            this.copyAppLinkToolStripMenuItem.Name = "copyAppLinkToolStripMenuItem";
+            this.copyAppLinkToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.copyAppLinkToolStripMenuItem.Text = "Copy App Link";
+            this.copyAppLinkToolStripMenuItem.Click += new System.EventHandler(this.copyAppLinkToolStripMenuItem_Click);
+            // 
             // HideUsernamesCheckbox
             // 
             this.HideUsernamesCheckbox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -376,41 +382,10 @@
             this.HideUsernamesCheckbox.UseVisualStyleBackColor = true;
             this.HideUsernamesCheckbox.CheckedChanged += new System.EventHandler(this.HideUsernamesCheckbox_CheckedChanged);
             // 
-            // InviteLinks
-            // 
-            this.InviteLinks.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.InviteLinks.FormattingEnabled = true;
-            this.InviteLinks.Location = new System.Drawing.Point(352, 267);
-            this.InviteLinks.Name = "InviteLinks";
-            this.InviteLinks.Size = new System.Drawing.Size(145, 21);
-            this.InviteLinks.TabIndex = 16;
-            this.InviteLinks.Text = "Copy Invite Link";
-            this.InviteLinks.SelectedIndexChanged += new System.EventHandler(this.InviteLinks_SelectedIndexChanged);
-            this.InviteLinks.TextUpdate += new System.EventHandler(this.InviteLinks_TextUpdate);
-            // 
-            // RobloxProcessTimer
-            // 
-            this.RobloxProcessTimer.Interval = 2500;
-            this.RobloxProcessTimer.Tick += new System.EventHandler(this.RobloxProcessTimer_Tick);
-            // 
             // RefreshTip
             // 
             this.RefreshTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.RefreshTip.ToolTipTitle = "Refresh";
-            // 
-            // RefreshLinks
-            // 
-            this.RefreshLinks.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.RefreshLinks.Location = new System.Drawing.Point(325, 266);
-            this.RefreshLinks.Name = "RefreshLinks";
-            this.RefreshLinks.Size = new System.Drawing.Size(21, 23);
-            this.RefreshLinks.TabIndex = 18;
-            this.RefreshLinks.Tag = "Refresh";
-            this.RefreshLinks.Text = "R";
-            this.RefreshTip.SetToolTip(this.RefreshLinks, "Refresh Account Links\r\nPress multiple times if you are running multiple accounts");
-            this.RefreshLinks.UseVisualStyleBackColor = true;
-            this.RefreshLinks.Click += new System.EventHandler(this.RefreshLinks_Click);
             // 
             // BrowserButton
             // 
@@ -491,7 +466,6 @@
             this.CurrentPlace.Size = new System.Drawing.Size(71, 13);
             this.CurrentPlace.TabIndex = 21;
             this.CurrentPlace.Text = "Current Place";
-            this.CurrentPlace.Click += new System.EventHandler(this.CurrentPlace_Click);
             // 
             // LabelPlaceID
             // 
@@ -508,24 +482,28 @@
             this.PlaceTimer.Interval = 400;
             this.PlaceTimer.Tick += new System.EventHandler(this.PlaceTimer_Tick);
             // 
-            // copyAppLinkToolStripMenuItem
+            // JoinDiscord
             // 
-            this.copyAppLinkToolStripMenuItem.Name = "copyAppLinkToolStripMenuItem";
-            this.copyAppLinkToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            this.copyAppLinkToolStripMenuItem.Text = "Copy App Link";
-            this.copyAppLinkToolStripMenuItem.Click += new System.EventHandler(this.copyAppLinkToolStripMenuItem_Click);
+            this.JoinDiscord.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.JoinDiscord.Location = new System.Drawing.Point(325, 266);
+            this.JoinDiscord.Name = "JoinDiscord";
+            this.JoinDiscord.Size = new System.Drawing.Size(172, 23);
+            this.JoinDiscord.TabIndex = 22;
+            this.JoinDiscord.Text = "Join Discord";
+            this.JoinDiscord.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.JoinDiscord.UseVisualStyleBackColor = true;
+            this.JoinDiscord.Click += new System.EventHandler(this.JoinDiscord_Click);
             // 
             // AccountManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(783, 301);
+            this.Controls.Add(this.JoinDiscord);
             this.Controls.Add(this.CurrentPlace);
             this.Controls.Add(this.MainStrip);
-            this.Controls.Add(this.RefreshLinks);
             this.Controls.Add(this.ArgumentsB);
             this.Controls.Add(this.BrowserButton);
-            this.Controls.Add(this.InviteLinks);
             this.Controls.Add(this.HideUsernamesCheckbox);
             this.Controls.Add(this.AccountsView);
             this.Controls.Add(this.ServerList);
@@ -584,7 +562,6 @@
         private System.Windows.Forms.ToolStripMenuItem removeAccountToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem infoToolStripMenuItem;
         private System.Windows.Forms.CheckBox HideUsernamesCheckbox;
-        private System.Windows.Forms.ComboBox InviteLinks;
         private System.Windows.Forms.Timer RobloxProcessTimer;
         private System.Windows.Forms.ToolStripMenuItem getAuthenticationTicketToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyRbxplayerLinkToolStripMenuItem;
@@ -593,7 +570,6 @@
         private System.Windows.Forms.ToolStripMenuItem copySecurityTokenToolStripMenuItem;
         private System.Windows.Forms.Button BrowserButton;
         private System.Windows.Forms.Button ArgumentsB;
-        private System.Windows.Forms.Button RefreshLinks;
         private System.Windows.Forms.ToolStripMenuItem helloToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem helloV2ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem hiToolStripMenuItem;
@@ -608,5 +584,6 @@
         private System.Windows.Forms.ToolStripMenuItem moveUpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem moveDownToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyAppLinkToolStripMenuItem;
+        private System.Windows.Forms.Button JoinDiscord;
     }
 }

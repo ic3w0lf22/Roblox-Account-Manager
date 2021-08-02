@@ -472,7 +472,7 @@ namespace RBX_Alt_Manager
                     else
                         Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}&isPlayTogetherGame=false\"", Token, PlaceID, "&gameId=" + JobID, string.IsNullOrEmpty(JobID) ? "" : "Job");
                     Process.Start(Roblox);*/
-                    return "How did this happen...";
+                    return "How did this happen... (Re-install roblox maybe?)";
                 }
             }
             else

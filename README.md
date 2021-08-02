@@ -20,6 +20,7 @@ If you ever want a friend to join a game using your account, make sure you have 
 To install this, head over to the [Releases](https://github.com/ic3w0lf22/Roblox-Account-Manager/releases) section and download the rar file at the very top, once downloaded, extract the files into a folder on your desktop and run RBX Alt Manager.exe.
 
 If the application isn't starting or not working, make sure to install the [Latest .NET Framework](https://dotnet.microsoft.com/download/dotnet-framework).
+Still having issues? Download and install [vcredist](https://aka.ms/vs/16/release/vc_redist.x86.exe)
 
 To use rbx-join, make sure to run RegisterRbxJoinProtocol.exe first and if you haven't accepted the handle EULA, run handle.exe and it'll automatically close after clicking accept.
 

@@ -182,8 +182,6 @@ namespace RBX_Alt_Manager
                 return;
             }
 
-            // i've just now realized how absolutely scuffed this code is... im not gonna fix it either since it works just fine, can probably be more efficient.
-
             string token = AccountManager.SelectedAccount.SecurityToken;
             RestRequest request = new RestRequest("headshot-thumbnail/json?userId=" + UserID.ToString() + "&width=48&height=48", Method.GET);
             request.AddCookie(".ROBLOSECURITY", token);
@@ -293,17 +291,6 @@ namespace RBX_Alt_Manager
         {
             if (ServerListView.SelectedItem != null)
                 Clipboard.SetText(ServerListView.SelectedItem.Text);
-        }
-
-        private void copyJoinLinkToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (this.ServerListView.SelectedItem != null)
-                Clipboard.SetText("<rbx-join://" + PlaceId.ToString() + "/" + this.ServerListView.SelectedItem.Text + ">");
-        }
-
-        private void Term_KeyPress(object sender, KeyPressEventArgs e)
-        {
-
         }
 
         private void Search_Click(object sender, EventArgs e)

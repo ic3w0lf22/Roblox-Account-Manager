@@ -252,7 +252,6 @@
             this.Name = "AccountUtils";
             this.Text = " Account Utilities";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AccountUtils_FormClosing);
-            this.Load += new System.EventHandler(this.AccountUtils_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

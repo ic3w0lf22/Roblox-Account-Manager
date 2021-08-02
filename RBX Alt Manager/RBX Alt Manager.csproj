@@ -142,10 +142,10 @@
     <Compile Include="GameInstance.cs" />
     <Compile Include="GameInstancesCollection.cs" />
     <Compile Include="GamePlayer.cs" />
+    <Compile Include="IniFile.cs" />
     <Compile Include="ProductInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RbxProcess.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="ServerList.cs">
       <SubType>Form</SubType>
@@ -209,9 +209,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="handle.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Resources\server_icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
