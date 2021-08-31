@@ -308,13 +308,16 @@ namespace RBX_Alt_Manager
                 OpenApp.Size = new Size(70, 23);
             }
 
-            if (!rbxMultiMutex.WaitOne(TimeSpan.Zero, true) && IniSettings.Read("HideRbxAlert", "General") != "true")
+            try
             {
-                DialogResult MsgResult = MessageBox.Show("WARNING: Roblox is currently running, multi roblox will not work until you restart the account manager with roblox closed.\nTo hide this warning permanently, press Cancel.", "Roblox Account Manager", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                if (!rbxMultiMutex.WaitOne(TimeSpan.Zero, true) && IniSettings.Read("HideRbxAlert", "General") != "true")
+                {
+                    DialogResult MsgResult = MessageBox.Show("WARNING: Roblox is currently running, multi roblox will not work until you restart the account manager with roblox closed.\nTo hide this warning permanently, press Cancel.", "Roblox Account Manager", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
 
-                if (MsgResult == DialogResult.Cancel)
-                    IniSettings.Write("HideRbxAlert", "true", "General");
-            }
+                    if (MsgResult == DialogResult.Cancel)
+                        IniSettings.Write("HideRbxAlert", "true", "General");
+                }
+            } finally { rbxMultiMutex.ReleaseMutex(); }
 
             if (IniSettings.Read("EnableWebServer", "Developer") == "true")
             {
@@ -1155,7 +1158,7 @@ namespace RBX_Alt_Manager
 
         private void OpenApp_Click(object sender, EventArgs e)
         {
-            SelectedAccount.LaunchApp();
+            if (SelectedAccount != null) SelectedAccount.LaunchApp();
         }
 
         private void ImportByCookie_Click(object sender, EventArgs e)
