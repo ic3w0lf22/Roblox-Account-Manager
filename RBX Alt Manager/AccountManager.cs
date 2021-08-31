@@ -317,7 +317,7 @@ namespace RBX_Alt_Manager
                     if (MsgResult == DialogResult.Cancel)
                         IniSettings.Write("HideRbxAlert", "true", "General");
                 }
-            } finally { rbxMultiMutex.ReleaseMutex(); }
+            } finally { }
 
             if (IniSettings.Read("EnableWebServer", "Developer") == "true")
             {
