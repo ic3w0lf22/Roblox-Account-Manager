@@ -13,8 +13,10 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -37,6 +39,7 @@ namespace RBX_Alt_Manager
         private ArgumentsForm afform;
         private ServerList ServerListForm;
         private AccountUtils UtilsForm;
+        private ImportForm ImportAccountsForm;
         private static DateTime startTime = DateTime.Now;
         public static bool IsTeleport = false;
         public static bool UseOldJoin = false;
@@ -44,11 +47,17 @@ namespace RBX_Alt_Manager
         private ListViewItem LastViewItem;
         private ListViewItem DraggingItem;
         private DateTime DragTime = DateTime.MinValue;
-        private IniFile IniSettings;
+        private WebServer AltManagerWS;
+        public static IniFile IniSettings;
+        private string WSPassword = "";
+        private static DateTime LastAccountSave = DateTime.Now;
+
+        private static Mutex rbxMultiMutex = new Mutex(true, "ROBLOX_singletonMutex");
 
         private delegate void SafeCallDelegateAccount(Account account);
         private delegate void SafeCallDelegateGroup(string Group, ListViewItem Item = null);
         private delegate void SafeCallDelegateRemoveAt(int Index);
+        private delegate void SafeCallDelegateSetAccountViewSubItem(Account account, int Index, string Text);
         private delegate int SafeCallDelegateInvite(object Item);
 
         public AccountManager()
@@ -99,9 +108,12 @@ namespace RBX_Alt_Manager
         public static void SaveAccounts()
         {
             if ((DateTime.Now - startTime).Seconds < 5 || AccountsList.Count == 0) return;
+            if ((DateTime.Now - LastAccountSave).Seconds < 1) return;
+
+            LastAccountSave = DateTime.Now;
 
             string OldInfo = File.Exists(SaveFilePath) ? File.ReadAllText(SaveFilePath) : "";
-            string SaveData =  JsonConvert.SerializeObject(AccountsList);
+            string SaveData = JsonConvert.SerializeObject(AccountsList);
             int OldSize = Encoding.Unicode.GetByteCount(OldInfo);
             int NewSize = Encoding.Unicode.GetByteCount(SaveData);
 
@@ -145,6 +157,26 @@ namespace RBX_Alt_Manager
                 AccountsView.Items.Add(Item);
 
                 if (!string.IsNullOrEmpty(account.Group)) AddGroupToList(account.Group, Item);
+            }
+        }
+
+        public void SetAccountViewSubItem(Account account, int Index, string Text)
+        {
+            if (AccountsView.InvokeRequired)
+            {
+                var getItem = new SafeCallDelegateSetAccountViewSubItem(SetAccountViewSubItem);
+                AccountsView.Invoke(getItem, new object[] { account, Index, Text });
+            }
+            else
+            {
+                foreach (ListViewItem Item in AccountsView.Items)
+                {
+                    if (Item.SubItems[3].Text.Length >= account.Username.Length && account.Username == Item.SubItems[3].Text.Substring(0, account.Username.Length))
+                    {
+                        Item.SubItems[Index].Text = Text;
+                        break;
+                    }
+                }
             }
         }
 
@@ -230,19 +262,11 @@ namespace RBX_Alt_Manager
 
         private void AccountManager_Load(object sender, EventArgs e)
         {
-            if (Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName
-                .Contains(Path.GetTempPath()))
+            if (Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName.Contains(Path.GetTempPath()))
             {
                 int Stupid = 1337;
                 MessageBox.Show("bro extract the files, don't run it in winrar");
                 Environment.Exit(Stupid);
-            }
-
-            if (!File.Exists("dev.mode"))
-            {
-                AccountsStrip.Items.Remove(getAuthenticationTicketToolStripMenuItem);
-                AccountsStrip.Items.Remove(copyRbxplayerLinkToolStripMenuItem);
-                AccountsStrip.Items.Remove(copySecurityTokenToolStripMenuItem);
             }
 
             if (File.Exists("AU.exe"))
@@ -259,7 +283,46 @@ namespace RBX_Alt_Manager
 
             IniSettings = new IniFile("RAMSettings.ini");
 
-            PlaceID.Text = IniSettings.KeyExists("SavedPlaceId", "General") ? IniSettings.Read("SavedPlaceId", "General") : "3016661674";
+            if (!IniSettings.KeyExists("DevMode", "Developer")) IniSettings.Write("DevMode", "false", "Developer");
+            if (!IniSettings.KeyExists("EnableWebServer", "Developer")) IniSettings.Write("EnableWebServer", "false", "Developer");
+            if (!IniSettings.KeyExists("WebServerPort", "WebServer")) IniSettings.Write("WebServerPort", "7963", "WebServer");
+            if (!IniSettings.KeyExists("AllowGetCookie", "WebServer")) IniSettings.Write("AllowGetCookie", "false", "WebServer");
+            if (!IniSettings.KeyExists("AllowGetAccounts", "WebServer")) IniSettings.Write("AllowGetAccounts", "false", "WebServer");
+            if (!IniSettings.KeyExists("AllowLaunchAccount", "WebServer")) IniSettings.Write("AllowLaunchAccount", "false", "WebServer");
+            if (!IniSettings.KeyExists("AllowAccountEditing", "WebServer")) IniSettings.Write("AllowAccountEditing", "false", "WebServer");
+            if (!IniSettings.KeyExists("Password", "WebServer")) IniSettings.Write("Password", "", "WebServer"); else WSPassword = IniSettings.Read("Password", "WebServer");
+            if (!IniSettings.KeyExists("EveryRequestRequiresPassword", "WebServer")) IniSettings.Write("EveryRequestRequiresPassword", "false", "WebServer");
+
+            PlaceID.Text = IniSettings.KeyExists("SavedPlaceId", "General") ? IniSettings.Read("SavedPlaceId", "General") : "2788229376";
+
+            if (IniSettings.Read("DevMode", "Developer") != "true" && !File.Exists("dev.mode"))
+            {
+                AccountsStrip.Items.Remove(getAuthenticationTicketToolStripMenuItem);
+                AccountsStrip.Items.Remove(copyRbxplayerLinkToolStripMenuItem);
+                AccountsStrip.Items.Remove(copySecurityTokenToolStripMenuItem);
+            }
+            else
+            {
+                ImportByCookie.Visible = true;
+                OpenApp.Location = new Point(398, 266);
+                OpenApp.Size = new Size(70, 23);
+            }
+
+            if (!rbxMultiMutex.WaitOne(TimeSpan.Zero, true) && IniSettings.Read("HideRbxAlert", "General") != "true")
+            {
+                DialogResult MsgResult = MessageBox.Show("WARNING: Roblox is currently running, multi roblox will not work until you restart the account manager with roblox closed.\nTo hide this warning permanently, press Cancel.", "Roblox Account Manager", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+
+                if (MsgResult == DialogResult.Cancel)
+                    IniSettings.Write("HideRbxAlert", "true", "General");
+            }
+
+            if (IniSettings.Read("EnableWebServer", "Developer") == "true")
+            {
+                string Port = IniSettings.KeyExists("WebServerPort", "WebServer") ? IniSettings.Read("WebServerPort", "WebServer") : "7963";
+
+                AltManagerWS = new WebServer(SendResponse, $"http://localhost:{Port}/");
+                AltManagerWS.Run();
+            }
 
             // SetupNamedPipe(); // unused now
 
@@ -267,6 +330,7 @@ namespace RBX_Alt_Manager
             afform = new ArgumentsForm();
             ServerListForm = new ServerList();
             UtilsForm = new AccountUtils();
+            ImportAccountsForm = new ImportForm();
 
             AccountsView.Items.Clear();
 
@@ -331,6 +395,119 @@ namespace RBX_Alt_Manager
                 }
                 catch { }
             });
+        }
+
+        private string SendResponse(HttpListenerRequest request)
+        {
+            if (!request.IsLocal || request.Url.AbsolutePath == "/favicon.ico") return "";
+
+            if (request.Url.AbsolutePath == "/Running") return "true";
+
+            string Method = request.Url.AbsolutePath.Substring(1);
+            string Account = request.QueryString["Account"];
+            string Password = request.QueryString["Password"];
+
+            if (IniSettings.Read("EveryRequestRequiresPassword", "WebServer") == "true" && (WSPassword.Length < 6 || Password != WSPassword)) return "Invalid Password";
+
+            if ((Method == "GetCookie" || Method == "GetAccounts" || Method == "LaunchAccount") && (WSPassword.Length < 6 || Password != WSPassword)) return "Invalid Password";
+
+            if (Method == "GetAccounts")
+            {
+                if (IniSettings.Read("AllowGetAccounts", "WebServer") != "true") return "Method not allowed";
+
+                string Names = "";
+
+                foreach (Account acc in AccountsList)
+                    Names += acc.Username + ",";
+
+                return Names.Remove(Names.Length - 1);
+            }
+
+            if (string.IsNullOrEmpty(Account)) return "Empty Account";
+
+            Account account = AccountsList.FirstOrDefault(x => x.Username == Account || x.UserID.ToString() == Account);
+
+            if (account == null || string.IsNullOrEmpty(account.GetCSRFToken())) return "Invalid Account";
+
+            if (Method == "GetCookie")
+            {
+                if (IniSettings.Read("AllowGetCookie", "WebServer") != "true") return "Method not allowed";
+
+                return account.SecurityToken;
+            }
+            if (Method == "LaunchAccount")
+            {
+                if (IniSettings.Read("AllowLaunchAccount", "WebServer") != "true") return "Method not allowed";
+
+                bool ValidPlaceId = long.TryParse(request.QueryString["PlaceId"], out long PlaceId); if (!ValidPlaceId) return "Invalid PlaceId";
+
+                string JobID = !string.IsNullOrEmpty(request.QueryString["JobId"]) ? request.QueryString["JobId"] : "";
+                string FollowUser = request.QueryString["FollowUser"];
+                string JoinVIP = request.QueryString["JoinVIP"];
+
+                account.JoinServer(PlaceId, JobID, FollowUser == "true", JoinVIP == "true");
+
+                return $"Launched {Account} to {PlaceId}";
+            }
+
+            if (Method == "GetCSRFToken") return account.GetCSRFToken();
+            if (Method == "GetAlias") return account.Alias;
+            if (Method == "GetDescription") return account.Description;
+
+            if (Method == "BlockUser" && !string.IsNullOrEmpty(request.QueryString["UserId"])) return account.BlockUserId(request.QueryString["UserId"]);
+            if (Method == "UnblockUser" && !string.IsNullOrEmpty(request.QueryString["UserId"])) return account.UnblockUserId(request.QueryString["UserId"]);
+            if (Method == "UnblockEveryone") return account.UnblockEveryone();
+            if (Method == "GetBlockedList") return account.GetBlockedList();
+
+            if (Method == "GetField" && !string.IsNullOrEmpty(request.QueryString["Field"])) return account.GetField(request.QueryString["Field"]);
+            if (Method == "SetField" && !string.IsNullOrEmpty(request.QueryString["Field"]) && !string.IsNullOrEmpty(request.QueryString["Value"]))
+            {
+                if (IniSettings.Read("AllowAccountEditing", "WebServer") != "true") return "Method not allowed";
+
+                account.SetField(request.QueryString["Field"], request.QueryString["Value"]);
+
+                return $"Set Field {request.QueryString["Field"]} to {request.QueryString["Value"]}";
+            }
+            if (Method == "RemoveField" && !string.IsNullOrEmpty(request.QueryString["Field"]))
+            {
+                if (IniSettings.Read("AllowAccountEditing", "WebServer") != "true") return "Method not allowed";
+
+                account.RemoveField(request.QueryString["Field"]);
+
+                return $"Removed Field {request.QueryString["Field"]}";
+            }
+
+            string Body = new StreamReader(request.InputStream).ReadToEnd();
+
+            if (Method == "SetAlias" && !string.IsNullOrEmpty(Body))
+            {
+                if (IniSettings.Read("AllowAccountEditing", "WebServer") != "true") return "Method not allowed";
+
+                account.Alias = Body;
+                SetAccountViewSubItem(account, 1, account.Alias);
+
+                return $"Set Alias of {account.Username} to {Body}";
+            }
+            if (Method == "SetDescription" && !string.IsNullOrEmpty(Body))
+            {
+                if (IniSettings.Read("AllowAccountEditing", "WebServer") != "true") return "Method not allowed";
+
+                account.Description = Body;
+                SetAccountViewSubItem(account, 2, account.Description.Replace("\n", " "));
+
+                return $"Set Description of {account.Username} to {Body}";
+            }
+            if (Method == "AppendDescription" && !string.IsNullOrEmpty(Body))
+            {
+                if (IniSettings.Read("AllowAccountEditing", "WebServer") != "true") return "Method not allowed";
+
+                account.Description += Body;
+                SetAccountViewSubItem(account, 2, account.Description.Replace("\n", " "));
+
+                return $"Appended Description of {account.Username} with {Body}";
+            }
+
+            return $"";
         }
 
         private void AccountManager_Shown(object sender, EventArgs e)
@@ -403,7 +580,6 @@ namespace RBX_Alt_Manager
             if (SelectedAccount == null) return;
 
             SelectedAccount.Alias = Alias.Text;
-            SelectedAccountItem.SubItems[3].Text = SelectedAccount.Username;
             SelectedAccountItem.SubItems[1].Text = SelectedAccount.Alias;
         }
 
@@ -412,7 +588,7 @@ namespace RBX_Alt_Manager
             if (SelectedAccount == null) return;
 
             SelectedAccount.Description = DescriptionBox.Text;
-            SelectedAccountItem.SubItems[2].Text = SelectedAccount.Description.Replace("\n", "");
+            SelectedAccountItem.SubItems[2].Text = SelectedAccount.Description.Replace("\n", " ");
         }
 
         private void JoinServer_Click(object sender, EventArgs e)
@@ -485,7 +661,10 @@ namespace RBX_Alt_Manager
         private void ServerList_Click(object sender, EventArgs e)
         {
             if (ServerListForm.Visible)
+            {
+                ServerListForm.WindowState = FormWindowState.Normal;
                 ServerListForm.BringToFront();
+            }
             else
                 ServerListForm.Show();
 
@@ -604,6 +783,12 @@ namespace RBX_Alt_Manager
             if (PlaceID == null || string.IsNullOrEmpty(PlaceID.Text)) return;
 
             IniSettings.Write("SavedPlaceId", PlaceID.Text, "General");
+
+            if (AltManagerWS != null)
+            {
+                AltManagerWS.Stop();
+                SaveAccounts();
+            }
         }
 
         private void BrowserButton_Click(object sender, EventArgs e)
@@ -615,6 +800,8 @@ namespace RBX_Alt_Manager
             }
 
             UtilsForm.Show();
+            UtilsForm.WindowState = FormWindowState.Normal;
+            UtilsForm.BringToFront();
         }
 
         private void reAuthToolStripMenuItem_Click(object sender, EventArgs e)
@@ -632,7 +819,7 @@ namespace RBX_Alt_Manager
 
         private void AccountsView_MouseDown(object sender, MouseEventArgs e)
         {
-            if (AccountsView.Groups.Count > 0) return; 
+            if (AccountsView.Groups.Count > 0) return;
 
             DraggingItem = AccountsView.GetItemAt(e.X, e.Y);
             DragTime = DateTime.Now;
@@ -648,7 +835,7 @@ namespace RBX_Alt_Manager
         private void AccountsView_MouseUp(object sender, MouseEventArgs e)
         {
             if ((DateTime.Now - DragTime).TotalMilliseconds < 120) DraggingItem = null;
-            
+
             Cursor = Cursors.Default;
 
             if (DraggingItem == null) return;
@@ -778,6 +965,7 @@ namespace RBX_Alt_Manager
         {
             if (SelectedAccount == null) return;
 
+            SelectedAccount.RemoveField("test");
             Clipboard.SetText(SelectedAccount.SecurityToken);
         }
 
@@ -785,6 +973,7 @@ namespace RBX_Alt_Manager
         {
             if (SelectedAccount == null) return;
 
+            SelectedAccount.SetField("test", "true");
             Clipboard.SetText(SelectedAccount.Username);
         }
 
@@ -823,7 +1012,8 @@ namespace RBX_Alt_Manager
 
             bool CreateGroup = true;
 
-            if (AccountsView.Groups.Count == 0) {
+            if (AccountsView.Groups.Count == 0)
+            {
                 DialogResult res = MessageBox.Show("Creating groups prevents accounts from being moved! Continue?", "Groups", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
                 if (res == DialogResult.No)
@@ -961,6 +1151,19 @@ namespace RBX_Alt_Manager
         private void JoinDiscord_Click(object sender, EventArgs e)
         {
             Process.Start("https://discord.gg/MsEH7smXY8");
+        }
+
+        private void OpenApp_Click(object sender, EventArgs e)
+        {
+            SelectedAccount.LaunchApp();
+        }
+
+        private void ImportByCookie_Click(object sender, EventArgs e)
+        {
+            ImportAccountsForm.Show();
+            ImportAccountsForm.WindowState = FormWindowState.Normal;
+            ImportAccountsForm.BringToFront();
+            // open import form
         }
     }
 }

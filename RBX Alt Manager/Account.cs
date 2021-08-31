@@ -2,13 +2,12 @@
 using Newtonsoft.Json;
 using RestSharp;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 #pragma warning disable CS0618
@@ -31,6 +30,7 @@ namespace RBX_Alt_Manager
         private string _Description = "";
         public string Group { get; set; }
         public long UserID;
+        public Dictionary<string, string> Fields = new Dictionary<string, string>();
         [JsonIgnore] public DateTime PinUnlocked;
         [JsonIgnore] public DateTime TokenSet;
         [JsonIgnore] public DateTime LastAppLaunch;
@@ -371,6 +371,92 @@ namespace RBX_Alt_Manager
             return false;
         }
 
+        public string BlockUserId(string UserID, bool SkipPinCheck = false)
+        {
+            if (!SkipPinCheck && !CheckPin(true)) return "Pin Locked";
+
+            RestRequest blockReq = new RestRequest("userblock/blockuser", Method.POST);
+
+            blockReq.AddCookie(".ROBLOSECURITY", SecurityToken);
+            blockReq.AddHeader("Referer", "https://www.roblox.com/");
+            blockReq.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
+            blockReq.AddHeader("Content-Type", "application/json");
+            blockReq.AddJsonBody(new { blockeeId = UserID });
+
+            IRestResponse blockRes = AccountManager.mainclient.Execute(blockReq);
+
+            return blockRes.Content;
+        }
+
+        public string UnblockUserId(string UserID, bool SkipPinCheck = false) {
+            if (!SkipPinCheck && !CheckPin(true)) return "Pin Locked";
+
+            RestRequest blockReq = new RestRequest("userblock/unblockuser", Method.POST);
+
+            blockReq.AddCookie(".ROBLOSECURITY", SecurityToken);
+            blockReq.AddHeader("Referer", "https://www.roblox.com/");
+            blockReq.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
+            blockReq.AddHeader("Content-Type", "application/json");
+            blockReq.AddJsonBody(new { blockeeId = UserID });
+
+            IRestResponse blockRes = AccountManager.mainclient.Execute(blockReq);
+
+            return blockRes.Content;
+        }
+
+        public string UnblockEveryone()
+        {
+            if (!CheckPin(true)) return "Pin is Locked";
+
+            RestRequest request = new RestRequest($"userblock/getblockedusers?page=1", Method.GET);
+
+            request.AddCookie(".ROBLOSECURITY", SecurityToken);
+
+            IRestResponse response = AccountManager.apiclient.Execute(request);
+
+            if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
+            {
+                Task.Run(async () =>
+                {
+                    Match R = Regex.Match(response.Content, "\"userList\":\\[(.+)\\]");
+
+                    if (R.Success && R.Groups.Count == 2)
+                    {
+                        string[] UserIDs = R.Groups[1].Value.Split(',');
+
+                        foreach (string UserId in UserIDs)
+                        {
+                            if (!UnblockUserId(UserId, true).Contains("true")) {
+                                await Task.Delay(20000);
+
+                                UnblockUserId(UserId, true);
+
+                                if (!CheckPin(true))
+                                    break;
+                            }
+                        }
+                    }
+                });
+
+                return "Unblocking Everyone";
+            }
+
+            return "Failed to unblock everyone";
+        }
+
+        public string GetBlockedList()
+        {
+            if (!CheckPin()) return "Pin is Locked";
+
+            RestRequest request = new RestRequest($"userblock/getblockedusers?page=1", Method.GET);
+
+            request.AddCookie(".ROBLOSECURITY", SecurityToken);
+
+            IRestResponse response = AccountManager.apiclient.Execute(request);
+
+            return response.Content;
+        }
+
         public string JoinServer(long PlaceID, string JobID = "", bool FollowUser = false, bool JoinVIP = false)
         {
             if (string.IsNullOrEmpty(BrowserTrackerID))
@@ -388,17 +474,12 @@ namespace RBX_Alt_Manager
 
             if (string.IsNullOrEmpty(CurrentVersion)) return "ERROR: No Roblox Version";
 
-            RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
-
-            request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
-
             string Token = GetCSRFToken();
 
             if (string.IsNullOrEmpty(Token))
                 return "ERROR: Account Session Expired, re-add the account or try again. (1)";
 
-            request = new RestRequest("/v1/authentication-ticket/", Method.POST);
+            RestRequest request = new RestRequest("/v1/authentication-ticket/", Method.POST);
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
             request.AddHeader("X-CSRF-TOKEN", Token);
             request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
@@ -531,5 +612,9 @@ namespace RBX_Alt_Manager
             else
                 return "ERROR: Invalid Authentication Ticket";
         }
+
+        public string GetField(string Name) => Fields.ContainsKey(Name) ? Fields[Name] : "";
+        public void SetField(string Name, string Value) { Fields[Name] = Value; AccountManager.SaveAccounts(); }
+        public void RemoveField(string Name) { Fields.Remove(Name); AccountManager.SaveAccounts(); }
     }
 }

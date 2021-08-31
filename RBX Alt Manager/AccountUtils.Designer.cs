@@ -44,7 +44,6 @@
             this.label3 = new System.Windows.Forms.Label();
             this.Username = new System.Windows.Forms.TextBox();
             this.Block = new System.Windows.Forms.Button();
-            this.OpenApp = new System.Windows.Forms.Button();
             this.SetDisplayName = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
@@ -205,16 +204,6 @@
             this.Block.UseVisualStyleBackColor = true;
             this.Block.Click += new System.EventHandler(this.Block_Click);
             // 
-            // OpenApp
-            // 
-            this.OpenApp.Location = new System.Drawing.Point(153, 79);
-            this.OpenApp.Name = "OpenApp";
-            this.OpenApp.Size = new System.Drawing.Size(65, 22);
-            this.OpenApp.TabIndex = 9;
-            this.OpenApp.Text = "Open App";
-            this.OpenApp.UseVisualStyleBackColor = true;
-            this.OpenApp.Click += new System.EventHandler(this.OpenApp_Click);
-            // 
             // SetDisplayName
             // 
             this.SetDisplayName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -232,7 +221,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(518, 142);
             this.Controls.Add(this.SetDisplayName);
-            this.Controls.Add(this.OpenApp);
             this.Controls.Add(this.Block);
             this.Controls.Add(this.Username);
             this.Controls.Add(this.label3);
@@ -274,7 +262,6 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox Username;
         private System.Windows.Forms.Button Block;
-        private System.Windows.Forms.Button OpenApp;
         private System.Windows.Forms.Button SetDisplayName;
     }
 }

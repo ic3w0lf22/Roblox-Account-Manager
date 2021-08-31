@@ -76,6 +76,8 @@
             this.LabelPlaceID = new System.Windows.Forms.Label();
             this.PlaceTimer = new System.Windows.Forms.Timer(this.components);
             this.JoinDiscord = new System.Windows.Forms.Button();
+            this.OpenApp = new System.Windows.Forms.Button();
+            this.ImportByCookie = new System.Windows.Forms.Button();
             this.AccountsStrip.SuspendLayout();
             this.MainStrip.SuspendLayout();
             this.SuspendLayout();
@@ -83,7 +85,7 @@
             // PlaceID
             // 
             this.PlaceID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.PlaceID.Location = new System.Drawing.Point(503, 43);
+            this.PlaceID.Location = new System.Drawing.Point(504, 43);
             this.PlaceID.Name = "PlaceID";
             this.PlaceID.Size = new System.Drawing.Size(84, 20);
             this.PlaceID.TabIndex = 1;
@@ -94,7 +96,7 @@
             // JobID
             // 
             this.JobID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.JobID.Location = new System.Drawing.Point(593, 43);
+            this.JobID.Location = new System.Drawing.Point(594, 43);
             this.JobID.Name = "JobID";
             this.JobID.Size = new System.Drawing.Size(178, 20);
             this.JobID.TabIndex = 2;
@@ -103,7 +105,7 @@
             // 
             this.LabelJobID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.LabelJobID.AutoSize = true;
-            this.LabelJobID.Location = new System.Drawing.Point(590, 27);
+            this.LabelJobID.Location = new System.Drawing.Point(591, 27);
             this.LabelJobID.Name = "LabelJobID";
             this.LabelJobID.Size = new System.Drawing.Size(38, 13);
             this.LabelJobID.TabIndex = 4;
@@ -134,7 +136,7 @@
             // JoinServer
             // 
             this.JoinServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.JoinServer.Location = new System.Drawing.Point(503, 69);
+            this.JoinServer.Location = new System.Drawing.Point(504, 69);
             this.JoinServer.Name = "JoinServer";
             this.JoinServer.Size = new System.Drawing.Size(168, 23);
             this.JoinServer.TabIndex = 3;
@@ -145,7 +147,7 @@
             // SetDescription
             // 
             this.SetDescription.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.SetDescription.Location = new System.Drawing.Point(503, 266);
+            this.SetDescription.Location = new System.Drawing.Point(504, 266);
             this.SetDescription.Name = "SetDescription";
             this.SetDescription.Size = new System.Drawing.Size(133, 23);
             this.SetDescription.TabIndex = 11;
@@ -156,7 +158,7 @@
             // DescriptionBox
             // 
             this.DescriptionBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.DescriptionBox.Location = new System.Drawing.Point(503, 150);
+            this.DescriptionBox.Location = new System.Drawing.Point(504, 150);
             this.DescriptionBox.Name = "DescriptionBox";
             this.DescriptionBox.Size = new System.Drawing.Size(268, 109);
             this.DescriptionBox.TabIndex = 10;
@@ -165,7 +167,7 @@
             // SetAlias
             // 
             this.SetAlias.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.SetAlias.Location = new System.Drawing.Point(715, 122);
+            this.SetAlias.Location = new System.Drawing.Point(716, 122);
             this.SetAlias.Name = "SetAlias";
             this.SetAlias.Size = new System.Drawing.Size(56, 23);
             this.SetAlias.TabIndex = 9;
@@ -177,7 +179,7 @@
             // Alias
             // 
             this.Alias.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Alias.Location = new System.Drawing.Point(503, 124);
+            this.Alias.Location = new System.Drawing.Point(504, 124);
             this.Alias.MaxLength = 30;
             this.Alias.Name = "Alias";
             this.Alias.Size = new System.Drawing.Size(206, 20);
@@ -187,7 +189,7 @@
             // Follow
             // 
             this.Follow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Follow.Location = new System.Drawing.Point(715, 96);
+            this.Follow.Location = new System.Drawing.Point(716, 96);
             this.Follow.Name = "Follow";
             this.Follow.Size = new System.Drawing.Size(56, 23);
             this.Follow.TabIndex = 7;
@@ -198,7 +200,7 @@
             // UserID
             // 
             this.UserID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.UserID.Location = new System.Drawing.Point(565, 98);
+            this.UserID.Location = new System.Drawing.Point(566, 98);
             this.UserID.Name = "UserID";
             this.UserID.Size = new System.Drawing.Size(144, 20);
             this.UserID.TabIndex = 6;
@@ -207,7 +209,7 @@
             // 
             this.LabelUserID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.LabelUserID.AutoSize = true;
-            this.LabelUserID.Location = new System.Drawing.Point(504, 101);
+            this.LabelUserID.Location = new System.Drawing.Point(505, 101);
             this.LabelUserID.Name = "LabelUserID";
             this.LabelUserID.Size = new System.Drawing.Size(55, 13);
             this.LabelUserID.TabIndex = 14;
@@ -216,7 +218,7 @@
             // ServerList
             // 
             this.ServerList.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ServerList.Location = new System.Drawing.Point(706, 69);
+            this.ServerList.Location = new System.Drawing.Point(707, 69);
             this.ServerList.Name = "ServerList";
             this.ServerList.Size = new System.Drawing.Size(65, 23);
             this.ServerList.TabIndex = 5;
@@ -243,7 +245,7 @@
             this.AccountsView.Location = new System.Drawing.Point(13, 12);
             this.AccountsView.MultiSelect = false;
             this.AccountsView.Name = "AccountsView";
-            this.AccountsView.Size = new System.Drawing.Size(484, 247);
+            this.AccountsView.Size = new System.Drawing.Size(485, 247);
             this.AccountsView.TabIndex = 17;
             this.AccountsView.UseCompatibleStateImageBehavior = false;
             this.AccountsView.View = System.Windows.Forms.View.Details;
@@ -390,7 +392,7 @@
             // BrowserButton
             // 
             this.BrowserButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BrowserButton.Location = new System.Drawing.Point(638, 266);
+            this.BrowserButton.Location = new System.Drawing.Point(639, 266);
             this.BrowserButton.Name = "BrowserButton";
             this.BrowserButton.Size = new System.Drawing.Size(133, 23);
             this.BrowserButton.TabIndex = 12;
@@ -401,7 +403,7 @@
             // ArgumentsB
             // 
             this.ArgumentsB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ArgumentsB.Location = new System.Drawing.Point(677, 69);
+            this.ArgumentsB.Location = new System.Drawing.Point(678, 69);
             this.ArgumentsB.Name = "ArgumentsB";
             this.ArgumentsB.Size = new System.Drawing.Size(23, 23);
             this.ArgumentsB.TabIndex = 4;
@@ -461,7 +463,7 @@
             // 
             this.CurrentPlace.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.CurrentPlace.AutoSize = true;
-            this.CurrentPlace.Location = new System.Drawing.Point(503, 12);
+            this.CurrentPlace.Location = new System.Drawing.Point(504, 12);
             this.CurrentPlace.Name = "CurrentPlace";
             this.CurrentPlace.Size = new System.Drawing.Size(71, 13);
             this.CurrentPlace.TabIndex = 21;
@@ -471,7 +473,7 @@
             // 
             this.LabelPlaceID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.LabelPlaceID.AutoSize = true;
-            this.LabelPlaceID.Location = new System.Drawing.Point(503, 27);
+            this.LabelPlaceID.Location = new System.Drawing.Point(504, 27);
             this.LabelPlaceID.Name = "LabelPlaceID";
             this.LabelPlaceID.Size = new System.Drawing.Size(48, 13);
             this.LabelPlaceID.TabIndex = 3;
@@ -485,26 +487,51 @@
             // JoinDiscord
             // 
             this.JoinDiscord.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.JoinDiscord.Location = new System.Drawing.Point(325, 266);
+            this.JoinDiscord.Image = global::RBX_Alt_Manager.Properties.Resources.disc;
+            this.JoinDiscord.Location = new System.Drawing.Point(474, 266);
             this.JoinDiscord.Name = "JoinDiscord";
-            this.JoinDiscord.Size = new System.Drawing.Size(172, 23);
+            this.JoinDiscord.Size = new System.Drawing.Size(23, 23);
             this.JoinDiscord.TabIndex = 22;
-            this.JoinDiscord.Text = "Join Discord";
             this.JoinDiscord.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.JoinDiscord.UseVisualStyleBackColor = true;
             this.JoinDiscord.Click += new System.EventHandler(this.JoinDiscord_Click);
+            // 
+            // OpenApp
+            // 
+            this.OpenApp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.OpenApp.Location = new System.Drawing.Point(325, 266);
+            this.OpenApp.Name = "OpenApp";
+            this.OpenApp.Size = new System.Drawing.Size(143, 23);
+            this.OpenApp.TabIndex = 23;
+            this.OpenApp.Text = "Open App";
+            this.OpenApp.UseVisualStyleBackColor = true;
+            this.OpenApp.Click += new System.EventHandler(this.OpenApp_Click);
+            // 
+            // ImportByCookie
+            // 
+            this.ImportByCookie.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.ImportByCookie.Location = new System.Drawing.Point(325, 266);
+            this.ImportByCookie.Name = "ImportByCookie";
+            this.ImportByCookie.Size = new System.Drawing.Size(70, 23);
+            this.ImportByCookie.TabIndex = 24;
+            this.ImportByCookie.Text = "Import";
+            this.ImportByCookie.UseVisualStyleBackColor = true;
+            this.ImportByCookie.Visible = false;
+            this.ImportByCookie.Click += new System.EventHandler(this.ImportByCookie_Click);
             // 
             // AccountManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(783, 301);
+            this.ClientSize = new System.Drawing.Size(784, 301);
+            this.Controls.Add(this.ImportByCookie);
+            this.Controls.Add(this.OpenApp);
             this.Controls.Add(this.JoinDiscord);
             this.Controls.Add(this.CurrentPlace);
-            this.Controls.Add(this.MainStrip);
             this.Controls.Add(this.ArgumentsB);
             this.Controls.Add(this.BrowserButton);
             this.Controls.Add(this.HideUsernamesCheckbox);
+            this.Controls.Add(this.MainStrip);
             this.Controls.Add(this.AccountsView);
             this.Controls.Add(this.ServerList);
             this.Controls.Add(this.LabelUserID);
@@ -524,7 +551,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.MainStrip;
             this.MaximizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(649, 340);
+            this.MinimumSize = new System.Drawing.Size(800, 340);
             this.Name = "AccountManager";
             this.Text = "Roblox Account Manager";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.AccountManager_FormClosed);
@@ -585,5 +612,7 @@
         private System.Windows.Forms.ToolStripMenuItem moveDownToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyAppLinkToolStripMenuItem;
         private System.Windows.Forms.Button JoinDiscord;
+        private System.Windows.Forms.Button OpenApp;
+        private System.Windows.Forms.Button ImportByCookie;
     }
 }

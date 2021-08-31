@@ -282,6 +282,7 @@
             // 
             // label1
             // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(336, 8);
             this.label1.Name = "label1";
@@ -291,13 +292,20 @@
             // 
             // PageNum
             // 
+            this.PageNum.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.PageNum.Location = new System.Drawing.Point(356, 6);
+            this.PageNum.Maximum = new decimal(new int[] {
+            999999,
+            0,
+            0,
+            0});
             this.PageNum.Name = "PageNum";
             this.PageNum.Size = new System.Drawing.Size(40, 20);
             this.PageNum.TabIndex = 9;
             // 
             // Search
             // 
+            this.Search.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.Search.Location = new System.Drawing.Point(402, 5);
             this.Search.Name = "Search";
             this.Search.Size = new System.Drawing.Size(54, 22);
@@ -308,6 +316,8 @@
             // 
             // Term
             // 
+            this.Term.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.Term.Location = new System.Drawing.Point(6, 6);
             this.Term.Name = "Term";
             this.Term.Size = new System.Drawing.Size(330, 20);
