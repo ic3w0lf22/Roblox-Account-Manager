@@ -1,3 +1,5 @@
+-- DOCUMENTATION: https://ic3w0lf22.gitbook.io/roblox-account-manager/
+
 local Account = {} Account.__index = Account
 
 local WebserverSettings = {
