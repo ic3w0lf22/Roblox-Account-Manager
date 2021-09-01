@@ -22,7 +22,7 @@ local function GET(Method, Account, ...)
     return syn.request {
         Method = 'GET',
         Url = Url
-    }
+    }.Body
 end
 
 local function POST(Method, Account, Body, ...)
@@ -41,7 +41,7 @@ local function POST(Method, Account, Body, ...)
         Method = 'POST',
         Url = Url,
         Body = Body
-    }
+    }.Body
 end
 
 function Account.new(Username)
