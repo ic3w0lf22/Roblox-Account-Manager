@@ -19,10 +19,14 @@ local function GET(Method, Account, ...)
         Url = Url .. '&Password=' .. WebserverSettings.Password
     end
     
-    return syn.request {
+    local Response = syn.request {
         Method = 'GET',
         Url = Url
-    }.Body
+    }
+
+    if Response.StatusCode ~= 200 then return false end
+
+    return Response.Body
 end
 
 local function POST(Method, Account, Body, ...)
@@ -37,11 +41,15 @@ local function POST(Method, Account, Body, ...)
         Url = Url .. '&Password=' .. WebserverSettings.Password
     end
     
-    return syn.request {
+    local Response = syn.request {
         Method = 'POST',
         Url = Url,
         Body = Body
-    }.Body
+    }
+
+    if Response.StatusCode ~= 200 then return false end
+
+    return Response.Body
 end
 
 function Account.new(Username)
@@ -49,7 +57,7 @@ function Account.new(Username)
 
     local IsValid = GET('Test', Username)
 
-    if IsValid.StatusCode ~= 200 or IsValid.Body == 'Invalid Account' then return false end
+    if not IsValid or IsValid == 'Invalid Account' then return false end
 
     self.Username = Username
 
