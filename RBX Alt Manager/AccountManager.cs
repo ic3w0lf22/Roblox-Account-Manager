@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.IO.Pipes;
@@ -33,13 +34,13 @@ namespace RBX_Alt_Manager
         public static RestClient client;
         public static RestClient econclient;
         public static RestClient AccountClient;
-        public static string CurrentVersion;
         public static string CurrentPlaceId;
         private AccountAdder aaform;
         private ArgumentsForm afform;
         private ServerList ServerListForm;
         private AccountUtils UtilsForm;
         private ImportForm ImportAccountsForm;
+        private AccountFields FieldsForm;
         private static DateTime startTime = DateTime.Now;
         public static bool IsTeleport = false;
         public static bool UseOldJoin = false;
@@ -52,7 +53,7 @@ namespace RBX_Alt_Manager
         private string WSPassword = "";
         private static DateTime LastAccountSave = DateTime.Now;
 
-        private static Mutex rbxMultiMutex = new Mutex(true, "ROBLOX_singletonMutex");
+        private static Mutex rbxMultiMutex;
 
         private delegate void SafeCallDelegateAccount(Account account);
         private delegate void SafeCallDelegateGroup(string Group, ListViewItem Item = null);
@@ -297,9 +298,11 @@ namespace RBX_Alt_Manager
 
             if (IniSettings.Read("DevMode", "Developer") != "true" && !File.Exists("dev.mode"))
             {
+                AccountsStrip.Items.Remove(viewFieldsToolStripMenuItem);
                 AccountsStrip.Items.Remove(getAuthenticationTicketToolStripMenuItem);
                 AccountsStrip.Items.Remove(copyRbxplayerLinkToolStripMenuItem);
                 AccountsStrip.Items.Remove(copySecurityTokenToolStripMenuItem);
+                AccountsStrip.Items.Remove(copyAppLinkToolStripMenuItem);
             }
             else
             {
@@ -310,22 +313,14 @@ namespace RBX_Alt_Manager
 
             try
             {
-                if (!rbxMultiMutex.WaitOne(TimeSpan.Zero, true) && IniSettings.Read("HideRbxAlert", "General") != "true")
+                if (IniSettings.Read("EnableWebServer", "Developer") == "true")
                 {
-                    DialogResult MsgResult = MessageBox.Show("WARNING: Roblox is currently running, multi roblox will not work until you restart the account manager with roblox closed.\nTo hide this warning permanently, press Cancel.", "Roblox Account Manager", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                    string Port = IniSettings.KeyExists("WebServerPort", "WebServer") ? IniSettings.Read("WebServerPort", "WebServer") : "7963";
 
-                    if (MsgResult == DialogResult.Cancel)
-                        IniSettings.Write("HideRbxAlert", "true", "General");
+                    AltManagerWS = new WebServer(SendResponse, $"http://localhost:{Port}/");
+                    AltManagerWS.Run();
                 }
-            } finally { }
-
-            if (IniSettings.Read("EnableWebServer", "Developer") == "true")
-            {
-                string Port = IniSettings.KeyExists("WebServerPort", "WebServer") ? IniSettings.Read("WebServerPort", "WebServer") : "7963";
-
-                AltManagerWS = new WebServer(SendResponse, $"http://localhost:{Port}/");
-                AltManagerWS.Run();
-            }
+            } catch(Exception x) { MessageBox.Show("Failed to start webserver! " + x, "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error); }
 
             // SetupNamedPipe(); // unused now
 
@@ -334,6 +329,7 @@ namespace RBX_Alt_Manager
             ServerListForm = new ServerList();
             UtilsForm = new AccountUtils();
             ImportAccountsForm = new ImportForm();
+            FieldsForm = new AccountFields();
 
             AccountsView.Items.Clear();
 
@@ -354,22 +350,20 @@ namespace RBX_Alt_Manager
             AccountClient = new RestClient("https://accountsettings.roblox.com/");
             AccountClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
-            WebClient WC = new WebClient();
-            string VersionJSON = WC.DownloadString("https://clientsettings.roblox.com/v1/client-version/WindowsPlayer");
-            JObject j = JObject.Parse(VersionJSON);
-            if (j.TryGetValue("clientVersionUpload", out JToken token))
-                CurrentVersion = token.Value<string>();
-
             PlaceID_TextChanged(PlaceID, new EventArgs());
 
             Task.Run(() =>
             {
                 try
                 {
+                    ServicePointManager.Expect100Continue = true;
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Ssl3;
+
+                    WebClient WC = new WebClient();
                     Assembly assembly = Assembly.GetExecutingAssembly();
                     FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
                     string version = fvi.FileVersion.Substring(0, 3);
-                    WC.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36";
+                    WC.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36";
                     string Releases = WC.DownloadString("https://api.github.com/repos/ic3w0lf22/Roblox-Account-Manager/releases/latest");
                     Match match = Regex.Match(Releases, @"""tag_name"":\s*""?([^""]+)");
 
@@ -482,6 +476,8 @@ namespace RBX_Alt_Manager
 
             string Body = new StreamReader(request.InputStream).ReadToEnd();
 
+            Console.WriteLine(Body);
+
             if (Method == "SetAlias" && !string.IsNullOrEmpty(Body))
             {
                 if (IniSettings.Read("AllowAccountEditing", "WebServer") != "true") return "Method not allowed";
@@ -516,6 +512,23 @@ namespace RBX_Alt_Manager
         private void AccountManager_Shown(object sender, EventArgs e)
         {
             LoadAccounts();
+
+            if (IniSettings.Read("DisableMultiRbx", "General") != "true")
+            {
+                try
+                {
+                    rbxMultiMutex = new Mutex(true, "ROBLOX_singletonMutex");
+
+                    if (!rbxMultiMutex.WaitOne(TimeSpan.Zero, true) && IniSettings.Read("HideRbxAlert", "General") != "true")
+                    {
+                        DialogResult MsgResult = MessageBox.Show("WARNING: Roblox is currently running, multi roblox will not work until you restart the account manager with roblox closed.\nTo hide this warning permanently, press Cancel.", "Roblox Account Manager", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+
+                        if (MsgResult == DialogResult.Cancel)
+                            IniSettings.Write("HideRbxAlert", "true", "General");
+                    }
+                }
+                finally { }
+            }
         }
 
         private void Remove_Click(object sender, EventArgs e)
@@ -636,7 +649,7 @@ namespace RBX_Alt_Manager
             RestRequest tokenrequest = new RestRequest("v1/authentication-ticket/", Method.POST);
 
             tokenrequest.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
-            tokenrequest.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+            tokenrequest.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
             IRestResponse response = client.Execute(tokenrequest);
             Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
@@ -656,7 +669,7 @@ namespace RBX_Alt_Manager
             request.AddHeader("X-CSRF-TOKEN", Token);
             request.AddHeader("Accept", "application/json");
             request.AddParameter("application/json", "{\"expectedCurrency\":1,\"expectedPrice\":350,\"expectedSellerId\":875316944}", ParameterType.RequestBody);
-            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
             response = econclient.Execute(request);
             MessageBox.Show(response.Content);
         }
@@ -888,7 +901,7 @@ namespace RBX_Alt_Manager
             RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
 
             request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
             IRestResponse response = client.Execute(request);
             Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
@@ -906,7 +919,7 @@ namespace RBX_Alt_Manager
             request = new RestRequest("/v1/authentication-ticket/", Method.POST);
             request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
             request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
             response = client.Execute(request);
 
             Parameter Ticket = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
@@ -922,7 +935,7 @@ namespace RBX_Alt_Manager
             RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
 
             request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
             IRestResponse response = client.Execute(request);
             Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
@@ -940,7 +953,7 @@ namespace RBX_Alt_Manager
             request = new RestRequest("/v1/authentication-ticket/", Method.POST);
             request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
             request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
             response = client.Execute(request);
 
             Parameter Ticket = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
@@ -976,7 +989,6 @@ namespace RBX_Alt_Manager
         {
             if (SelectedAccount == null) return;
 
-            SelectedAccount.SetField("test", "true");
             Clipboard.SetText(SelectedAccount.Username);
         }
 
@@ -1013,18 +1025,14 @@ namespace RBX_Alt_Manager
 
             if (string.IsNullOrEmpty(GroupName)) return;
 
-            bool CreateGroup = true;
-
             if (AccountsView.Groups.Count == 0)
             {
                 DialogResult res = MessageBox.Show("Creating groups prevents accounts from being moved! Continue?", "Groups", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
-                if (res == DialogResult.No)
-                    CreateGroup = false;
+                if (res == DialogResult.No) return;
             }
-
-            if (CreateGroup)
-                AddGroupToList(GroupName);
+            
+            AddGroupToList(GroupName);
         }
 
         private void MoveAccounts(ListViewGroup Group1, ListViewGroup Group2 = null)
@@ -1117,7 +1125,7 @@ namespace RBX_Alt_Manager
             RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
 
             request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
             IRestResponse response = client.Execute(request);
             Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
@@ -1135,7 +1143,7 @@ namespace RBX_Alt_Manager
             request = new RestRequest("/v1/authentication-ticket/", Method.POST);
             request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
             request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
             response = client.Execute(request);
 
             Parameter Ticket = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
@@ -1166,7 +1174,20 @@ namespace RBX_Alt_Manager
             ImportAccountsForm.Show();
             ImportAccountsForm.WindowState = FormWindowState.Normal;
             ImportAccountsForm.BringToFront();
-            // open import form
+        }
+
+        private void copyProfileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (SelectedAccount == null) return;
+
+            Clipboard.SetText($"https://www.roblox.com/users/{SelectedAccount.UserID}/profile");
+        }
+
+        private void viewFieldsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (SelectedAccount == null) return;
+
+            FieldsForm.View(SelectedAccount);
         }
     }
 }

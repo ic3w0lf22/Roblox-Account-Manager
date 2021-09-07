@@ -9,7 +9,7 @@ local WebserverSettings = {
 
 local function GET(Method, Account, ...)
     local Arguments = {...}
-    local Url, Body = 'http://localhost:' .. WebserverSettings.Port .. '/' .. Method .. '?Account=' .. Account
+    local Url = 'http://localhost:' .. WebserverSettings.Port .. '/' .. Method .. '?Account=' .. Account
 
     for Index, Parameter in pairs(Arguments) do
         Url = Url .. '&' .. Parameter
@@ -31,7 +31,7 @@ end
 
 local function POST(Method, Account, Body, ...)
     local Arguments = {...}
-    local Url, Body = 'http://localhost:' .. WebserverSettings.Port .. '/' .. Method .. '?Account=' .. Account
+    local Url = 'http://localhost:' .. WebserverSettings.Port .. '/' .. Method .. '?Account=' .. Account
 
     for Index, Parameter in pairs(Arguments) do
         Url = '&' .. Url .. Parameter
@@ -102,4 +102,4 @@ function Account:LaunchAccount(PlaceId, JobId, FollowUser, JoinVip) -- if you wa
     return GET('LaunchAccount', self.Username, 'PlaceId=' .. PlaceId, JobId and ('JobId=' .. JobId), FollowUser and 'FollowUser=true', JoinVip and 'JoinVIP=true')
 end
 
-return Account
+return Account, WebserverSettings

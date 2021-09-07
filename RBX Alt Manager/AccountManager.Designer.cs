@@ -52,17 +52,18 @@
             this.addAccountsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeAccountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyUsernameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyProfileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveGroupUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveDownToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.infoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewFieldsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.getAuthenticationTicketToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copySecurityTokenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyRbxplayerLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyAppLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.HideUsernamesCheckbox = new System.Windows.Forms.CheckBox();
-            this.RobloxProcessTimer = new System.Windows.Forms.Timer(this.components);
             this.RefreshTip = new System.Windows.Forms.ToolTip(this.components);
             this.BrowserButton = new System.Windows.Forms.Button();
             this.ArgumentsB = new System.Windows.Forms.Button();
@@ -276,14 +277,16 @@
             this.addAccountsToolStripMenuItem,
             this.removeAccountToolStripMenuItem,
             this.copyUsernameToolStripMenuItem,
+            this.copyProfileToolStripMenuItem,
             this.moveGroupUpToolStripMenuItem,
             this.infoToolStripMenuItem,
+            this.viewFieldsToolStripMenuItem,
             this.getAuthenticationTicketToolStripMenuItem,
             this.copySecurityTokenToolStripMenuItem,
             this.copyRbxplayerLinkToolStripMenuItem,
             this.copyAppLinkToolStripMenuItem});
             this.AccountsStrip.Name = "contextMenuStrip1";
-            this.AccountsStrip.Size = new System.Drawing.Size(209, 202);
+            this.AccountsStrip.Size = new System.Drawing.Size(209, 246);
             // 
             // addAccountsToolStripMenuItem
             // 
@@ -305,6 +308,13 @@
             this.copyUsernameToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.copyUsernameToolStripMenuItem.Text = "Copy Username";
             this.copyUsernameToolStripMenuItem.Click += new System.EventHandler(this.copyUsernameToolStripMenuItem_Click);
+            // 
+            // copyProfileToolStripMenuItem
+            // 
+            this.copyProfileToolStripMenuItem.Name = "copyProfileToolStripMenuItem";
+            this.copyProfileToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.copyProfileToolStripMenuItem.Text = "Copy Profile";
+            this.copyProfileToolStripMenuItem.Click += new System.EventHandler(this.copyProfileToolStripMenuItem_Click);
             // 
             // moveGroupUpToolStripMenuItem
             // 
@@ -343,6 +353,13 @@
             this.infoToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.infoToolStripMenuItem.Text = "Info";
             this.infoToolStripMenuItem.Click += new System.EventHandler(this.infoToolStripMenuItem_Click);
+            // 
+            // viewFieldsToolStripMenuItem
+            // 
+            this.viewFieldsToolStripMenuItem.Name = "viewFieldsToolStripMenuItem";
+            this.viewFieldsToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.viewFieldsToolStripMenuItem.Text = "View Fields";
+            this.viewFieldsToolStripMenuItem.Click += new System.EventHandler(this.viewFieldsToolStripMenuItem_Click);
             // 
             // getAuthenticationTicketToolStripMenuItem
             // 
@@ -454,7 +471,7 @@
             this.securityToolStripMenuItem});
             this.MainStrip.Location = new System.Drawing.Point(0, 0);
             this.MainStrip.Name = "MainStrip";
-            this.MainStrip.Size = new System.Drawing.Size(783, 24);
+            this.MainStrip.Size = new System.Drawing.Size(784, 24);
             this.MainStrip.TabIndex = 20;
             this.MainStrip.Text = "MainStrip";
             this.MainStrip.Visible = false;
@@ -589,7 +606,6 @@
         private System.Windows.Forms.ToolStripMenuItem removeAccountToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem infoToolStripMenuItem;
         private System.Windows.Forms.CheckBox HideUsernamesCheckbox;
-        private System.Windows.Forms.Timer RobloxProcessTimer;
         private System.Windows.Forms.ToolStripMenuItem getAuthenticationTicketToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyRbxplayerLinkToolStripMenuItem;
         private System.Windows.Forms.ToolTip RefreshTip;
@@ -614,5 +630,7 @@
         private System.Windows.Forms.Button JoinDiscord;
         private System.Windows.Forms.Button OpenApp;
         private System.Windows.Forms.Button ImportByCookie;
+        private System.Windows.Forms.ToolStripMenuItem copyProfileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem viewFieldsToolStripMenuItem;
     }
 }

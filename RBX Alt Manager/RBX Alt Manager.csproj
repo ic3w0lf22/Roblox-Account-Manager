@@ -112,12 +112,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Account.cs" />
-    <Compile Include="AccountAdder.cs">
+    <Compile Include="Classes\Account.cs" />
+    <Compile Include="Classes\Field.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Classes\Field.Designer.cs">
+      <DependentUpon>Field.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\AccountAdder.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AccountAdder.Designer.cs">
+    <Compile Include="Forms\AccountAdder.Designer.cs">
       <DependentUpon>AccountAdder.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\AccountFields.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\AccountFields.Designer.cs">
+      <DependentUpon>AccountFields.cs</DependentUpon>
     </Compile>
     <Compile Include="AccountManager.cs">
       <SubType>Form</SubType>
@@ -125,60 +137,66 @@
     <Compile Include="AccountManager.Designer.cs">
       <DependentUpon>AccountManager.cs</DependentUpon>
     </Compile>
-    <Compile Include="AccountUtils.cs">
+    <Compile Include="Forms\AccountUtils.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AccountUtils.Designer.cs">
+    <Compile Include="Forms\AccountUtils.Designer.cs">
       <DependentUpon>AccountUtils.cs</DependentUpon>
     </Compile>
-    <Compile Include="ArgumentsForm.cs">
+    <Compile Include="Forms\ArgumentsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ArgumentsForm.Designer.cs">
+    <Compile Include="Forms\ArgumentsForm.Designer.cs">
       <DependentUpon>ArgumentsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Avatar.cs" />
-    <Compile Include="GameClass.cs" />
-    <Compile Include="GameInstance.cs" />
-    <Compile Include="GameInstancesCollection.cs" />
-    <Compile Include="GamePlayer.cs" />
-    <Compile Include="ImportForm.cs">
+    <Compile Include="Classes\Avatar.cs" />
+    <Compile Include="Classes\GameClass.cs" />
+    <Compile Include="Classes\GameInstance.cs" />
+    <Compile Include="Classes\GameInstancesCollection.cs" />
+    <Compile Include="Classes\GamePlayer.cs" />
+    <Compile Include="Forms\ImportForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ImportForm.Designer.cs">
+    <Compile Include="Forms\ImportForm.Designer.cs">
       <DependentUpon>ImportForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="IniFile.cs" />
-    <Compile Include="ProductInfo.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Classes\IniFile.cs" />
+    <Compile Include="Classes\ProductInfo.cs" />
+    <Compile Include="Classes\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Server.cs" />
-    <Compile Include="ServerList.cs">
+    <Compile Include="Classes\Server.cs" />
+    <Compile Include="Forms\ServerList.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ServerList.Designer.cs">
+    <Compile Include="Forms\ServerList.Designer.cs">
       <DependentUpon>ServerList.cs</DependentUpon>
     </Compile>
-    <Compile Include="UsernameResponse.cs" />
-    <Compile Include="WebServer.cs" />
-    <EmbeddedResource Include="AccountAdder.resx">
+    <Compile Include="Classes\UsernameResponse.cs" />
+    <Compile Include="Classes\WebServer.cs" />
+    <EmbeddedResource Include="Classes\Field.resx">
+      <DependentUpon>Field.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\AccountAdder.resx">
       <DependentUpon>AccountAdder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\AccountFields.resx">
+      <DependentUpon>AccountFields.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AccountManager.resx">
       <DependentUpon>AccountManager.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="AccountUtils.resx">
+    <EmbeddedResource Include="Forms\AccountUtils.resx">
       <DependentUpon>AccountUtils.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ArgumentsForm.resx">
+    <EmbeddedResource Include="Forms\ArgumentsForm.resx">
       <DependentUpon>ArgumentsForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ImportForm.resx">
+    <EmbeddedResource Include="Forms\ImportForm.resx">
       <DependentUpon>ImportForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -186,7 +204,7 @@
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="ServerList.resx">
+    <EmbeddedResource Include="Forms\ServerList.resx">
       <DependentUpon>ServerList.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
@@ -233,4 +251,9 @@
     <Error Condition="!Exists('..\packages\CefSharp.Common.91.1.211\build\CefSharp.Common.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CefSharp.Common.91.1.211\build\CefSharp.Common.targets'))" />
   </Target>
   <Import Project="..\packages\CefSharp.Common.91.1.211\build\CefSharp.Common.targets" Condition="Exists('..\packages\CefSharp.Common.91.1.211\build\CefSharp.Common.targets')" />
+  <Target Name="AfterBuild">
+    <ItemGroup>
+      <MoveToLibFolder Include="$(OutputPath)*.dll ; $(OutputPath)*.pdb ; $(OutputPath)*.xml" />
+    </ItemGroup>
+  </Target>
 </Project>

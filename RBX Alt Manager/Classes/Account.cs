@@ -94,7 +94,7 @@ namespace RBX_Alt_Manager
             RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
 
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
             IRestResponse response = AccountManager.client.Execute(request);
             Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
@@ -465,15 +465,6 @@ namespace RBX_Alt_Manager
                 BrowserTrackerID = r.Next(500000, 600000).ToString() + r.Next(10000, 90000).ToString(); // longrandom doesnt work shrug
             }
 
-            RegistryKey RbxCmdPath = Registry.ClassesRoot.OpenSubKey(@"roblox-player\shell\open\command", RegistryKeyPermissionCheck.ReadSubTree);
-
-            string LaunchPath = RbxCmdPath.GetValue("").ToString();
-            string CurrentVersion = AccountManager.CurrentVersion;
-
-            bool UseRegistryPath = !string.IsNullOrEmpty(LaunchPath);
-
-            if (string.IsNullOrEmpty(CurrentVersion)) return "ERROR: No Roblox Version";
-
             string Token = GetCSRFToken();
 
             if (string.IsNullOrEmpty(Token))
@@ -482,7 +473,7 @@ namespace RBX_Alt_Manager
             RestRequest request = new RestRequest("/v1/authentication-ticket/", Method.POST);
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
             request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
             IRestResponse response = AccountManager.client.Execute(request);
 
@@ -500,7 +491,7 @@ namespace RBX_Alt_Manager
                     request = new RestRequest(string.Format("/games/{0}?privateServerLinkCode={1}", PlaceID, LinkCode), Method.GET);
                     request.AddCookie(".ROBLOSECURITY", SecurityToken);
                     request.AddHeader("X-CSRF-TOKEN", Token);
-                    request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+                    request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
                     response = AccountManager.mainclient.Execute(request);
 
@@ -518,43 +509,20 @@ namespace RBX_Alt_Manager
                     }
                 }
 
-                if (UseRegistryPath && !AccountManager.UseOldJoin)
+                double LaunchTime = Math.Floor((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds * 1000);
+
+                if (JoinVIP)
                 {
-                    double LaunchTime = Math.Floor((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds * 1000);
+                    string Argument = string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{4}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode={3}+browsertrackerid:{5}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, AccessCode, LinkCode, LaunchTime, BrowserTrackerID);
 
-                    if (JoinVIP)
-                    {
-                        string Argument = string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{4}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode={3}+browsertrackerid:{5}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, AccessCode, LinkCode, LaunchTime, BrowserTrackerID);
-
-                        Process.Start(Argument);
-                    }
-                    else if (FollowUser)
-                        Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{2}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}+browsertrackerid:{3}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, LaunchTime, BrowserTrackerID));
-                    else
-                        Process.Start($"roblox-player:1+launchmode:play+gameinfo:{Token}+launchtime:{LaunchTime}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{ (string.IsNullOrEmpty(JobID) ? "" : "Job") }&browserTrackerId={BrowserTrackerID}&placeId={PlaceID}{(string.IsNullOrEmpty(JobID) ? "" : ("&gameId=" + JobID))}&isPlayTogetherGame=false{(AccountManager.IsTeleport ? "&isTeleport=true" : "")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us");
-
-                    return "Success";
+                    Process.Start(Argument);
                 }
-                else // probably will never happen, SHOULDNT EVER HAPPEN
-                {
-                    /*string RPath = @"C:\Program Files (x86)\Roblox\Versions\" + CurrentVersion;
+                else if (FollowUser)
+                    Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{2}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}+browsertrackerid:{3}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, LaunchTime, BrowserTrackerID));
+                else
+                    Process.Start($"roblox-player:1+launchmode:play+gameinfo:{Token}+launchtime:{LaunchTime}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{ (string.IsNullOrEmpty(JobID) ? "" : "Job") }&browserTrackerId={BrowserTrackerID}&placeId={PlaceID}{(string.IsNullOrEmpty(JobID) ? "" : ("&gameId=" + JobID))}&isPlayTogetherGame=false{(AccountManager.IsTeleport ? "&isTeleport=true" : "")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us");
 
-                    if (!Directory.Exists(RPath))
-                        RPath = Path.Combine(Environment.GetEnvironmentVariable("LocalAppData"), @"Roblox\Versions\" + CurrentVersion);
-                    if (!Directory.Exists(RPath))
-                        return "ERROR: Failed to find ROBLOX executable, either restart the account manager or make sure your roblox is updated";
-
-                    RPath = RPath + @"\RobloxPlayerBeta.exe";
-                    ProcessStartInfo Roblox = new ProcessStartInfo(RPath);
-                    if (JoinVIP)
-                        Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode=\"", Token, PlaceID, JobID, LinkCode);
-                    else if (FollowUser)
-                        Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}\"", Token, PlaceID);
-                    else
-                        Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}&isPlayTogetherGame=false\"", Token, PlaceID, "&gameId=" + JobID, string.IsNullOrEmpty(JobID) ? "" : "Job");
-                    Process.Start(Roblox);*/
-                    return "How did this happen... (Re-install roblox maybe?)";
-                }
+                return "Success";
             }
             else
                 return "ERROR: Invalid Authentication Ticket";
@@ -571,19 +539,10 @@ namespace RBX_Alt_Manager
                 BrowserTrackerID = r.Next(500000, 600000).ToString() + r.Next(10000, 90000).ToString(); // longrandom doesnt work shrug
             }
 
-            RegistryKey RbxCmdPath = Registry.ClassesRoot.OpenSubKey(@"roblox-player\shell\open\command", RegistryKeyPermissionCheck.ReadSubTree);
-
-            string LaunchPath = RbxCmdPath.GetValue("").ToString();
-            string CurrentVersion = AccountManager.CurrentVersion;
-
-            bool UseRegistryPath = !string.IsNullOrEmpty(LaunchPath);
-
-            if (string.IsNullOrEmpty(CurrentVersion)) return "ERROR: No Roblox Version";
-
             RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
 
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
             string Token = GetCSRFToken();
 
@@ -593,7 +552,7 @@ namespace RBX_Alt_Manager
             request = new RestRequest("/v1/authentication-ticket/", Method.POST);
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
             request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Referer", "https://www.roblox.com/games/171336322/testing");
+            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
             IRestResponse response = AccountManager.client.Execute(request);
 
