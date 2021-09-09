@@ -153,7 +153,7 @@ namespace RBX_Alt_Manager
             }
             else
             {
-                ListViewItem Item = new ListViewItem(new string[] { account.Username, account.Alias, account.Description.Replace("\n", " "), account.Username });
+                ListViewItem Item = new ListViewItem(new string[] { account.Username, account.Alias, account.Description.Replace("\n", " "), account.Username});
 
                 AccountsView.Items.Add(Item);
 
@@ -586,9 +586,17 @@ namespace RBX_Alt_Manager
                     SelectedAccount = account;
                     Alias.Text = account.Alias;
                     DescriptionBox.Text = account.Description;
+                    JobID.Text = account.SavedVIP;
                 }
             }
             catch { }
+        }
+
+        private void saveJobId_Click(object sender, EventArgs e)
+        {
+            if (SelectedAccount == null) return;
+
+            SelectedAccount.SavedVIP = JobID.Text;
         }
 
         private void SetAlias_Click(object sender, EventArgs e)

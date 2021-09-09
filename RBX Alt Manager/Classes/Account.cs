@@ -28,6 +28,7 @@ namespace RBX_Alt_Manager
         public string Username;
         private string _Alias = "";
         private string _Description = "";
+        private string _SavedVIP = "";
         public string Group { get; set; }
         public long UserID;
         public Dictionary<string, string> Fields = new Dictionary<string, string>();
@@ -37,6 +38,19 @@ namespace RBX_Alt_Manager
         [JsonIgnore] public string CSRFToken;
 
         private string BrowserTrackerID;
+
+        public string SavedVIP
+        {
+            get => _SavedVIP;
+            set
+            {
+                if (value == null || value.Length > 150)
+                    return;
+
+                _SavedVIP = value;
+                AccountManager.SaveAccounts();
+            }
+        }
 
         public string Alias
         {
@@ -50,6 +64,7 @@ namespace RBX_Alt_Manager
                 AccountManager.SaveAccounts();
             }
         }
+
         public string Description
         {
             get => _Description;

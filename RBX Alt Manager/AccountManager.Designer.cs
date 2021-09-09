@@ -79,6 +79,7 @@
             this.JoinDiscord = new System.Windows.Forms.Button();
             this.OpenApp = new System.Windows.Forms.Button();
             this.ImportByCookie = new System.Windows.Forms.Button();
+            this.saveJobId = new System.Windows.Forms.Button();
             this.AccountsStrip.SuspendLayout();
             this.MainStrip.SuspendLayout();
             this.SuspendLayout();
@@ -536,11 +537,22 @@
             this.ImportByCookie.Visible = false;
             this.ImportByCookie.Click += new System.EventHandler(this.ImportByCookie_Click);
             // 
+            // saveJobId
+            // 
+            this.saveJobId.Location = new System.Drawing.Point(712, 18);
+            this.saveJobId.Name = "saveJobId";
+            this.saveJobId.Size = new System.Drawing.Size(60, 22);
+            this.saveJobId.TabIndex = 25;
+            this.saveJobId.Text = "Save JID";
+            this.saveJobId.UseVisualStyleBackColor = true;
+            this.saveJobId.Click += new System.EventHandler(this.saveJobId_Click);
+            // 
             // AccountManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 301);
+            this.Controls.Add(this.saveJobId);
             this.Controls.Add(this.ImportByCookie);
             this.Controls.Add(this.OpenApp);
             this.Controls.Add(this.JoinDiscord);
@@ -632,5 +644,6 @@
         private System.Windows.Forms.Button ImportByCookie;
         private System.Windows.Forms.ToolStripMenuItem copyProfileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem viewFieldsToolStripMenuItem;
+        private System.Windows.Forms.Button saveJobId;
     }
 }
