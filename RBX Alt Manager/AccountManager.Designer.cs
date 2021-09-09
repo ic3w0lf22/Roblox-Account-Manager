@@ -539,6 +539,7 @@
             // 
             // saveJobId
             // 
+            this.saveJobId.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.saveJobId.Location = new System.Drawing.Point(712, 18);
             this.saveJobId.Name = "saveJobId";
             this.saveJobId.Size = new System.Drawing.Size(60, 22);
@@ -551,6 +552,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(784, 301);
             this.Controls.Add(this.saveJobId);
             this.Controls.Add(this.ImportByCookie);
