@@ -586,7 +586,7 @@ namespace RBX_Alt_Manager
                     SelectedAccount = account;
                     Alias.Text = account.Alias;
                     DescriptionBox.Text = account.Description;
-                    JobID.Text = account.SavedVIP;
+                    if (!string.IsNullOrEmpty(account.SavedVIP)) JobID.Text = account.SavedVIP;
                 }
             }
             catch { }
