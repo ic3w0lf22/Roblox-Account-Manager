@@ -35,7 +35,7 @@ namespace RBX_Alt_Manager
         public static RestClient client;
         public static RestClient econclient;
         public static RestClient AccountClient;
-        public static RestClient webClient = new RestClient("https://web.roblox.com");
+        public static RestClient webClient;
         public static string CurrentPlaceId;
         public static string CurrentJobId;
         private AccountAdder aaform;
