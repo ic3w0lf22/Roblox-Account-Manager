@@ -46,11 +46,25 @@ namespace RBX_Alt_Manager
     {
         public string Name;
         public long PlaceID;
+        public string PrivateServer;
+
+        public FavoriteGame()
+        {
+            Name = "???";
+            PlaceID = 1818;
+        }
 
         public FavoriteGame(string Name, long PlaceID)
         {
             this.Name = Name;
             this.PlaceID = PlaceID;
+        }
+
+        public FavoriteGame(string Name, long PlaceID, string PrivateServer)
+        {
+            this.Name = Name;
+            this.PlaceID = PlaceID;
+            this.PrivateServer = PrivateServer;
         }
     }
 

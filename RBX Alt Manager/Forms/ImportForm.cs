@@ -29,8 +29,6 @@ namespace RBX_Alt_Manager
         {
             foreach (string Token in Accounts.Text.Split('\n'))
             {
-                Console.WriteLine(Token);
-
                 RestRequest myAcc = new RestRequest("my/account/json", Method.GET);
 
                 myAcc.AddCookie(".ROBLOSECURITY", Token);

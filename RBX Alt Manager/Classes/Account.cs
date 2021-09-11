@@ -47,7 +47,7 @@ namespace RBX_Alt_Manager
                     return;
 
                 _Alias = value;
-                AccountManager.SaveAccounts();
+                AccountManager.DelayedSaveAccounts();
             }
         }
         public string Description
@@ -59,7 +59,7 @@ namespace RBX_Alt_Manager
                     return;
 
                 _Description = value;
-                AccountManager.SaveAccounts();
+                AccountManager.DelayedSaveAccounts();
             }
         }
 
@@ -77,14 +77,6 @@ namespace RBX_Alt_Manager
             }
 
             return "false";
-        }
-
-        public static long LongRandom(long min, long max, Random rand)
-        {
-            long result = rand.Next((Int32)(min >> 32), (Int32)(max >> 32));
-            result = (result << 32);
-            result = result | (long)rand.Next((Int32)min, (Int32)max);
-            return result;
         }
 
         public string GetCSRFToken()
@@ -237,7 +229,7 @@ namespace RBX_Alt_Manager
                 if (SToken != null)
                 {
                     SecurityToken = SToken.Value;
-                    AccountManager.SaveAccounts();
+                    AccountManager.DelayedSaveAccounts();
                 }
                 else
                     MessageBox.Show("An error occured while changing passwords, you will need to re-login with your new password!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -299,7 +291,7 @@ namespace RBX_Alt_Manager
                 if (SToken != null)
                 {
                     SecurityToken = SToken.Value;
-                    AccountManager.SaveAccounts();
+                    AccountManager.DelayedSaveAccounts();
                 }
                 else
                     MessageBox.Show("An error occured, you will need to re-login!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -457,12 +449,24 @@ namespace RBX_Alt_Manager
             return response.Content;
         }
 
+        public string ParseAccessCode(IRestResponse response)
+        {
+            string pattern = "Roblox.GameLauncher.joinPrivateGame\\(\\d+,'(\\w+\\-\\w+\\-\\w+\\-\\w+\\-\\w+)";
+            Regex regex = new Regex(pattern);
+            MatchCollection matches = regex.Matches(response.Content);
+
+            if (matches.Count > 0 && matches[0].Groups.Count > 0)
+                return matches[0].Groups[1].Value;
+
+            return "Fail";
+        }
+
         public string JoinServer(long PlaceID, string JobID = "", bool FollowUser = false, bool JoinVIP = false)
         {
             if (string.IsNullOrEmpty(BrowserTrackerID))
             {
                 Random r = new Random();
-                BrowserTrackerID = r.Next(500000, 600000).ToString() + r.Next(10000, 90000).ToString(); // longrandom doesnt work shrug
+                BrowserTrackerID = r.Next(100000, 120000).ToString() + r.Next(100000, 900000).ToString();
             }
 
             string Token = GetCSRFToken();
@@ -495,16 +499,35 @@ namespace RBX_Alt_Manager
 
                     response = AccountManager.mainclient.Execute(request);
 
-                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    if (response.StatusCode == HttpStatusCode.OK)
                     {
-                        string pattern = "Roblox.GameLauncher.joinPrivateGame\\(\\d+,'(\\w+\\-\\w+\\-\\w+\\-\\w+\\-\\w+)";
-                        Regex regex = new Regex(pattern);
-                        MatchCollection matches = regex.Matches(response.Content);
+                        string parsedCode = ParseAccessCode(response);
 
-                        if (matches.Count > 0 && matches[0].Groups.Count > 0)
+                        if (parsedCode != "Fail")
                         {
                             JoinVIP = true;
-                            AccessCode = matches[0].Groups[1].Value;
+                            AccessCode = parsedCode;
+                        }
+                    }
+                    else if (response.StatusCode == HttpStatusCode.Redirect) // thx wally
+                    {
+                        RestRequest cRequest = new RestRequest(string.Format("/games/{0}?privateServerLinkCode={1}", PlaceID, LinkCode), Method.GET);
+
+                        cRequest.AddCookie(".ROBLOSECURITY", SecurityToken);
+                        cRequest.AddHeader("X-CSRF-TOKEN", Token);
+                        cRequest.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
+
+                        IRestResponse result = AccountManager.webClient.Execute(cRequest);
+
+                        if (result.StatusCode == HttpStatusCode.OK)
+                        {
+                            string parsedCode = ParseAccessCode(result);
+
+                            if (parsedCode != "Fail")
+                            {
+                                JoinVIP = true;
+                                AccessCode = parsedCode;
+                            }
                         }
                     }
                 }
@@ -536,7 +559,7 @@ namespace RBX_Alt_Manager
             if (string.IsNullOrEmpty(BrowserTrackerID))
             {
                 Random r = new Random();
-                BrowserTrackerID = r.Next(500000, 600000).ToString() + r.Next(10000, 90000).ToString(); // longrandom doesnt work shrug
+                BrowserTrackerID = r.Next(100000, 120000).ToString() + r.Next(100000, 900000).ToString();
             }
 
             RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
@@ -573,7 +596,7 @@ namespace RBX_Alt_Manager
         }
 
         public string GetField(string Name) => Fields.ContainsKey(Name) ? Fields[Name] : "";
-        public void SetField(string Name, string Value) { Fields[Name] = Value; AccountManager.SaveAccounts(); }
-        public void RemoveField(string Name) { Fields.Remove(Name); AccountManager.SaveAccounts(); }
+        public void SetField(string Name, string Value) { Fields[Name] = Value; AccountManager.DelayedSaveAccounts(); }
+        public void RemoveField(string Name) { Fields.Remove(Name); AccountManager.DelayedSaveAccounts(); }
     }
 }

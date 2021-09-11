@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -32,18 +33,6 @@ namespace RBX_Alt_Manager
         private DateTime startTime;
         private string FavGamesFN = Path.Combine(Environment.CurrentDirectory, "FavoriteGames.json");
         private delegate void SafeCallDelegateFavorite(FavoriteGame game);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-
-        [DllImport("user32.dll", EntryPoint = "FindWindow", SetLastError = true)]
-        static extern IntPtr FindWindowByCaption(IntPtr ZeroOnly, string lpWindowName);
-        public static IntPtr FindWindow(string windowName)
-        {
-            var hWnd = FindWindow(windowName, null);
-            return hWnd;
-        }
-
 
         private void ServerList_Load(object sender, EventArgs e)
         {
@@ -295,7 +284,6 @@ namespace RBX_Alt_Manager
 
         private void Search_Click(object sender, EventArgs e)
         {
-            // i forgot how to C# for a sec
             if (Busy || !Int32.TryParse(PageNum.Text, out Page)) return;
 
             IRestResponse response;
@@ -342,7 +330,10 @@ namespace RBX_Alt_Manager
             FavoriteGame game = FavoritesListView.SelectedObject as FavoriteGame;
 
             if (game != null)
+            {
                 Program.MainForm.PlaceID.Text = game.PlaceID.ToString();
+                Program.MainForm.JobID.Text = game.PrivateServer.ToString();
+            }
         }
 
         private void SaveFavorites()
@@ -371,17 +362,6 @@ namespace RBX_Alt_Manager
             }
         }
 
-        private void addToFavoritesToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ListGame game = GamesListView.SelectedObject as ListGame;
-
-            if (game != null)
-            {
-                AddFavoriteToList(new FavoriteGame(game.name, game.placeId));
-                SaveFavorites();
-            }
-        }
-
         private void joinGameToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ListGame game = GamesListView.SelectedObject as ListGame;
@@ -399,6 +379,17 @@ namespace RBX_Alt_Manager
             }
         }
 
+        private void addToFavoritesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ListGame game = GamesListView.SelectedObject as ListGame;
+
+            if (game != null)
+            {
+                AddFavoriteToList(new FavoriteGame(game.name, game.placeId));
+                SaveFavorites();
+            }
+        }
+
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
             FavoriteGame game = FavoritesListView.SelectedObject as FavoriteGame;
@@ -409,9 +400,14 @@ namespace RBX_Alt_Manager
 
                 if (AccountsView.SelectedItems.Count != 1 || AccountManager.SelectedAccount == null) return;
 
-                string res = AccountManager.SelectedAccount.JoinServer(game.PlaceID);
+                string res;
 
-                if (!res.Contains("Success"))
+                if (string.IsNullOrEmpty(game.PrivateServer))
+                    res = AccountManager.SelectedAccount.JoinServer(game.PlaceID);
+                else
+                    res = AccountManager.SelectedAccount.JoinServer(game.PlaceID, game.PrivateServer);
+
+                if (res != "Success")
                     MessageBox.Show(res);
             }
         }
@@ -452,17 +448,31 @@ namespace RBX_Alt_Manager
 
         private void Favorite_Click(object sender, EventArgs e)
         {
-            RestRequest request = new RestRequest("Marketplace/ProductInfo?assetId=" + AccountManager.CurrentPlaceId, Method.GET);
+            string PlaceId = AccountManager.CurrentPlaceId;
+
+            if (AccountManager.CurrentJobId.Contains("privateServerLinkCode") && Regex.IsMatch(AccountManager.CurrentJobId, @"\/games\/(\d+)\/"))
+                PlaceId = Regex.Match(AccountManager.CurrentJobId, @"\/games\/(\d+)\/").Groups[1].Value;
+
+            RestRequest request = new RestRequest("Marketplace/ProductInfo?assetId=" + PlaceId, Method.GET);
             request.AddHeader("Accept", "application/json");
-            IRestResponse response = response = AccountManager.apiclient.Execute(request);
+            IRestResponse response = AccountManager.apiclient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
-                ProductInfo placeInfo = JsonConvert.DeserializeObject<ProductInfo>(response.Content);
+                    ProductInfo placeInfo = JsonConvert.DeserializeObject<ProductInfo>(response.Content);
 
-                AddFavoriteToList(new FavoriteGame(placeInfo.Name, Convert.ToInt64(AccountManager.CurrentPlaceId)));
+                if (AccountManager.CurrentJobId.Contains("privateServerLinkCode"))
+                    AddFavoriteToList(new FavoriteGame(placeInfo.Name + " (VIP)", Convert.ToInt64(AccountManager.CurrentPlaceId), AccountManager.CurrentJobId));
+                else
+                    AddFavoriteToList(new FavoriteGame(placeInfo.Name, Convert.ToInt64(AccountManager.CurrentPlaceId)));
+
                 SaveFavorites();
             }
+        }
+
+        private void ServerList_HelpButtonClicked(object sender, CancelEventArgs e)
+        {
+            MessageBox.Show("To add a private server to your favorites, make sure the entire private server link is in the JobId box,", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

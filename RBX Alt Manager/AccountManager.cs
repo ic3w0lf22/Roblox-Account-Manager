@@ -15,6 +15,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -34,7 +35,9 @@ namespace RBX_Alt_Manager
         public static RestClient client;
         public static RestClient econclient;
         public static RestClient AccountClient;
+        public static RestClient webClient = new RestClient("https://web.roblox.com");
         public static string CurrentPlaceId;
+        public static string CurrentJobId;
         private AccountAdder aaform;
         private ArgumentsForm afform;
         private ServerList ServerListForm;
@@ -52,6 +55,7 @@ namespace RBX_Alt_Manager
         public static IniFile IniSettings;
         private string WSPassword = "";
         private static DateTime LastAccountSave = DateTime.Now;
+        private static System.Timers.Timer SaveAccountsTimer;
 
         private static Mutex rbxMultiMutex;
 
@@ -126,6 +130,16 @@ namespace RBX_Alt_Manager
             File.WriteAllText(SaveFilePath, SaveData);
         }
 
+        public static void DelayedSaveAccounts() // Prevent file being locked
+        {
+            if ((DateTime.Now - startTime).TotalMilliseconds < 5000) return;
+
+            if (SaveAccountsTimer.Enabled)
+                SaveAccountsTimer.Stop();
+
+            SaveAccountsTimer.Start();
+        }
+
         public static long GetUserID(string Username)
         {
             RestRequest request = new RestRequest("users/get-by-username?username=" + Username, Method.GET);
@@ -157,7 +171,7 @@ namespace RBX_Alt_Manager
 
                 AccountsView.Items.Add(Item);
 
-                if (!string.IsNullOrEmpty(account.Group)) AddGroupToList(account.Group, Item);
+                if (!string.IsNullOrEmpty(account.Group)) AddGroupToList(account.Group, Item, true);
             }
         }
 
@@ -181,7 +195,7 @@ namespace RBX_Alt_Manager
             }
         }
 
-        public void AddGroupToList(string GroupName, ListViewItem Item = null)
+        public void AddGroupToList(string GroupName, ListViewItem Item = null, bool OnStartup = false)
         {
             bool CreateGroup = true;
             ListViewGroup GroupItem = null;
@@ -209,7 +223,8 @@ namespace RBX_Alt_Manager
                 SelectedAccountItem.Group = GroupItem;
                 AccountsList.Remove(SelectedAccount);
                 AccountsList.Insert(AccountsList.Count, SelectedAccount); // move to end of account list
-                SaveAccounts();
+
+                if (!OnStartup) SaveAccounts();
             }
         }
 
@@ -263,12 +278,25 @@ namespace RBX_Alt_Manager
 
         private void AccountManager_Load(object sender, EventArgs e)
         {
-            if (Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName.Contains(Path.GetTempPath()))
+            int Stupid = 1337;
+
+            try
             {
-                int Stupid = 1337;
-                MessageBox.Show("bro extract the files, don't run it in winrar");
-                Environment.Exit(Stupid);
+                bool RanAsAdmin = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
+
+                if (RanAsAdmin)
+                {
+                    MessageBox.Show("Roblox Account Manager will not work properly if it is ran as admin!", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Environment.Exit(Stupid);
+                }
+
+                if (Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName.Contains(Path.GetTempPath().Remove(Path.GetTempPath().Length - 1)))
+                {
+                    MessageBox.Show("bro extract the files, don't run it in winrar");
+                    Environment.Exit(Stupid);
+                }
             }
+            catch { }
 
             if (File.Exists("AU.exe"))
             {
@@ -320,7 +348,11 @@ namespace RBX_Alt_Manager
                     AltManagerWS = new WebServer(SendResponse, $"http://localhost:{Port}/");
                     AltManagerWS.Run();
                 }
-            } catch(Exception x) { MessageBox.Show("Failed to start webserver! " + x, "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+            }
+            catch (Exception x) { MessageBox.Show("Failed to start webserver! " + x, "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+
+            SaveAccountsTimer = new System.Timers.Timer(2500);
+            SaveAccountsTimer.Elapsed += SaveTimer_Tick;
 
             // SetupNamedPipe(); // unused now
 
@@ -348,6 +380,9 @@ namespace RBX_Alt_Manager
             econclient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
             AccountClient = new RestClient("https://accountsettings.roblox.com/");
+            AccountClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
+
+            webClient = new RestClient("https://web.roblox.com/");
             AccountClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
             PlaceID_TextChanged(PlaceID, new EventArgs());
@@ -476,8 +511,6 @@ namespace RBX_Alt_Manager
 
             string Body = new StreamReader(request.InputStream).ReadToEnd();
 
-            Console.WriteLine(Body);
-
             if (Method == "SetAlias" && !string.IsNullOrEmpty(Body))
             {
                 if (IniSettings.Read("AllowAccountEditing", "WebServer") != "true") return "Method not allowed";
@@ -586,6 +619,9 @@ namespace RBX_Alt_Manager
                     SelectedAccount = account;
                     Alias.Text = account.Alias;
                     DescriptionBox.Text = account.Description;
+
+                    if (!string.IsNullOrEmpty(SelectedAccount.GetField("SavedPlaceId"))) PlaceID.Text = SelectedAccount.GetField("SavedPlaceId");
+                    if (!string.IsNullOrEmpty(SelectedAccount.GetField("SavedJobId"))) JobID.Text = SelectedAccount.GetField("SavedJobId");
                 }
             }
             catch { }
@@ -981,7 +1017,6 @@ namespace RBX_Alt_Manager
         {
             if (SelectedAccount == null) return;
 
-            SelectedAccount.RemoveField("test");
             Clipboard.SetText(SelectedAccount.SecurityToken);
         }
 
@@ -1009,7 +1044,7 @@ namespace RBX_Alt_Manager
 
             RestRequest request = new RestRequest("Marketplace/ProductInfo?assetId=" + PlaceID.Text, Method.GET);
             request.AddHeader("Accept", "application/json");
-            IRestResponse response = response = apiclient.Execute(request);
+            IRestResponse response = apiclient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
@@ -1031,7 +1066,7 @@ namespace RBX_Alt_Manager
 
                 if (res == DialogResult.No) return;
             }
-            
+
             AddGroupToList(GroupName);
         }
 
@@ -1188,6 +1223,38 @@ namespace RBX_Alt_Manager
             if (SelectedAccount == null) return;
 
             FieldsForm.View(SelectedAccount);
+        }
+
+        private void JobID_TextChanged(object sender, EventArgs e)
+        {
+            CurrentJobId = JobID.Text;
+        }
+
+        private void SaveToAccount_Click(object sender, EventArgs e)
+        {
+            if (SelectedAccount == null) return;
+
+            if (string.IsNullOrEmpty(PlaceID.Text) && string.IsNullOrEmpty(JobID.Text))
+            {
+                SelectedAccount.RemoveField("SavedPlaceId");
+                SelectedAccount.RemoveField("SavedJobId");
+
+                return;
+            }
+
+            string PlaceId = CurrentPlaceId;
+
+            if (JobID.Text.Contains("privateServerLinkCode") && Regex.IsMatch(JobID.Text, @"\/games\/(\d+)\/"))
+                PlaceId = Regex.Match(CurrentJobId, @"\/games\/(\d+)\/").Groups[1].Value;
+
+            SelectedAccount.SetField("SavedPlaceId", PlaceId);
+            SelectedAccount.SetField("SavedJobId", JobID.Text);
+        }
+
+        private void SaveTimer_Tick(object sender, EventArgs e)
+        {
+            SaveAccounts();
+            SaveAccountsTimer.Stop();
         }
     }
 }

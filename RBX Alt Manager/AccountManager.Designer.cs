@@ -64,12 +64,8 @@
             this.copyRbxplayerLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyAppLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.HideUsernamesCheckbox = new System.Windows.Forms.CheckBox();
-            this.RefreshTip = new System.Windows.Forms.ToolTip(this.components);
             this.BrowserButton = new System.Windows.Forms.Button();
             this.ArgumentsB = new System.Windows.Forms.Button();
-            this.helloToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.helloV2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.hiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.securityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.setPasswordToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainStrip = new System.Windows.Forms.MenuStrip();
@@ -79,6 +75,9 @@
             this.JoinDiscord = new System.Windows.Forms.Button();
             this.OpenApp = new System.Windows.Forms.Button();
             this.ImportByCookie = new System.Windows.Forms.Button();
+            this.SaveToAccount = new System.Windows.Forms.Button();
+            this.SaveTooltip = new System.Windows.Forms.ToolTip(this.components);
+            this.SaveTimer = new System.Windows.Forms.Timer(this.components);
             this.AccountsStrip.SuspendLayout();
             this.MainStrip.SuspendLayout();
             this.SuspendLayout();
@@ -99,8 +98,9 @@
             this.JobID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.JobID.Location = new System.Drawing.Point(594, 43);
             this.JobID.Name = "JobID";
-            this.JobID.Size = new System.Drawing.Size(178, 20);
+            this.JobID.Size = new System.Drawing.Size(150, 20);
             this.JobID.TabIndex = 2;
+            this.JobID.TextChanged += new System.EventHandler(this.JobID_TextChanged);
             // 
             // LabelJobID
             // 
@@ -401,11 +401,6 @@
             this.HideUsernamesCheckbox.UseVisualStyleBackColor = true;
             this.HideUsernamesCheckbox.CheckedChanged += new System.EventHandler(this.HideUsernamesCheckbox_CheckedChanged);
             // 
-            // RefreshTip
-            // 
-            this.RefreshTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
-            this.RefreshTip.ToolTipTitle = "Refresh";
-            // 
             // BrowserButton
             // 
             this.BrowserButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -428,27 +423,6 @@
             this.ArgumentsB.UseVisualStyleBackColor = true;
             this.ArgumentsB.Click += new System.EventHandler(this.ArgumentsB_Click);
             // 
-            // helloToolStripMenuItem
-            // 
-            this.helloToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.helloV2ToolStripMenuItem,
-            this.hiToolStripMenuItem});
-            this.helloToolStripMenuItem.Name = "helloToolStripMenuItem";
-            this.helloToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
-            this.helloToolStripMenuItem.Text = "Hello";
-            // 
-            // helloV2ToolStripMenuItem
-            // 
-            this.helloV2ToolStripMenuItem.Name = "helloV2ToolStripMenuItem";
-            this.helloV2ToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
-            this.helloV2ToolStripMenuItem.Text = "Hello v2";
-            // 
-            // hiToolStripMenuItem
-            // 
-            this.hiToolStripMenuItem.Name = "hiToolStripMenuItem";
-            this.hiToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
-            this.hiToolStripMenuItem.Text = "Hi";
-            // 
             // securityToolStripMenuItem
             // 
             this.securityToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -467,7 +441,6 @@
             // 
             this.MainStrip.Enabled = false;
             this.MainStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.helloToolStripMenuItem,
             this.securityToolStripMenuItem});
             this.MainStrip.Location = new System.Drawing.Point(0, 0);
             this.MainStrip.Name = "MainStrip";
@@ -536,11 +509,37 @@
             this.ImportByCookie.Visible = false;
             this.ImportByCookie.Click += new System.EventHandler(this.ImportByCookie_Click);
             // 
+            // SaveToAccount
+            // 
+            this.SaveToAccount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.SaveToAccount.FlatAppearance.BorderSize = 0;
+            this.SaveToAccount.Image = ((System.Drawing.Image)(resources.GetObject("SaveToAccount.Image")));
+            this.SaveToAccount.ImageAlign = System.Drawing.ContentAlignment.BottomRight;
+            this.SaveToAccount.Location = new System.Drawing.Point(750, 42);
+            this.SaveToAccount.Name = "SaveToAccount";
+            this.SaveToAccount.Size = new System.Drawing.Size(22, 22);
+            this.SaveToAccount.TabIndex = 25;
+            this.SaveTooltip.SetToolTip(this.SaveToAccount, "Saves the PlaceId + JobId to the selected account\r\nTo remove, clear out the text " +
+        "boxes on the left and click Save");
+            this.SaveToAccount.UseVisualStyleBackColor = true;
+            this.SaveToAccount.Click += new System.EventHandler(this.SaveToAccount_Click);
+            // 
+            // SaveTooltip
+            // 
+            this.SaveTooltip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
+            this.SaveTooltip.ToolTipTitle = "Save to Account";
+            // 
+            // SaveTimer
+            // 
+            this.SaveTimer.Interval = 2500;
+            this.SaveTimer.Tick += new System.EventHandler(this.SaveTimer_Tick);
+            // 
             // AccountManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 301);
+            this.Controls.Add(this.SaveToAccount);
             this.Controls.Add(this.ImportByCookie);
             this.Controls.Add(this.OpenApp);
             this.Controls.Add(this.JoinDiscord);
@@ -566,7 +565,6 @@
             this.Controls.Add(this.JobID);
             this.Controls.Add(this.PlaceID);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MainMenuStrip = this.MainStrip;
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(800, 340);
             this.Name = "AccountManager";
@@ -608,14 +606,10 @@
         private System.Windows.Forms.CheckBox HideUsernamesCheckbox;
         private System.Windows.Forms.ToolStripMenuItem getAuthenticationTicketToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyRbxplayerLinkToolStripMenuItem;
-        private System.Windows.Forms.ToolTip RefreshTip;
         private System.Windows.Forms.ToolStripMenuItem copyUsernameToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copySecurityTokenToolStripMenuItem;
         private System.Windows.Forms.Button BrowserButton;
         private System.Windows.Forms.Button ArgumentsB;
-        private System.Windows.Forms.ToolStripMenuItem helloToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem helloV2ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem hiToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem securityToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem setPasswordToolStripMenuItem;
         private System.Windows.Forms.MenuStrip MainStrip;
@@ -632,5 +626,8 @@
         private System.Windows.Forms.Button ImportByCookie;
         private System.Windows.Forms.ToolStripMenuItem copyProfileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem viewFieldsToolStripMenuItem;
+        private System.Windows.Forms.Button SaveToAccount;
+        private System.Windows.Forms.ToolTip SaveTooltip;
+        private System.Windows.Forms.Timer SaveTimer;
     }
 }
