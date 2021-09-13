@@ -285,10 +285,7 @@ namespace RBX_Alt_Manager
                 bool RanAsAdmin = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
 
                 if (RanAsAdmin)
-                {
-                    MessageBox.Show("Roblox Account Manager will not work properly if it is ran as admin!", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Environment.Exit(Stupid);
-                }
+                    MessageBox.Show("Some features may not work properly if you ran the account manager as admin!", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                 if (Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName.Contains(Path.GetTempPath().Remove(Path.GetTempPath().Length - 1)))
                 {
@@ -311,6 +308,8 @@ namespace RBX_Alt_Manager
             JoinServer.Size = new Size(197, 23);
 
             IniSettings = new IniFile("RAMSettings.ini");
+
+            if (!IniSettings.KeyExists("DisableAutoUpdate", "General")) IniSettings.Write("DisableAutoUpdate", "false", "General");
 
             if (!IniSettings.KeyExists("DevMode", "Developer")) IniSettings.Write("DevMode", "false", "Developer");
             if (!IniSettings.KeyExists("EnableWebServer", "Developer")) IniSettings.Write("EnableWebServer", "false", "Developer");
@@ -387,46 +386,54 @@ namespace RBX_Alt_Manager
 
             PlaceID_TextChanged(PlaceID, new EventArgs());
 
-            Task.Run(() =>
+            if (IniSettings.Read("DisableAutoUpdate", "General") != "true")
             {
-                try
+                Task.Run(() =>
                 {
-                    ServicePointManager.Expect100Continue = true;
-                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Ssl3;
-
-                    WebClient WC = new WebClient();
-                    Assembly assembly = Assembly.GetExecutingAssembly();
-                    FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-                    string version = fvi.FileVersion.Substring(0, 3);
-                    WC.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36";
-                    string Releases = WC.DownloadString("https://api.github.com/repos/ic3w0lf22/Roblox-Account-Manager/releases/latest");
-                    Match match = Regex.Match(Releases, @"""tag_name"":\s*""?([^""]+)");
-
-                    if (match.Success && match.Groups[1].Value != version)
+                    try
                     {
-                        DialogResult result = MessageBox.Show("An update is available, click yes to run the auto updater or no to be redirected to the download page.", "Roblox Account Manager", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+                        ServicePointManager.Expect100Continue = true;
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Ssl3;
 
-                        if (result == DialogResult.Yes)
+                        WebClient WC = new WebClient();
+                        Assembly assembly = Assembly.GetExecutingAssembly();
+                        FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+                        WC.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36";
+                        string Releases = WC.DownloadString("https://api.github.com/repos/ic3w0lf22/Roblox-Account-Manager/releases/latest");
+                        Match match = Regex.Match(Releases, @"""tag_name"":\s*""?([^""]+)");
+
+                        if (match.Success)
                         {
-                            string AFN = Path.Combine(Directory.GetCurrentDirectory(), "Auto Update.exe");
+                            string version = fvi.FileVersion.Substring(0, match.Groups[1].Value.Length);
 
-                            if (File.Exists(AFN))
+                            if (match.Groups[1].Value != version)
                             {
-                                Process.Start(AFN);
-                                Environment.Exit(1);
-                            }
-                            else
-                            {
-                                MessageBox.Show("You do not have the auto updater downloaded, go to the github page and download the latest release.");
-                                Process.Start("https://github.com/ic3w0lf22/Roblox-Account-Manager/releases");
+
+                                DialogResult result = MessageBox.Show("An update is available, click yes to run the auto updater or no to be redirected to the download page.", "Roblox Account Manager", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+
+                                if (result == DialogResult.Yes)
+                                {
+                                    string AFN = Path.Combine(Directory.GetCurrentDirectory(), "Auto Update.exe");
+
+                                    if (File.Exists(AFN))
+                                    {
+                                        Process.Start(AFN);
+                                        Environment.Exit(1);
+                                    }
+                                    else
+                                    {
+                                        MessageBox.Show("You do not have the auto updater downloaded, go to the github page and download the latest release.");
+                                        Process.Start("https://github.com/ic3w0lf22/Roblox-Account-Manager/releases");
+                                    }
+                                }
+                                else if (result == DialogResult.No)
+                                    Process.Start("https://github.com/ic3w0lf22/Roblox-Account-Manager/releases");
                             }
                         }
-                        else if (result == DialogResult.No)
-                            Process.Start("https://github.com/ic3w0lf22/Roblox-Account-Manager/releases");
                     }
-                }
-                catch { }
-            });
+                    catch { }
+                });
+            }
         }
 
         private string SendResponse(HttpListenerRequest request)

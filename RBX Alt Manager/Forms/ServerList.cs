@@ -332,7 +332,7 @@ namespace RBX_Alt_Manager
             if (game != null)
             {
                 Program.MainForm.PlaceID.Text = game.PlaceID.ToString();
-                Program.MainForm.JobID.Text = game.PrivateServer.ToString();
+                Program.MainForm.JobID.Text = !string.IsNullOrEmpty(game.PrivateServer) ? game.PrivateServer.ToString() : "";
             }
         }
 
