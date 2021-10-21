@@ -1047,8 +1047,10 @@ namespace RBX_Alt_Manager
             foreach (Account acc in AccountsView.SelectedObjects)
                 acc.Group = GroupName;
 
-            AccountsView.UpdateObjects(AccountsView.SelectedObjects);
-            AccountsView.EnsureModelVisible(AccountsView.SelectedObjects[0]);
+            RefreshView();
+
+            // AccountsView.UpdateObjects(AccountsView.SelectedObjects);
+            // AccountsView.EnsureModelVisible(AccountsView.SelectedObjects[0]);
         }
 
         private void copyAppLinkToolStripMenuItem_Click(object sender, EventArgs e)

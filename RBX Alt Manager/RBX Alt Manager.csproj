@@ -119,7 +119,6 @@
     <Compile Include="Classes\Field.Designer.cs">
       <DependentUpon>Field.cs</DependentUpon>
     </Compile>
-    <Compile Include="Classes\ViewSorter.cs" />
     <Compile Include="Forms\AccountAdder.cs">
       <SubType>Form</SubType>
     </Compile>
