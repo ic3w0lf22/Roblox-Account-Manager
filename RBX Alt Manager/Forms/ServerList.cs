@@ -1,5 +1,4 @@
-﻿using BrightIdeasSoftware;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RestSharp;
 using System;
 using System.Collections.Generic;
@@ -140,9 +139,7 @@ namespace RBX_Alt_Manager
 
         private void joinServerToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ListView AccountsView = Program.MainForm.AccountsView;
-
-            if (AccountsView.SelectedItems.Count != 1 || AccountManager.SelectedAccount == null) return;
+            if (AccountManager.SelectedAccount == null) return;
 
             string res = AccountManager.SelectedAccount.JoinServer(Convert.ToInt64(Program.MainForm.PlaceID.Text), ServerListView.SelectedItem.Text, false, false);
 
@@ -354,8 +351,7 @@ namespace RBX_Alt_Manager
             }
             else
             {
-                if (Favorites.Find(x => x.PlaceID == game.PlaceID) != null)
-                    return;
+                if (string.IsNullOrEmpty(game.PrivateServer) && Favorites.Find(x => x.PlaceID == game.PlaceID) != null) return;
 
                 Favorites.Add(game);
                 FavoritesListView.AddObject(game);
@@ -368,9 +364,7 @@ namespace RBX_Alt_Manager
 
             if (game != null)
             {
-                ListView AccountsView = Program.MainForm.AccountsView;
-
-                if (AccountsView.SelectedItems.Count != 1 || AccountManager.SelectedAccount == null) return;
+                if (AccountManager.SelectedAccount == null) return;
 
                 string res = AccountManager.SelectedAccount.JoinServer(game.placeId);
 
@@ -396,9 +390,7 @@ namespace RBX_Alt_Manager
 
             if (game != null)
             {
-                ListView AccountsView = Program.MainForm.AccountsView;
-
-                if (AccountsView.SelectedItems.Count != 1 || AccountManager.SelectedAccount == null) return;
+                if (AccountManager.SelectedAccount == null) return;
 
                 string res;
 
@@ -450,18 +442,18 @@ namespace RBX_Alt_Manager
         {
             string PlaceId = AccountManager.CurrentPlaceId;
 
-            if (AccountManager.CurrentJobId.Contains("privateServerLinkCode") && Regex.IsMatch(AccountManager.CurrentJobId, @"\/games\/(\d+)\/"))
+            if (!string.IsNullOrEmpty(AccountManager.CurrentJobId) && AccountManager.CurrentJobId.Contains("privateServerLinkCode") && Regex.IsMatch(AccountManager.CurrentJobId, @"\/games\/(\d+)\/"))
                 PlaceId = Regex.Match(AccountManager.CurrentJobId, @"\/games\/(\d+)\/").Groups[1].Value;
 
             RestRequest request = new RestRequest("Marketplace/ProductInfo?assetId=" + PlaceId, Method.GET);
             request.AddHeader("Accept", "application/json");
-            IRestResponse response = AccountManager.apiclient.Execute(request);
+            IRestResponse response = AccountManager.APIClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
-                    ProductInfo placeInfo = JsonConvert.DeserializeObject<ProductInfo>(response.Content);
+                ProductInfo placeInfo = JsonConvert.DeserializeObject<ProductInfo>(response.Content);
 
-                if (AccountManager.CurrentJobId.Contains("privateServerLinkCode"))
+                if (!string.IsNullOrEmpty(AccountManager.CurrentJobId) && AccountManager.CurrentJobId.Contains("privateServerLinkCode"))
                     AddFavoriteToList(new FavoriteGame(placeInfo.Name + " (VIP)", Convert.ToInt64(AccountManager.CurrentPlaceId), AccountManager.CurrentJobId));
                 else
                     AddFavoriteToList(new FavoriteGame(placeInfo.Name, Convert.ToInt64(AccountManager.CurrentPlaceId)));

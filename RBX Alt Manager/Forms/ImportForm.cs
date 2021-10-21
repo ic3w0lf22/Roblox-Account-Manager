@@ -33,7 +33,7 @@ namespace RBX_Alt_Manager
 
                 myAcc.AddCookie(".ROBLOSECURITY", Token);
 
-                IRestResponse response = AccountManager.mainclient.Execute(myAcc);
+                IRestResponse response = AccountManager.MainClient.Execute(myAcc);
 
                 if (response.StatusCode == HttpStatusCode.OK && response.Content.Contains("DisplayName")) // shitty check i know ...
                     AccountManager.AddAccount(Token, response.Content);

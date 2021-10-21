@@ -45,6 +45,7 @@
             this.Username = new System.Windows.Forms.TextBox();
             this.Block = new System.Windows.Forms.Button();
             this.SetDisplayName = new System.Windows.Forms.Button();
+            this.button4 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // WhoFollow
@@ -191,12 +192,12 @@
             // 
             this.Username.Location = new System.Drawing.Point(12, 80);
             this.Username.Name = "Username";
-            this.Username.Size = new System.Drawing.Size(80, 20);
+            this.Username.Size = new System.Drawing.Size(72, 20);
             this.Username.TabIndex = 7;
             // 
             // Block
             // 
-            this.Block.Location = new System.Drawing.Point(98, 79);
+            this.Block.Location = new System.Drawing.Point(90, 79);
             this.Block.Name = "Block";
             this.Block.Size = new System.Drawing.Size(50, 22);
             this.Block.TabIndex = 8;
@@ -215,11 +216,22 @@
             this.SetDisplayName.UseVisualStyleBackColor = true;
             this.SetDisplayName.Click += new System.EventHandler(this.SetDisplayName_Click);
             // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(146, 79);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(72, 22);
+            this.button4.TabIndex = 1004;
+            this.button4.Text = "Add Friend";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
+            // 
             // AccountUtils
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(518, 142);
+            this.Controls.Add(this.button4);
             this.Controls.Add(this.SetDisplayName);
             this.Controls.Add(this.Block);
             this.Controls.Add(this.Username);
@@ -263,5 +275,6 @@
         private System.Windows.Forms.TextBox Username;
         private System.Windows.Forms.Button Block;
         private System.Windows.Forms.Button SetDisplayName;
+        private System.Windows.Forms.Button button4;
     }
 }

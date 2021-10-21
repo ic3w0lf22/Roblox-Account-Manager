@@ -93,8 +93,8 @@ function Account:SetAlias(Alias) return POST('SetAlias', self.Username, Alias) e
 function Account:SetDescription(Description) return POST('SetDescription', self.Username, Description) end
 function Account:AppendDescription(Description) return POST('AppendDescription', self.Username, Description) end
 
-function Account:GetField(Field) return GET('GetField', self.Username, 'Field=' .. Field).Body end
-function Account:SetField(Field, Value) return GET('SetField', self.Username, 'Field=' .. Field, 'Value=' .. tostring(Value)).Body end
+function Account:GetField(Field) return GET('GetField', self.Username, 'Field=' .. Field) end
+function Account:SetField(Field, Value) return GET('SetField', self.Username, 'Field=' .. Field, 'Value=' .. tostring(Value)) end
 function Account:RemoveField(Field) return GET('RemoveField', self.Username, 'Field=' .. Field) end
 
 function Account:GetCookie() return GET('GetCookie', self.Username) end

@@ -44,10 +44,6 @@
             this.UserID = new System.Windows.Forms.TextBox();
             this.LabelUserID = new System.Windows.Forms.Label();
             this.ServerList = new System.Windows.Forms.Button();
-            this.AccountsView = new System.Windows.Forms.ListView();
-            this.AccountName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.AliasColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.Description = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.AccountsStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addAccountsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeAccountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -55,8 +51,6 @@
             this.copyProfileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveGroupUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.moveUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.moveDownToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.infoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewFieldsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.getAuthenticationTicketToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -66,9 +60,6 @@
             this.HideUsernamesCheckbox = new System.Windows.Forms.CheckBox();
             this.BrowserButton = new System.Windows.Forms.Button();
             this.ArgumentsB = new System.Windows.Forms.Button();
-            this.securityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.setPasswordToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.MainStrip = new System.Windows.Forms.MenuStrip();
             this.CurrentPlace = new System.Windows.Forms.Label();
             this.LabelPlaceID = new System.Windows.Forms.Label();
             this.PlaceTimer = new System.Windows.Forms.Timer(this.components);
@@ -78,8 +69,13 @@
             this.SaveToAccount = new System.Windows.Forms.Button();
             this.SaveTooltip = new System.Windows.Forms.ToolTip(this.components);
             this.SaveTimer = new System.Windows.Forms.Timer(this.components);
+            this.AccountsView = new BrightIdeasSoftware.ObjectListView();
+            this.Username = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.AccountAlias = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.Description = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.Group = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.AccountsStrip.SuspendLayout();
-            this.MainStrip.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).BeginInit();
             this.SuspendLayout();
             // 
             // PlaceID
@@ -227,50 +223,6 @@
             this.ServerList.UseVisualStyleBackColor = true;
             this.ServerList.Click += new System.EventHandler(this.ServerList_Click);
             // 
-            // AccountsView
-            // 
-            this.AccountsView.AllowColumnReorder = true;
-            this.AccountsView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.AccountsView.BackColor = System.Drawing.SystemColors.Window;
-            this.AccountsView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.AccountName,
-            this.AliasColumn,
-            this.Description});
-            this.AccountsView.ContextMenuStrip = this.AccountsStrip;
-            this.AccountsView.ForeColor = System.Drawing.Color.Black;
-            this.AccountsView.FullRowSelect = true;
-            this.AccountsView.GridLines = true;
-            this.AccountsView.HideSelection = false;
-            this.AccountsView.Location = new System.Drawing.Point(13, 12);
-            this.AccountsView.MultiSelect = false;
-            this.AccountsView.Name = "AccountsView";
-            this.AccountsView.Size = new System.Drawing.Size(485, 247);
-            this.AccountsView.TabIndex = 17;
-            this.AccountsView.UseCompatibleStateImageBehavior = false;
-            this.AccountsView.View = System.Windows.Forms.View.Details;
-            this.AccountsView.SelectedIndexChanged += new System.EventHandler(this.AccountsView_SelectedIndexChanged);
-            this.AccountsView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.AccountsView_MouseDown);
-            this.AccountsView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.AccountsView_MouseMove);
-            this.AccountsView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.AccountsView_MouseUp);
-            // 
-            // AccountName
-            // 
-            this.AccountName.Tag = "";
-            this.AccountName.Text = "Name";
-            this.AccountName.Width = 120;
-            // 
-            // AliasColumn
-            // 
-            this.AliasColumn.Text = "Alias";
-            this.AliasColumn.Width = 112;
-            // 
-            // Description
-            // 
-            this.Description.Text = "Description";
-            this.Description.Width = 229;
-            // 
             // AccountsStrip
             // 
             this.AccountsStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -319,9 +271,7 @@
             // moveGroupUpToolStripMenuItem
             // 
             this.moveGroupUpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.moveToToolStripMenuItem,
-            this.moveUpToolStripMenuItem,
-            this.moveDownToolStripMenuItem});
+            this.moveToToolStripMenuItem});
             this.moveGroupUpToolStripMenuItem.Name = "moveGroupUpToolStripMenuItem";
             this.moveGroupUpToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.moveGroupUpToolStripMenuItem.Text = "Groups";
@@ -329,23 +279,9 @@
             // moveToToolStripMenuItem
             // 
             this.moveToToolStripMenuItem.Name = "moveToToolStripMenuItem";
-            this.moveToToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
+            this.moveToToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
             this.moveToToolStripMenuItem.Text = "Move Account To";
             this.moveToToolStripMenuItem.Click += new System.EventHandler(this.moveToToolStripMenuItem_Click);
-            // 
-            // moveUpToolStripMenuItem
-            // 
-            this.moveUpToolStripMenuItem.Name = "moveUpToolStripMenuItem";
-            this.moveUpToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
-            this.moveUpToolStripMenuItem.Text = "Move Group Up";
-            this.moveUpToolStripMenuItem.Click += new System.EventHandler(this.moveUpToolStripMenuItem_Click);
-            // 
-            // moveDownToolStripMenuItem
-            // 
-            this.moveDownToolStripMenuItem.Name = "moveDownToolStripMenuItem";
-            this.moveDownToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
-            this.moveDownToolStripMenuItem.Text = "Move Group Down";
-            this.moveDownToolStripMenuItem.Click += new System.EventHandler(this.moveDownToolStripMenuItem_Click);
             // 
             // infoToolStripMenuItem
             // 
@@ -422,32 +358,6 @@
             this.ArgumentsB.Text = "A";
             this.ArgumentsB.UseVisualStyleBackColor = true;
             this.ArgumentsB.Click += new System.EventHandler(this.ArgumentsB_Click);
-            // 
-            // securityToolStripMenuItem
-            // 
-            this.securityToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.setPasswordToolStripMenuItem});
-            this.securityToolStripMenuItem.Name = "securityToolStripMenuItem";
-            this.securityToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
-            this.securityToolStripMenuItem.Text = "Security";
-            // 
-            // setPasswordToolStripMenuItem
-            // 
-            this.setPasswordToolStripMenuItem.Name = "setPasswordToolStripMenuItem";
-            this.setPasswordToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
-            this.setPasswordToolStripMenuItem.Text = "Set Master Password";
-            // 
-            // MainStrip
-            // 
-            this.MainStrip.Enabled = false;
-            this.MainStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.securityToolStripMenuItem});
-            this.MainStrip.Location = new System.Drawing.Point(0, 0);
-            this.MainStrip.Name = "MainStrip";
-            this.MainStrip.Size = new System.Drawing.Size(784, 24);
-            this.MainStrip.TabIndex = 20;
-            this.MainStrip.Text = "MainStrip";
-            this.MainStrip.Visible = false;
             // 
             // CurrentPlace
             // 
@@ -534,11 +444,69 @@
             this.SaveTimer.Interval = 2500;
             this.SaveTimer.Tick += new System.EventHandler(this.SaveTimer_Tick);
             // 
+            // AccountsView
+            // 
+            this.AccountsView.AllColumns.Add(this.Username);
+            this.AccountsView.AllColumns.Add(this.AccountAlias);
+            this.AccountsView.AllColumns.Add(this.Description);
+            this.AccountsView.AllColumns.Add(this.Group);
+            this.AccountsView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.AccountsView.CellEditUseWholeCell = false;
+            this.AccountsView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.Username,
+            this.AccountAlias,
+            this.Description,
+            this.Group});
+            this.AccountsView.ContextMenuStrip = this.AccountsStrip;
+            this.AccountsView.Cursor = System.Windows.Forms.Cursors.Default;
+            this.AccountsView.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.75F);
+            this.AccountsView.FullRowSelect = true;
+            this.AccountsView.HideSelection = false;
+            this.AccountsView.Location = new System.Drawing.Point(13, 13);
+            this.AccountsView.Name = "AccountsView";
+            this.AccountsView.Size = new System.Drawing.Size(485, 246);
+            this.AccountsView.TabIndex = 26;
+            this.AccountsView.UseCompatibleStateImageBehavior = false;
+            this.AccountsView.View = System.Windows.Forms.View.Details;
+            this.AccountsView.ModelCanDrop += new System.EventHandler<BrightIdeasSoftware.ModelDropEventArgs>(this.AccountsView_ModelCanDrop);
+            this.AccountsView.ModelDropped += new System.EventHandler<BrightIdeasSoftware.ModelDropEventArgs>(this.AccountsView_ModelDropped);
+            this.AccountsView.SelectedIndexChanged += new System.EventHandler(this.AccountsView_SelectedIndexChanged);
+            // 
+            // Username
+            // 
+            this.Username.AspectName = "Username";
+            this.Username.Sortable = false;
+            this.Username.Text = "Username";
+            this.Username.Width = 120;
+            // 
+            // AccountAlias
+            // 
+            this.AccountAlias.AspectName = "Alias";
+            this.AccountAlias.Text = "Alias";
+            this.AccountAlias.Width = 120;
+            // 
+            // Description
+            // 
+            this.Description.AspectName = "Description";
+            this.Description.Text = "Description";
+            this.Description.Width = 210;
+            // 
+            // Group
+            // 
+            this.Group.AspectName = "Group";
+            this.Group.MaximumWidth = 0;
+            this.Group.MinimumWidth = 0;
+            this.Group.Text = "";
+            this.Group.Width = 0;
+            // 
             // AccountManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 301);
+            this.Controls.Add(this.AccountsView);
             this.Controls.Add(this.SaveToAccount);
             this.Controls.Add(this.ImportByCookie);
             this.Controls.Add(this.OpenApp);
@@ -547,8 +515,6 @@
             this.Controls.Add(this.ArgumentsB);
             this.Controls.Add(this.BrowserButton);
             this.Controls.Add(this.HideUsernamesCheckbox);
-            this.Controls.Add(this.MainStrip);
-            this.Controls.Add(this.AccountsView);
             this.Controls.Add(this.ServerList);
             this.Controls.Add(this.LabelUserID);
             this.Controls.Add(this.UserID);
@@ -573,8 +539,7 @@
             this.Load += new System.EventHandler(this.AccountManager_Load);
             this.Shown += new System.EventHandler(this.AccountManager_Shown);
             this.AccountsStrip.ResumeLayout(false);
-            this.MainStrip.ResumeLayout(false);
-            this.MainStrip.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -595,10 +560,6 @@
         private System.Windows.Forms.TextBox UserID;
         private System.Windows.Forms.Label LabelUserID;
         private System.Windows.Forms.Button ServerList;
-        public System.Windows.Forms.ListView AccountsView;
-        private System.Windows.Forms.ColumnHeader AccountName;
-        private System.Windows.Forms.ColumnHeader AliasColumn;
-        private System.Windows.Forms.ColumnHeader Description;
         private System.Windows.Forms.ContextMenuStrip AccountsStrip;
         private System.Windows.Forms.ToolStripMenuItem addAccountsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem removeAccountToolStripMenuItem;
@@ -610,16 +571,11 @@
         private System.Windows.Forms.ToolStripMenuItem copySecurityTokenToolStripMenuItem;
         private System.Windows.Forms.Button BrowserButton;
         private System.Windows.Forms.Button ArgumentsB;
-        private System.Windows.Forms.ToolStripMenuItem securityToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem setPasswordToolStripMenuItem;
-        private System.Windows.Forms.MenuStrip MainStrip;
         private System.Windows.Forms.Label CurrentPlace;
         private System.Windows.Forms.Label LabelPlaceID;
         private System.Windows.Forms.Timer PlaceTimer;
         private System.Windows.Forms.ToolStripMenuItem moveGroupUpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem moveToToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem moveUpToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem moveDownToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyAppLinkToolStripMenuItem;
         private System.Windows.Forms.Button JoinDiscord;
         private System.Windows.Forms.Button OpenApp;
@@ -629,5 +585,10 @@
         private System.Windows.Forms.Button SaveToAccount;
         private System.Windows.Forms.ToolTip SaveTooltip;
         private System.Windows.Forms.Timer SaveTimer;
+        private BrightIdeasSoftware.ObjectListView AccountsView;
+        private BrightIdeasSoftware.OLVColumn Group;
+        private BrightIdeasSoftware.OLVColumn Username;
+        private BrightIdeasSoftware.OLVColumn AccountAlias;
+        private BrightIdeasSoftware.OLVColumn Description;
     }
 }

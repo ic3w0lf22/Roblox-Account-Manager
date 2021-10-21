@@ -21,20 +21,29 @@ namespace RBX_Alt_Manager
         public double unlockedUntil { get; set; }
     }
 
-    public class Account
+    public class Account : IComparable<Account>
     {
         public bool Valid;
         public string SecurityToken;
         public string Username;
         private string _Alias = "";
         private string _Description = "";
-        public string Group { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public string Group { get; set; } = "Default";
         public long UserID;
         public Dictionary<string, string> Fields = new Dictionary<string, string>();
         [JsonIgnore] public DateTime PinUnlocked;
         [JsonIgnore] public DateTime TokenSet;
         [JsonIgnore] public DateTime LastAppLaunch;
         [JsonIgnore] public string CSRFToken;
+
+        public int CompareTo(Account compareTo)
+        {
+            if (compareTo == null)
+                return 1;
+
+            else
+                return Group.CompareTo(compareTo.Group);
+        }
 
         private string BrowserTrackerID;
 
@@ -88,7 +97,7 @@ namespace RBX_Alt_Manager
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
             request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
-            IRestResponse response = AccountManager.client.Execute(request);
+            IRestResponse response = AccountManager.AuthClient.Execute(request);
             Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
 
             string Token = "";
@@ -122,7 +131,7 @@ namespace RBX_Alt_Manager
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
             request.AddHeader("Referer", "https://www.roblox.com/");
 
-            IRestResponse response = AccountManager.client.Execute(request);
+            IRestResponse response = AccountManager.AuthClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
@@ -150,7 +159,7 @@ namespace RBX_Alt_Manager
             request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
             request.AddParameter("pin", Pin);
 
-            IRestResponse response = AccountManager.client.Execute(request);
+            IRestResponse response = AccountManager.AuthClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
@@ -200,7 +209,7 @@ namespace RBX_Alt_Manager
                     break;
             }
 
-            IRestResponse response = AccountManager.mainclient.Execute(request);
+            IRestResponse response = AccountManager.MainClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK) return true;
 
@@ -220,7 +229,7 @@ namespace RBX_Alt_Manager
             request.AddParameter("currentPassword", Current);
             request.AddParameter("newPassword", New);
 
-            IRestResponse response = AccountManager.client.Execute(request);
+            IRestResponse response = AccountManager.AuthClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
@@ -282,7 +291,7 @@ namespace RBX_Alt_Manager
             request.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
             request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
 
-            IRestResponse response = AccountManager.mainclient.Execute(request);
+            IRestResponse response = AccountManager.MainClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
@@ -316,7 +325,7 @@ namespace RBX_Alt_Manager
 
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
 
-            IRestResponse response = AccountManager.apiclient.Execute(request);
+            IRestResponse response = AccountManager.APIClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
@@ -330,7 +339,7 @@ namespace RBX_Alt_Manager
                     blockReq.AddHeader("Content-Type", "application/json");
                     blockReq.AddJsonBody(new { blockeeId = BlockeeID.ToString() });
 
-                    IRestResponse blockRes = AccountManager.mainclient.Execute(blockReq);
+                    IRestResponse blockRes = AccountManager.MainClient.Execute(blockReq);
 
                     if (blockRes.Content.Contains(@"""success"":true"))
                         MessageBox.Show("Blocked " + Username);
@@ -347,7 +356,7 @@ namespace RBX_Alt_Manager
                     blockReq.AddHeader("Content-Type", "application/json");
                     blockReq.AddJsonBody(new { blockeeId = BlockeeID.ToString() });
 
-                    IRestResponse blockRes = AccountManager.mainclient.Execute(blockReq);
+                    IRestResponse blockRes = AccountManager.MainClient.Execute(blockReq);
 
                     if (blockRes.Content.Contains(@"""success"":true"))
                         MessageBox.Show("Unblocked " + Username);
@@ -375,7 +384,7 @@ namespace RBX_Alt_Manager
             blockReq.AddHeader("Content-Type", "application/json");
             blockReq.AddJsonBody(new { blockeeId = UserID });
 
-            IRestResponse blockRes = AccountManager.mainclient.Execute(blockReq);
+            IRestResponse blockRes = AccountManager.MainClient.Execute(blockReq);
 
             return blockRes.Content;
         }
@@ -391,7 +400,7 @@ namespace RBX_Alt_Manager
             blockReq.AddHeader("Content-Type", "application/json");
             blockReq.AddJsonBody(new { blockeeId = UserID });
 
-            IRestResponse blockRes = AccountManager.mainclient.Execute(blockReq);
+            IRestResponse blockRes = AccountManager.MainClient.Execute(blockReq);
 
             return blockRes.Content;
         }
@@ -404,7 +413,7 @@ namespace RBX_Alt_Manager
 
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
 
-            IRestResponse response = AccountManager.apiclient.Execute(request);
+            IRestResponse response = AccountManager.APIClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
@@ -444,14 +453,14 @@ namespace RBX_Alt_Manager
 
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
 
-            IRestResponse response = AccountManager.apiclient.Execute(request);
+            IRestResponse response = AccountManager.APIClient.Execute(request);
 
             return response.Content;
         }
 
         public string ParseAccessCode(IRestResponse response)
         {
-            string pattern = "Roblox.GameLauncher.joinPrivateGame\\(\\d+,'(\\w+\\-\\w+\\-\\w+\\-\\w+\\-\\w+)";
+            string pattern = "Roblox.GameLauncher.joinPrivateGame\\(\\d+\\,\\s*'(\\w+\\-\\w+\\-\\w+\\-\\w+\\-\\w+)'";
             Regex regex = new Regex(pattern);
             MatchCollection matches = regex.Matches(response.Content);
 
@@ -479,7 +488,7 @@ namespace RBX_Alt_Manager
             request.AddHeader("X-CSRF-TOKEN", Token);
             request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
-            IRestResponse response = AccountManager.client.Execute(request);
+            IRestResponse response = AccountManager.AuthClient.Execute(request);
 
             Parameter Ticket = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
 
@@ -497,7 +506,7 @@ namespace RBX_Alt_Manager
                     request.AddHeader("X-CSRF-TOKEN", Token);
                     request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
-                    response = AccountManager.mainclient.Execute(request);
+                    response = AccountManager.MainClient.Execute(request);
 
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
@@ -517,7 +526,7 @@ namespace RBX_Alt_Manager
                         cRequest.AddHeader("X-CSRF-TOKEN", Token);
                         cRequest.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
-                        IRestResponse result = AccountManager.webClient.Execute(cRequest);
+                        IRestResponse result = AccountManager.Web13Client.Execute(cRequest);
 
                         if (result.StatusCode == HttpStatusCode.OK)
                         {
@@ -577,7 +586,7 @@ namespace RBX_Alt_Manager
             request.AddHeader("X-CSRF-TOKEN", Token);
             request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
-            IRestResponse response = AccountManager.client.Execute(request);
+            IRestResponse response = AccountManager.AuthClient.Execute(request);
 
             Parameter Ticket = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
 
@@ -593,6 +602,22 @@ namespace RBX_Alt_Manager
             }
             else
                 return "ERROR: Invalid Authentication Ticket";
+        }
+
+        public bool SendFriendRequest(string Username)
+        {
+            long UserId = AccountManager.GetUserID(Username);
+
+            RestRequest friendRequest = new RestRequest($"/v1/users/{UserId}/request-friendship", Method.POST);
+            friendRequest.AddCookie(".ROBLOSECURITY", SecurityToken);
+            friendRequest.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
+
+            IRestResponse friendResponse = AccountManager.FriendsClient.Execute(friendRequest);
+
+            if (friendResponse.IsSuccessful && friendResponse.StatusCode == HttpStatusCode.OK)
+                return true;
+
+            return false;
         }
 
         public string GetField(string Name) => Fields.ContainsKey(Name) ? Fields[Name] : "";
