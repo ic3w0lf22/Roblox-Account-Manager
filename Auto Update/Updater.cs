@@ -1,17 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Auto_Update
@@ -154,7 +150,7 @@ namespace Auto_Update
                                 catch (Exception x)
                                 {
                                     SetStatus("Error");
-                                    this.Invoke(new Action(() => { MessageBox.Show(this, "Failed to extract file, make sure the alt manager is completely closed.\n" + x.Message); }));
+                                    Invoke(new Action(() => { MessageBox.Show(this, "Failed to extract file, make sure the alt manager is completely closed.\n" + x.Message); }));
                                     Environment.Exit(0);
                                 }
                             }
@@ -165,11 +161,18 @@ namespace Auto_Update
             } catch(Exception x)
             {
                 SetStatus("Error");
-                this.Invoke(new Action(() => { MessageBox.Show(this, "Something went wrong! " + x.Message); }));
+                Invoke(new Action(() => { MessageBox.Show(this, "Something went wrong! " + x.Message); }));
                 Environment.Exit(0);
             }
 
-            SetStatus("Done!"); Thread.Sleep(2500); Environment.Exit(0);
+            SetStatus("Done!");
+            Thread.Sleep(2500);
+            File.Delete(FileName);
+
+            if (File.Exists("RBX Alt Manager.exe"))
+                Process.Start("RBX Alt Manager.exe");
+
+            Environment.Exit(0);
         }
 
         private void AutoUpdater_FormClosing(object sender, FormClosingEventArgs e)

@@ -50,7 +50,9 @@
             this.copyUsernameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyProfileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveGroupUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toggleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sortAlphabeticallyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.infoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewFieldsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.getAuthenticationTicketToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -105,7 +107,7 @@
             this.LabelJobID.Location = new System.Drawing.Point(591, 27);
             this.LabelJobID.Name = "LabelJobID";
             this.LabelJobID.Size = new System.Drawing.Size(38, 13);
-            this.LabelJobID.TabIndex = 4;
+            this.LabelJobID.TabIndex = 1000;
             this.LabelJobID.Text = "Job ID";
             // 
             // Add
@@ -114,7 +116,7 @@
             this.Add.Location = new System.Drawing.Point(13, 266);
             this.Add.Name = "Add";
             this.Add.Size = new System.Drawing.Size(95, 23);
-            this.Add.TabIndex = 13;
+            this.Add.TabIndex = 14;
             this.Add.Text = "Add Account";
             this.Add.UseVisualStyleBackColor = true;
             this.Add.Click += new System.EventHandler(this.Add_Click);
@@ -125,7 +127,7 @@
             this.Remove.Location = new System.Drawing.Point(114, 266);
             this.Remove.Name = "Remove";
             this.Remove.Size = new System.Drawing.Size(95, 23);
-            this.Remove.TabIndex = 14;
+            this.Remove.TabIndex = 15;
             this.Remove.Text = "Remove";
             this.Remove.UseVisualStyleBackColor = true;
             this.Remove.Click += new System.EventHandler(this.Remove_Click);
@@ -136,7 +138,7 @@
             this.JoinServer.Location = new System.Drawing.Point(504, 69);
             this.JoinServer.Name = "JoinServer";
             this.JoinServer.Size = new System.Drawing.Size(168, 23);
-            this.JoinServer.TabIndex = 3;
+            this.JoinServer.TabIndex = 4;
             this.JoinServer.Text = "Join Server";
             this.JoinServer.UseVisualStyleBackColor = true;
             this.JoinServer.Click += new System.EventHandler(this.JoinServer_Click);
@@ -147,7 +149,7 @@
             this.SetDescription.Location = new System.Drawing.Point(504, 266);
             this.SetDescription.Name = "SetDescription";
             this.SetDescription.Size = new System.Drawing.Size(133, 23);
-            this.SetDescription.TabIndex = 11;
+            this.SetDescription.TabIndex = 12;
             this.SetDescription.Text = "Set Description";
             this.SetDescription.UseVisualStyleBackColor = true;
             this.SetDescription.Click += new System.EventHandler(this.SetDescription_Click);
@@ -158,7 +160,7 @@
             this.DescriptionBox.Location = new System.Drawing.Point(504, 150);
             this.DescriptionBox.Name = "DescriptionBox";
             this.DescriptionBox.Size = new System.Drawing.Size(268, 109);
-            this.DescriptionBox.TabIndex = 10;
+            this.DescriptionBox.TabIndex = 11;
             this.DescriptionBox.Text = "Description";
             // 
             // SetAlias
@@ -167,7 +169,7 @@
             this.SetAlias.Location = new System.Drawing.Point(716, 122);
             this.SetAlias.Name = "SetAlias";
             this.SetAlias.Size = new System.Drawing.Size(56, 23);
-            this.SetAlias.TabIndex = 9;
+            this.SetAlias.TabIndex = 10;
             this.SetAlias.Text = "Set Alias";
             this.SetAlias.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.SetAlias.UseVisualStyleBackColor = true;
@@ -180,7 +182,7 @@
             this.Alias.MaxLength = 30;
             this.Alias.Name = "Alias";
             this.Alias.Size = new System.Drawing.Size(206, 20);
-            this.Alias.TabIndex = 8;
+            this.Alias.TabIndex = 9;
             this.Alias.Text = "Alias";
             // 
             // Follow
@@ -189,7 +191,7 @@
             this.Follow.Location = new System.Drawing.Point(716, 96);
             this.Follow.Name = "Follow";
             this.Follow.Size = new System.Drawing.Size(56, 23);
-            this.Follow.TabIndex = 7;
+            this.Follow.TabIndex = 8;
             this.Follow.Text = "Follow";
             this.Follow.UseVisualStyleBackColor = true;
             this.Follow.Click += new System.EventHandler(this.Follow_Click);
@@ -200,7 +202,7 @@
             this.UserID.Location = new System.Drawing.Point(566, 98);
             this.UserID.Name = "UserID";
             this.UserID.Size = new System.Drawing.Size(144, 20);
-            this.UserID.TabIndex = 6;
+            this.UserID.TabIndex = 7;
             // 
             // LabelUserID
             // 
@@ -209,7 +211,7 @@
             this.LabelUserID.Location = new System.Drawing.Point(505, 101);
             this.LabelUserID.Name = "LabelUserID";
             this.LabelUserID.Size = new System.Drawing.Size(55, 13);
-            this.LabelUserID.TabIndex = 14;
+            this.LabelUserID.TabIndex = 1000;
             this.LabelUserID.Text = "Username";
             // 
             // ServerList
@@ -218,7 +220,7 @@
             this.ServerList.Location = new System.Drawing.Point(707, 69);
             this.ServerList.Name = "ServerList";
             this.ServerList.Size = new System.Drawing.Size(65, 23);
-            this.ServerList.TabIndex = 5;
+            this.ServerList.TabIndex = 6;
             this.ServerList.Text = "Server List";
             this.ServerList.UseVisualStyleBackColor = true;
             this.ServerList.Click += new System.EventHandler(this.ServerList_Click);
@@ -231,6 +233,7 @@
             this.copyUsernameToolStripMenuItem,
             this.copyProfileToolStripMenuItem,
             this.moveGroupUpToolStripMenuItem,
+            this.sortAlphabeticallyToolStripMenuItem,
             this.infoToolStripMenuItem,
             this.viewFieldsToolStripMenuItem,
             this.getAuthenticationTicketToolStripMenuItem,
@@ -238,7 +241,7 @@
             this.copyRbxplayerLinkToolStripMenuItem,
             this.copyAppLinkToolStripMenuItem});
             this.AccountsStrip.Name = "contextMenuStrip1";
-            this.AccountsStrip.Size = new System.Drawing.Size(209, 246);
+            this.AccountsStrip.Size = new System.Drawing.Size(209, 268);
             // 
             // addAccountsToolStripMenuItem
             // 
@@ -271,10 +274,18 @@
             // moveGroupUpToolStripMenuItem
             // 
             this.moveGroupUpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toggleToolStripMenuItem,
             this.moveToToolStripMenuItem});
             this.moveGroupUpToolStripMenuItem.Name = "moveGroupUpToolStripMenuItem";
             this.moveGroupUpToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.moveGroupUpToolStripMenuItem.Text = "Groups";
+            // 
+            // toggleToolStripMenuItem
+            // 
+            this.toggleToolStripMenuItem.Name = "toggleToolStripMenuItem";
+            this.toggleToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.toggleToolStripMenuItem.Text = "Toggle";
+            this.toggleToolStripMenuItem.Click += new System.EventHandler(this.toggleToolStripMenuItem_Click);
             // 
             // moveToToolStripMenuItem
             // 
@@ -282,6 +293,13 @@
             this.moveToToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
             this.moveToToolStripMenuItem.Text = "Move Account To";
             this.moveToToolStripMenuItem.Click += new System.EventHandler(this.moveToToolStripMenuItem_Click);
+            // 
+            // sortAlphabeticallyToolStripMenuItem
+            // 
+            this.sortAlphabeticallyToolStripMenuItem.Name = "sortAlphabeticallyToolStripMenuItem";
+            this.sortAlphabeticallyToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.sortAlphabeticallyToolStripMenuItem.Text = "Sort Alphabetically";
+            this.sortAlphabeticallyToolStripMenuItem.Click += new System.EventHandler(this.sortAlphabeticallyToolStripMenuItem_Click);
             // 
             // infoToolStripMenuItem
             // 
@@ -332,7 +350,7 @@
             this.HideUsernamesCheckbox.Location = new System.Drawing.Point(215, 270);
             this.HideUsernamesCheckbox.Name = "HideUsernamesCheckbox";
             this.HideUsernamesCheckbox.Size = new System.Drawing.Size(104, 17);
-            this.HideUsernamesCheckbox.TabIndex = 15;
+            this.HideUsernamesCheckbox.TabIndex = 16;
             this.HideUsernamesCheckbox.Text = "Hide Usernames";
             this.HideUsernamesCheckbox.UseVisualStyleBackColor = true;
             this.HideUsernamesCheckbox.CheckedChanged += new System.EventHandler(this.HideUsernamesCheckbox_CheckedChanged);
@@ -343,7 +361,7 @@
             this.BrowserButton.Location = new System.Drawing.Point(639, 266);
             this.BrowserButton.Name = "BrowserButton";
             this.BrowserButton.Size = new System.Drawing.Size(133, 23);
-            this.BrowserButton.TabIndex = 12;
+            this.BrowserButton.TabIndex = 13;
             this.BrowserButton.Text = "Open Account Utilities";
             this.BrowserButton.UseVisualStyleBackColor = true;
             this.BrowserButton.Click += new System.EventHandler(this.BrowserButton_Click);
@@ -354,7 +372,7 @@
             this.ArgumentsB.Location = new System.Drawing.Point(678, 69);
             this.ArgumentsB.Name = "ArgumentsB";
             this.ArgumentsB.Size = new System.Drawing.Size(23, 23);
-            this.ArgumentsB.TabIndex = 4;
+            this.ArgumentsB.TabIndex = 5;
             this.ArgumentsB.Text = "A";
             this.ArgumentsB.UseVisualStyleBackColor = true;
             this.ArgumentsB.Click += new System.EventHandler(this.ArgumentsB_Click);
@@ -366,7 +384,7 @@
             this.CurrentPlace.Location = new System.Drawing.Point(504, 12);
             this.CurrentPlace.Name = "CurrentPlace";
             this.CurrentPlace.Size = new System.Drawing.Size(71, 13);
-            this.CurrentPlace.TabIndex = 21;
+            this.CurrentPlace.TabIndex = 1000;
             this.CurrentPlace.Text = "Current Place";
             // 
             // LabelPlaceID
@@ -376,7 +394,7 @@
             this.LabelPlaceID.Location = new System.Drawing.Point(504, 27);
             this.LabelPlaceID.Name = "LabelPlaceID";
             this.LabelPlaceID.Size = new System.Drawing.Size(48, 13);
-            this.LabelPlaceID.TabIndex = 3;
+            this.LabelPlaceID.TabIndex = 1000;
             this.LabelPlaceID.Text = "Place ID";
             // 
             // PlaceTimer
@@ -391,7 +409,7 @@
             this.JoinDiscord.Location = new System.Drawing.Point(474, 266);
             this.JoinDiscord.Name = "JoinDiscord";
             this.JoinDiscord.Size = new System.Drawing.Size(23, 23);
-            this.JoinDiscord.TabIndex = 22;
+            this.JoinDiscord.TabIndex = 19;
             this.JoinDiscord.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.JoinDiscord.UseVisualStyleBackColor = true;
             this.JoinDiscord.Click += new System.EventHandler(this.JoinDiscord_Click);
@@ -402,7 +420,7 @@
             this.OpenApp.Location = new System.Drawing.Point(325, 266);
             this.OpenApp.Name = "OpenApp";
             this.OpenApp.Size = new System.Drawing.Size(143, 23);
-            this.OpenApp.TabIndex = 23;
+            this.OpenApp.TabIndex = 18;
             this.OpenApp.Text = "Open App";
             this.OpenApp.UseVisualStyleBackColor = true;
             this.OpenApp.Click += new System.EventHandler(this.OpenApp_Click);
@@ -413,7 +431,7 @@
             this.ImportByCookie.Location = new System.Drawing.Point(325, 266);
             this.ImportByCookie.Name = "ImportByCookie";
             this.ImportByCookie.Size = new System.Drawing.Size(70, 23);
-            this.ImportByCookie.TabIndex = 24;
+            this.ImportByCookie.TabIndex = 17;
             this.ImportByCookie.Text = "Import";
             this.ImportByCookie.UseVisualStyleBackColor = true;
             this.ImportByCookie.Visible = false;
@@ -428,7 +446,7 @@
             this.SaveToAccount.Location = new System.Drawing.Point(750, 42);
             this.SaveToAccount.Name = "SaveToAccount";
             this.SaveToAccount.Size = new System.Drawing.Size(22, 22);
-            this.SaveToAccount.TabIndex = 25;
+            this.SaveToAccount.TabIndex = 3;
             this.SaveTooltip.SetToolTip(this.SaveToAccount, "Saves the PlaceId + JobId to the selected account\r\nTo remove, clear out the text " +
         "boxes on the left and click Save");
             this.SaveToAccount.UseVisualStyleBackColor = true;
@@ -463,11 +481,16 @@
             this.AccountsView.Cursor = System.Windows.Forms.Cursors.Default;
             this.AccountsView.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.75F);
             this.AccountsView.FullRowSelect = true;
+            this.AccountsView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.AccountsView.HideSelection = false;
+            this.AccountsView.IsSimpleDragSource = true;
+            this.AccountsView.IsSimpleDropSink = true;
             this.AccountsView.Location = new System.Drawing.Point(13, 13);
             this.AccountsView.Name = "AccountsView";
+            this.AccountsView.ShowSortIndicators = false;
             this.AccountsView.Size = new System.Drawing.Size(485, 246);
-            this.AccountsView.TabIndex = 26;
+            this.AccountsView.SortGroupItemsByPrimaryColumn = false;
+            this.AccountsView.TabIndex = 20;
             this.AccountsView.UseCompatibleStateImageBehavior = false;
             this.AccountsView.View = System.Windows.Forms.View.Details;
             this.AccountsView.ModelCanDrop += new System.EventHandler<BrightIdeasSoftware.ModelDropEventArgs>(this.AccountsView_ModelCanDrop);
@@ -479,7 +502,7 @@
             this.Username.AspectName = "Username";
             this.Username.Sortable = false;
             this.Username.Text = "Username";
-            this.Username.Width = 120;
+            this.Username.Width = 130;
             // 
             // AccountAlias
             // 
@@ -491,7 +514,7 @@
             // 
             this.Description.AspectName = "Description";
             this.Description.Text = "Description";
-            this.Description.Width = 210;
+            this.Description.Width = 200;
             // 
             // Group
             // 
@@ -590,5 +613,7 @@
         private BrightIdeasSoftware.OLVColumn Username;
         private BrightIdeasSoftware.OLVColumn AccountAlias;
         private BrightIdeasSoftware.OLVColumn Description;
+        private System.Windows.Forms.ToolStripMenuItem sortAlphabeticallyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toggleToolStripMenuItem;
     }
 }

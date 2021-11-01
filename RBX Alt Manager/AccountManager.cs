@@ -1,6 +1,5 @@
 ﻿using BrightIdeasSoftware;
 using Newtonsoft.Json;
-using RBX_Alt_Manager.Classes;
 using RestSharp;
 using System;
 using System.Collections.Generic;
@@ -16,6 +15,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Security.Cryptography;
 
 #pragma warning disable CS0618 // stupid parameter warnings
 
@@ -24,6 +24,7 @@ namespace RBX_Alt_Manager
     public partial class AccountManager : Form
     {
         public static List<Account> AccountsList = new List<Account>();
+        public static List<Account> SelectedAccounts = new List<Account>();
         public static Account SelectedAccount;
         public static RestClient MainClient;
         public static RestClient FriendsClient;
@@ -40,11 +41,10 @@ namespace RBX_Alt_Manager
         private AccountUtils UtilsForm;
         private ImportForm ImportAccountsForm;
         private AccountFields FieldsForm;
-        private static DateTime startTime = DateTime.Now;
+        private readonly static DateTime startTime = DateTime.Now;
         public static bool IsTeleport = false;
         public static bool UseOldJoin = false;
         public OLVListItem SelectedAccountItem;
-        private DateTime DragTime = DateTime.MinValue;
         private WebServer AltManagerWS;
         public static IniFile IniSettings;
         private string WSPassword = "";
@@ -56,8 +56,10 @@ namespace RBX_Alt_Manager
         private delegate void SafeCallDelegateAccount(Account account);
         private delegate void SafeCallDelegateGroup(string Group, OLVListItem Item = null);
         private delegate void SafeCallDelegateRemoveAt(int Index);
-        private delegate void SafeCallDelegateSetAccountViewSubItem(Account account, int Index, string Text);
+        private delegate void SafeCallDelegateUpdateAccountView(Account account);
         private delegate int SafeCallDelegateInvite(object Item);
+
+        private static readonly byte[] Entropy = new byte[] { 0x52, 0x4f, 0x42, 0x4c, 0x4f, 0x58, 0x20, 0x41, 0x43, 0x43, 0x4f, 0x55, 0x4e, 0x54, 0x20, 0x4d, 0x41, 0x4e, 0x41, 0x47, 0x45, 0x52, 0x20, 0x7c, 0x20, 0x3a, 0x29, 0x20, 0x7c, 0x20, 0x42, 0x52, 0x4f, 0x55, 0x47, 0x48, 0x54, 0x20, 0x54, 0x4f, 0x20, 0x59, 0x4f, 0x55, 0x20, 0x42, 0x55, 0x59, 0x20, 0x69, 0x63, 0x33, 0x77, 0x30, 0x6c, 0x66 };
 
         public AccountManager()
         {
@@ -66,22 +68,36 @@ namespace RBX_Alt_Manager
             AccountsView.UnfocusedHighlightBackgroundColor = Color.FromArgb(0, 150, 215);
             AccountsView.UnfocusedHighlightForegroundColor = Color.FromArgb(240, 240, 240);
 
-            /* SimpleDropSink sink = AccountsView.DropSink as SimpleDropSink;
+            SimpleDropSink sink = AccountsView.DropSink as SimpleDropSink;
             sink.CanDropBetween = true;
             sink.CanDropOnBackground = false;
             sink.CanDropOnItem = false;
             sink.CanDropOnSubItem = false;
-            sink.FeedbackColor = Color.FromArgb(33, 33, 33); */
+            sink.FeedbackColor = Color.FromArgb(33, 33, 33);
 
             AccountsView.AlwaysGroupByColumn = Group;
+
+            Group.GroupKeyGetter = delegate (object account)
+            {
+                return ((Account)account).Group;
+            };
+
+            Group.GroupKeyToTitleConverter = delegate (object Key)
+            {
+                string GroupName = Key as string;
+                Match match = Regex.Match(GroupName, @"\d{1,3}\s?");
+
+                if (match.Success)
+                    return GroupName.Substring(match.Length);
+                else
+                    return GroupName;
+            };
         }
 
-        private static string SaveFilePath = Path.Combine(Environment.CurrentDirectory, "AccountData.json");
+        private readonly static string SaveFilePath = Path.Combine(Environment.CurrentDirectory, "AccountData.json");
 
         private void RefreshView()
         {
-            // AccountsView.SetObjects(AccountsList);
-
             AccountsView.BuildList(true);
             AccountsView.BuildGroups();
         }
@@ -92,21 +108,26 @@ namespace RBX_Alt_Manager
             {
                 try
                 {
-                    AccountsList = JsonConvert.DeserializeObject<List<Account>>(File.ReadAllText(SaveFilePath));
+                    string Decoded = Encoding.UTF8.GetString(ProtectedData.Unprotect(File.ReadAllBytes(SaveFilePath), Entropy, DataProtectionScope.CurrentUser));
 
+                    AccountsList = JsonConvert.DeserializeObject<List<Account>>(Decoded);
                     AccountsView.SetObjects(AccountsList);
-
                     RefreshView();
-
-                    //AccountsList.Sort();
-
-                    //for (int i = 0; i < AccountsList.Count; i++) Console.WriteLine($"{i} {AccountsList[i].Group} : {AccountsList[i].Username}");
                 }
-                catch (Exception x)
+                catch
                 {
-                    MessageBox.Show("Failed to load accounts!\nA backup file was created.\n\n" + x);
+                    try
+                    {
+                        AccountsList = JsonConvert.DeserializeObject<List<Account>>(File.ReadAllText(SaveFilePath));
+                        AccountsView.SetObjects(AccountsList);
+                        RefreshView();
+                    }
+                    catch (Exception x)
+                    {
+                        MessageBox.Show("Failed to load accounts!\nA backup file was created.\n\n" + x);
 
-                    File.WriteAllText(SaveFilePath + ".bak", File.ReadAllText(SaveFilePath));
+                        File.WriteAllText(SaveFilePath + ".bak", File.ReadAllText(SaveFilePath));
+                    }
                 }
             }
 
@@ -118,13 +139,24 @@ namespace RBX_Alt_Manager
                 {
                     try
                     {
-                        AccountsList = JsonConvert.DeserializeObject<List<Account>>(File.ReadAllText(SaveFilePath + ".backup"));
+                        string Decoded = Encoding.UTF8.GetString(ProtectedData.Unprotect(File.ReadAllBytes(SaveFilePath + ".backup"), Entropy, DataProtectionScope.CurrentUser));
 
+                        AccountsList = JsonConvert.DeserializeObject<List<Account>>(Decoded);
+                        AccountsView.SetObjects(AccountsList);
                         RefreshView();
                     }
                     catch
                     {
-                        MessageBox.Show("Failed to load backup file!", "Roblox Account Manager", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                        try
+                        {
+                            AccountsList = JsonConvert.DeserializeObject<List<Account>>(File.ReadAllText(SaveFilePath + ".backup"));
+                            AccountsView.SetObjects(AccountsList);
+                            RefreshView();
+                        }
+                        catch
+                        {
+                            MessageBox.Show("Failed to load backup file!", "Roblox Account Manager", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                        }
                     }
                 }
             }
@@ -147,7 +179,7 @@ namespace RBX_Alt_Manager
             if (OldFile.Exists && NewSize < OldSize || (OldFile.Exists && (DateTime.Now - OldFile.LastWriteTime).TotalHours > 36))
                 File.WriteAllText(SaveFilePath + ".backup", OldInfo);
 
-            File.WriteAllText(SaveFilePath, SaveData);
+            File.WriteAllBytes(SaveFilePath, ProtectedData.Protect(Encoding.UTF8.GetBytes(SaveData), Entropy, DataProtectionScope.LocalMachine));
         }
 
         public static void DelayedSaveAccounts() // Prevent file being locked
@@ -191,58 +223,16 @@ namespace RBX_Alt_Manager
             }
         }
 
-        public void SetAccountViewSubItem(Account account, int Index, string Text)
+        public void UpdateAccountView(Account account)
         {
-            /*if (AccountsView.InvokeRequired)
+            if (AccountsView.InvokeRequired)
             {
-                var getItem = new SafeCallDelegateSetAccountViewSubItem(SetAccountViewSubItem);
-                AccountsView.Invoke(getItem, new object[] { account, Index, Text });
+                var getItem = new SafeCallDelegateUpdateAccountView(UpdateAccountView);
+                AccountsView.Invoke(getItem, new object[] { account });
             }
             else
-            {
-                foreach (OLVListItem Item in AccountsView.Items)
-                {
-                    if (Item.SubItems[3].Text.Length >= account.Username.Length && account.Username == Item.SubItems[3].Text.Substring(0, account.Username.Length))
-                    {
-                        Item.SubItems[Index].Text = Text;
-                        break;
-                    }
-                }
-            }*/
+                AccountsView.UpdateObject(account);
         }
-
-        /*public void AddGroupToList(string GroupName, OLVListItem Item = null, bool OnStartup = false)
-        {
-            bool CreateGroup = true;
-            ListViewGroup GroupItem = null;
-
-            foreach (ListViewGroup g in AccountsView.Groups)
-            {
-                if (g.Header == GroupName)
-                {
-                    GroupItem = g;
-                    CreateGroup = false;
-                }
-            }
-
-            if (GroupItem == null && !string.IsNullOrEmpty(GroupName))
-                GroupItem = new ListViewGroup(GroupName);
-
-            if (GroupItem != null) AccountsView.ShowGroups = true;
-            if (CreateGroup && GroupItem != null) AccountsView.Groups.Add(GroupItem);
-
-            if (Item != null)
-                Item.Group = GroupItem;
-            else if (SelectedAccount != null && SelectedAccountItem != null)
-            {
-                SelectedAccount.Group = GroupName;
-                SelectedAccountItem.Group = GroupItem;
-                AccountsList.Remove(SelectedAccount);
-                AccountsList.Insert(AccountsList.Count, SelectedAccount); // move to end of account list
-
-                if (!OnStartup) SaveAccounts();
-            }
-        }*/
 
         public static void AddAccount(string SecurityToken, string UserData)
         {
@@ -268,7 +258,7 @@ namespace RBX_Alt_Manager
             else MessageBox.Show(res);
         }
 
-        public static string ShowDialog(string text, string caption) //tbh pasted from stackoverflow
+        public static string ShowDialog(string text, string caption) // tbh pasted from stackoverflow
         {
             Form prompt = new Form()
             {
@@ -327,6 +317,7 @@ namespace RBX_Alt_Manager
             IniSettings = new IniFile("RAMSettings.ini");
 
             if (!IniSettings.KeyExists("DisableAutoUpdate", "General")) IniSettings.Write("DisableAutoUpdate", "false", "General");
+            if (!IniSettings.KeyExists("AccountJoinDelay", "General")) IniSettings.Write("AccountJoinDelay", "8", "General");
 
             if (!IniSettings.KeyExists("DevMode", "Developer")) IniSettings.Write("DevMode", "false", "Developer");
             if (!IniSettings.KeyExists("EnableWebServer", "Developer")) IniSettings.Write("EnableWebServer", "false", "Developer");
@@ -370,8 +361,6 @@ namespace RBX_Alt_Manager
             SaveAccountsTimer = new System.Timers.Timer(2500);
             SaveAccountsTimer.Elapsed += SaveTimer_Tick;
 
-            // SetupNamedPipe(); // unused now
-
             aaform = new AccountAdder();
             afform = new ArgumentsForm();
             ServerListForm = new ServerList();
@@ -380,8 +369,6 @@ namespace RBX_Alt_Manager
             FieldsForm = new AccountFields();
 
             AccountsView.Items.Clear();
-
-            // RobloxProcessTimer.Start();
 
             MainClient = new RestClient("https://www.roblox.com/");
             MainClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
@@ -418,7 +405,7 @@ namespace RBX_Alt_Manager
                         WebClient WC = new WebClient();
                         Assembly assembly = Assembly.GetExecutingAssembly();
                         FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-                        WC.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36";
+                        WC.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36";
                         string Releases = WC.DownloadString("https://api.github.com/repos/ic3w0lf22/Roblox-Account-Manager/releases/latest");
                         Match match = Regex.Match(Releases, @"""tag_name"":\s*""?([^""]+)");
 
@@ -542,7 +529,7 @@ namespace RBX_Alt_Manager
                 if (IniSettings.Read("AllowAccountEditing", "WebServer") != "true") return "Method not allowed";
 
                 account.Alias = Body;
-                SetAccountViewSubItem(account, 1, account.Alias);
+                UpdateAccountView(account);
 
                 return $"Set Alias of {account.Username} to {Body}";
             }
@@ -551,7 +538,7 @@ namespace RBX_Alt_Manager
                 if (IniSettings.Read("AllowAccountEditing", "WebServer") != "true") return "Method not allowed";
 
                 account.Description = Body;
-                SetAccountViewSubItem(account, 2, account.Description.Replace("\n", " "));
+                UpdateAccountView(account);
 
                 return $"Set Description of {account.Username} to {Body}";
             }
@@ -560,7 +547,7 @@ namespace RBX_Alt_Manager
                 if (IniSettings.Read("AllowAccountEditing", "WebServer") != "true") return "Method not allowed";
 
                 account.Description += Body;
-                SetAccountViewSubItem(account, 2, account.Description.Replace("\n", " "));
+                UpdateAccountView(account);
 
                 return $"Appended Description of {account.Username} with {Body}";
             }
@@ -637,11 +624,16 @@ namespace RBX_Alt_Manager
                 SelectedAccount = null;
                 SelectedAccountItem = null;
 
+                if (AccountsView.SelectedObjects.Count > 1)
+                    SelectedAccounts = AccountsView.SelectedObjects.Cast<Account>().ToList();
+
                 return;
             }
 
             SelectedAccount = AccountsView.SelectedObject as Account;
             SelectedAccountItem = AccountsView.SelectedItem;
+
+            if (SelectedAccount == null) return;
 
             AccountsView.HideSelection = false;
 
@@ -654,30 +646,46 @@ namespace RBX_Alt_Manager
 
         private void SetAlias_Click(object sender, EventArgs e)
         {
-            if (SelectedAccount == null) return;
+            foreach (Account account in AccountsView.SelectedObjects)
+                account.Alias = Alias.Text;
 
-            SelectedAccount.Alias = Alias.Text;
-            AccountsView.UpdateObject(SelectedAccount);
+            RefreshView();
         }
 
         private void SetDescription_Click(object sender, EventArgs e)
         {
-            if (SelectedAccount == null) return;
+            foreach (Account account in AccountsView.SelectedObjects)
+                account.Description = DescriptionBox.Text;
 
-            SelectedAccount.Description = DescriptionBox.Text;
-            AccountsView.UpdateObject(SelectedAccount);
+            RefreshView();
         }
 
         private void JoinServer_Click(object sender, EventArgs e)
         {
-            if (SelectedAccount == null) return;
-
             bool VIPServer = JobID.TextLength > 4 ? JobID.Text.Substring(0, 4) == "VIP:" : false;
 
-            string res = SelectedAccount.JoinServer(Convert.ToInt64(PlaceID.Text), VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer);
+            if (AccountsView.SelectedObjects.Count > 1)
+            {
+                Task.Run(async () =>
+                {
+                    int Delay = 8;
+                    int.TryParse(IniSettings.Read("AccountJoinDelay", "General"), out Delay);
 
-            if (!res.Contains("Success"))
-                MessageBox.Show(res);
+                    foreach (Account account in SelectedAccounts)
+                    {
+                        account.JoinServer(Convert.ToInt64(PlaceID.Text), VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer);
+
+                        await Task.Delay(Delay * 1000);
+                    }
+                });
+            }
+            else if (SelectedAccount != null)
+            {
+                string res = SelectedAccount.JoinServer(Convert.ToInt64(PlaceID.Text), VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer);
+
+                if (!res.Contains("Success"))
+                    MessageBox.Show(res);
+            }
         }
 
         private void Follow_Click(object sender, EventArgs e)
@@ -703,38 +711,6 @@ namespace RBX_Alt_Manager
             e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
         }
 
-        private void OpenBrowser_Click(object sender, EventArgs e) // not used i forgot this was here
-        {
-            if (1 == 1 || SelectedAccount == null) return;
-
-            RestRequest tokenrequest = new RestRequest("v1/authentication-ticket/", Method.POST);
-
-            tokenrequest.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
-            tokenrequest.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
-
-            IRestResponse response = AuthClient.Execute(tokenrequest);
-            Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
-
-            string Token = "";
-
-            if (result != null)
-                Token = (string)result.Value;
-            else
-                return;
-
-            if (string.IsNullOrEmpty(Token) || result == null)
-                return;
-
-            RestRequest request = new RestRequest("v1/purchases/products/502391436", Method.POST);
-            request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
-            request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Accept", "application/json");
-            request.AddParameter("application/json", "{\"expectedCurrency\":1,\"expectedPrice\":350,\"expectedSellerId\":875316944}", ParameterType.RequestBody);
-            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
-            response = EconClient.Execute(request);
-            MessageBox.Show(response.Content);
-        }
-
         private void ServerList_Click(object sender, EventArgs e)
         {
             if (ServerListForm.Visible)
@@ -752,9 +728,6 @@ namespace RBX_Alt_Manager
 
         private void HideUsernamesCheckbox_CheckedChanged(object sender, EventArgs e)
         {
-            // Console.WriteLine(SelectedAccountItem.ForeColor);
-            // Console.WriteLine(SelectedAccountItem.SelectedForeColor);
-
             AccountsView.BeginUpdate();
 
             Username.Width = HideUsernamesCheckbox.Checked ? 0 : 120;
@@ -792,7 +765,7 @@ namespace RBX_Alt_Manager
 
                 if (result == DialogResult.Yes)
                 {
-                    AccountsList.RemoveAll(x => x == SelectedAccount);
+                    AccountsList.Remove(SelectedAccount);
 
                     RefreshView();
 
@@ -801,77 +774,8 @@ namespace RBX_Alt_Manager
             }
         }
 
-        private void infoToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+        private void infoToolStripMenuItem_Click(object sender, EventArgs e) =>
             MessageBox.Show("Roblox Account Manager created by ic3w0lf under the GNU GPLv3 license.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        /*private void SetupNamedPipe()
-        {
-            Task.Factory.StartNew(() =>
-            {
-                NamedPipeServerStream pipe = new NamedPipeServerStream("AccountManagerPipe", PipeDirection.InOut, -1, PipeTransmissionMode.Message);
-
-                while (true)
-                {
-                    pipe.WaitForConnection();
-                    byte[] messageBytes = ReadMessage(pipe);
-                    string line = Encoding.UTF8.GetString(messageBytes);
-
-                    if (string.IsNullOrEmpty(line)) continue;
-
-                    if (line == "acclist")
-                    {
-                        string AccountString = HideUsernamesCheckbox.Checked ? "hidden\n" : "";
-
-                        foreach (Account acc in AccountsList)
-                            AccountString = AccountString + acc.Username + "::" + acc.Alias + "\n";
-
-                        if (AccountString.Length > 1)
-                            AccountString = AccountString.Substring(0, AccountString.Length - 1);
-
-                        byte[] response = Encoding.UTF8.GetBytes(AccountString);
-                        pipe.Write(response, 0, response.Length);
-                    }
-                    else if (line.Substring(0, 4) == "play")
-                    {
-#if DEBUG
-                        Console.WriteLine(line);
-#endif
-                        Match match = Regex.Match(line, "play\\-(\\w+)\\-(\\d+)\\-?(\\w+-\\w+-\\w+-\\w+-\\w+)?");
-
-                        if (match.Success)
-                        {
-                            string AccountName = match.Groups[1].Value;
-                            long PlaceId = Convert.ToInt64(match.Groups[2].Value);
-                            string JobId = (match.Groups.Count == 4) ? match.Groups[3].Value : "";
-
-                            Account account = AccountsList.FirstOrDefault((Account x) => AccountName.Length >= x.Username.Length && x.Username == AccountName.Substring(0, x.Username.Length));
-                            account.JoinServer(PlaceId, JobId, false);
-                        }
-                    }
-
-                    pipe.Disconnect();
-                }
-            });
-        }
-
-        private static byte[] ReadMessage(PipeStream pipe)
-        {
-            byte[] buffer = new byte[1024];
-            byte[] result;
-            using (MemoryStream ms = new MemoryStream())
-            {
-                do
-                {
-                    int readBytes = pipe.Read(buffer, 0, buffer.Length);
-                    ms.Write(buffer, 0, readBytes);
-                }
-                while (!pipe.IsMessageComplete);
-                result = ms.ToArray();
-            }
-            return result;
-        }*/
 
         private void AccountManager_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -946,7 +850,7 @@ namespace RBX_Alt_Manager
                 Clipboard.SetText((string)Ticket.Value);
         }
 
-        private void copyRbxplayerLinkToolStripMenuItem_Click(object sender, EventArgs e) // shouldn't be available to public releases
+        private void copyRbxplayerLinkToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (SelectedAccount == null) return;
 
@@ -997,16 +901,22 @@ namespace RBX_Alt_Manager
 
         private void copySecurityTokenToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedAccount == null) return;
+            string Tokens = "";
 
-            Clipboard.SetText(SelectedAccount.SecurityToken);
+            foreach (Account account in AccountsView.SelectedObjects)
+                Tokens += account.SecurityToken + "\n";
+
+            Clipboard.SetText(Tokens);
         }
 
         private void copyUsernameToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedAccount == null) return;
+            string Usernames = "";
 
-            Clipboard.SetText(SelectedAccount.Username);
+            foreach (Account account in AccountsView.SelectedObjects)
+                Usernames += account.Username + "\n";
+
+            Clipboard.SetText(Usernames);
         }
 
         private void PlaceID_TextChanged(object sender, EventArgs e)
@@ -1028,7 +938,7 @@ namespace RBX_Alt_Manager
             request.AddHeader("Accept", "application/json");
             IRestResponse response = APIClient.Execute(request);
 
-            if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
+            if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK && (response.Content.StartsWith("{") && response.Content.EndsWith("}")))
             {
                 ProductInfo placeInfo = JsonConvert.DeserializeObject<ProductInfo>(response.Content);
 
@@ -1048,9 +958,7 @@ namespace RBX_Alt_Manager
                 acc.Group = GroupName;
 
             RefreshView();
-
-            // AccountsView.UpdateObjects(AccountsView.SelectedObjects);
-            // AccountsView.EnsureModelVisible(AccountsView.SelectedObjects[0]);
+            DelayedSaveAccounts();
         }
 
         private void copyAppLinkToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1113,9 +1021,12 @@ namespace RBX_Alt_Manager
 
         private void copyProfileToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedAccount == null) return;
+            string Profiles = "";
 
-            Clipboard.SetText($"https://www.roblox.com/users/{SelectedAccount.UserID}/profile");
+            foreach (Account account in AccountsView.SelectedObjects)
+                Profiles += $"https://www.roblox.com/users/{account.UserID}/profile" + "\n";
+
+            Clipboard.SetText(Profiles);
         }
 
         private void viewFieldsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1132,23 +1043,24 @@ namespace RBX_Alt_Manager
 
         private void SaveToAccount_Click(object sender, EventArgs e)
         {
-            if (SelectedAccount == null) return;
-
-            if (string.IsNullOrEmpty(PlaceID.Text) && string.IsNullOrEmpty(JobID.Text))
+            foreach (Account account in AccountsView.SelectedObjects)
             {
-                SelectedAccount.RemoveField("SavedPlaceId");
-                SelectedAccount.RemoveField("SavedJobId");
+                if (string.IsNullOrEmpty(PlaceID.Text) && string.IsNullOrEmpty(JobID.Text))
+                {
+                    account.RemoveField("SavedPlaceId");
+                    account.RemoveField("SavedJobId");
 
-                return;
+                    return;
+                }
+
+                string PlaceId = CurrentPlaceId;
+
+                if (JobID.Text.Contains("privateServerLinkCode") && Regex.IsMatch(JobID.Text, @"\/games\/(\d+)\/"))
+                    PlaceId = Regex.Match(CurrentJobId, @"\/games\/(\d+)\/").Groups[1].Value;
+
+                account.SetField("SavedPlaceId", PlaceId);
+                account.SetField("SavedJobId", JobID.Text);
             }
-
-            string PlaceId = CurrentPlaceId;
-
-            if (JobID.Text.Contains("privateServerLinkCode") && Regex.IsMatch(JobID.Text, @"\/games\/(\d+)\/"))
-                PlaceId = Regex.Match(CurrentJobId, @"\/games\/(\d+)\/").Groups[1].Value;
-
-            SelectedAccount.SetField("SavedPlaceId", PlaceId);
-            SelectedAccount.SetField("SavedJobId", JobID.Text);
         }
 
         private void SaveTimer_Tick(object sender, EventArgs e)
@@ -1168,9 +1080,7 @@ namespace RBX_Alt_Manager
 
             Account droppedOn = e.TargetModel as Account;
 
-            int Index = AccountsList.IndexOf(droppedOn);
-
-            foreach (Account a in AccountsList) Console.WriteLine($"{AccountsList.IndexOf(a)} {a.Username}");
+            int Index = e.DropTargetIndex;
 
             for (int i = e.SourceModels.Count; i > 0; i--)
             {
@@ -1182,13 +1092,24 @@ namespace RBX_Alt_Manager
                 AccountsList.Insert(Index, dragged);
             }
 
-            Console.WriteLine("---------------");
-
-            foreach (Account a in AccountsList) Console.WriteLine($"{AccountsList.IndexOf(a)} {a.Username}");
-
             RefreshView();
             AccountsView.EnsureModelVisible(e.SourceModels[e.SourceModels.Count - 1]);
             DelayedSaveAccounts();
         }
+
+        private void sortAlphabeticallyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show($"Are you sure you want to sort every account alphabetically?", "Roblox Account Manager", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            if (result == DialogResult.Yes)
+            {
+                AccountsList = AccountsList.OrderByDescending(x => x.Username.All(char.IsDigit)).ThenByDescending(x => x.Username.Any(char.IsLetter)).ThenBy(x => x.Username).ToList();
+
+                AccountsView.SetObjects(AccountsList);
+            }
+        }
+
+        private void toggleToolStripMenuItem_Click(object sender, EventArgs e) =>
+            AccountsView.ShowGroups = !AccountsView.ShowGroups;
     }
 }

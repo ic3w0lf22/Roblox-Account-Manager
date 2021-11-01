@@ -3,13 +3,8 @@ using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -25,7 +20,6 @@ namespace RBX_Alt_Manager
 
         public static RestClient rbxclient;
         public static RestClient gamesclient;
-        private long PlaceId;
         private bool Busy;
         private int Page = 0;
         private List<FavoriteGame> Favorites;
@@ -68,7 +62,7 @@ namespace RBX_Alt_Manager
 
         private void RefreshServers_Click(object sender, EventArgs e)
         {
-            if (Busy || !Int64.TryParse(Program.MainForm.PlaceID.Text, out PlaceId)) return;
+            if (Busy || !Int64.TryParse(Program.MainForm.PlaceID.Text, out long PlaceId)) return;
 
             ServerListView.Items.Clear();
             IRestResponse response;
@@ -96,7 +90,6 @@ namespace RBX_Alt_Manager
                             servers.Add(data);
                             ServerListView.AddObject(data);
                         }
-                        // ServerListView.SetObjects(servers);
                     }
                 }
 
@@ -122,8 +115,6 @@ namespace RBX_Alt_Manager
                         }
                     }
                 }
-
-                // ServerListView.SetObjects(servers);
 
                 Busy = false;
             });
@@ -221,7 +212,6 @@ namespace RBX_Alt_Manager
 
             for (int i = 0; i < instances.TotalCollectionSize; i += 50)
             {
-                // shitty coding here ignore this
                 int startIndex = i;
                 int tindex = startIndex;
                 bool FirstTime = true;
@@ -266,7 +256,6 @@ namespace RBX_Alt_Manager
                         ServerListView.ClearObjects();
                         ServerListView.SetObjects(new List<ServerData> { serverData });
                     }
-                    // else MessageBox.Show("User not found!", "Search", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 
                     Busy = false;
                 });

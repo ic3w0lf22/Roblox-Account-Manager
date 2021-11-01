@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using RBX_Alt_Manager.Classes;
 
@@ -39,35 +35,6 @@ namespace RBX_Alt_Manager
 
         private void AddField(string Field, string Value)
         {
-            /*TextBox FieldBox = new TextBox
-            {
-                Text = Field,
-                Location = new Point(20, 45 + (25 * FieldCount)),
-                Size = new Size(125, 25),
-                Parent = this
-            };
-
-            TextBox ValueBox = new TextBox
-            {
-                Text = Value,
-                Location = new Point(20 + 125 + 5, 45 + (25 * FieldCount)),
-                Size = new Size(125, 25),
-                Parent = this
-            };
-
-            Button XButton = new Button
-            {
-                Text = "X",
-                Location = new Point(20 + 125 + 10 + 125, 45 + (25 * FieldCount) - 1),
-                Size = new Size(22, 22),
-                Font = new Font("Verdana", 9, FontStyle.Bold),
-                ForeColor = Color.Red,
-                Parent = this
-            };
-
-            ValueBox.KeyPress += Value_KeyPress;
-            XButton.MouseClick += XButton_MouseClick;*/
-
             Field f = new Field(Viewing, Field, Value);
             f.Parent = this;
             f.Location = new Point(10, 45 + (25 * FieldCount));
