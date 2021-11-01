@@ -53,7 +53,7 @@ namespace RBX_Alt_Manager
 
         private static Mutex rbxMultiMutex;
 
-        private delegate void SafeCallDelegateAccount(Account account);
+        private delegate void SafeCallDelegateRefresh();
         private delegate void SafeCallDelegateGroup(string Group, OLVListItem Item = null);
         private delegate void SafeCallDelegateRemoveAt(int Index);
         private delegate void SafeCallDelegateUpdateAccountView(Account account);
@@ -98,8 +98,16 @@ namespace RBX_Alt_Manager
 
         private void RefreshView()
         {
-            AccountsView.BuildList(true);
-            AccountsView.BuildGroups();
+            if (AccountsView.InvokeRequired)
+            {
+                var refreshView = new SafeCallDelegateRefresh(RefreshView);
+                AccountsView.Invoke(refreshView);
+            }
+            else
+            {
+                AccountsView.BuildList(true);
+                AccountsView.BuildGroups();
+            }
         }
 
         private void LoadAccounts()
@@ -208,20 +216,7 @@ namespace RBX_Alt_Manager
             return -1;
         }
 
-        public void AddAccountToList(Account account)
-        {
-            string Name = account.Username + " " + account.Alias;
-
-            if (AccountsView.InvokeRequired)
-            {
-                var addItem = new SafeCallDelegateAccount(AddAccountToList);
-                AccountsView.Invoke(addItem, new object[] { account });
-            }
-            else
-            {
-                RefreshView();
-            }
-        }
+        public void AddAccountToList(Account account) => RefreshView();
 
         public void UpdateAccountView(Account account)
         {
@@ -755,7 +750,6 @@ namespace RBX_Alt_Manager
                         AccountsList.Remove(acc);
 
                     RefreshView();
-
                     SaveAccounts();
                 }
             }
@@ -768,7 +762,6 @@ namespace RBX_Alt_Manager
                     AccountsList.Remove(SelectedAccount);
 
                     RefreshView();
-
                     SaveAccounts();
                 }
             }
