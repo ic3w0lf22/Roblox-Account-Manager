@@ -113,6 +113,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\Account.cs" />
+    <Compile Include="Classes\BorderedRichTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Classes\BorderedTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Classes\Field.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -163,6 +169,12 @@
     <Compile Include="Classes\IniFile.cs" />
     <Compile Include="Classes\ProductInfo.cs" />
     <Compile Include="Classes\Program.cs" />
+    <Compile Include="Forms\ThemeEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ThemeEditor.Designer.cs">
+      <DependentUpon>ThemeEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Classes\Server.cs" />
     <Compile Include="Forms\ServerList.cs">
@@ -193,6 +205,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\ImportForm.resx">
       <DependentUpon>ImportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ThemeEditor.resx">
+      <DependentUpon>ThemeEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -237,6 +252,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\server_icon_white.ico" />
+    <Content Include="Resources\team_KX4_icon_white.ico" />
     <None Include="Resources\disc.png" />
     <None Include="Resources\SaveIconSmall.png" />
     <Content Include="Resources\server_icon.ico" />

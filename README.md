@@ -29,5 +29,65 @@ To view the documentation, [click here](https://ic3w0lf22.gitbook.io/roblox-acco
 Change the webserver port if you are planning on using any dangerous functions!
 Be careful executing random scripts when having dangerous settings enabled.
 
-# Preview
+# Frequently Asked Questions
+**Q: Why am I getting CefSharp.Core.Runtime.dll error, how do I fix it?**
+
+**A:** Download the x86 version from https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0
+If that doesn't work download the x64 version and the latest .NET Framework from https://dotnet.microsoft.com/download/dotnet-framework
+
+
+**Q: How do I prevent Windows Defender from deleting alt manager files?**
+
+**A:** Add an exclusion for the Roblox Account Manager folder, here's a video on how to add an exclusion: https://youtu.be/1r93NtwZt4o
+
+
+**Q: Can I join vip servers using alt manager?**
+
+**A:** Yes you can, just make sure the place id is the same as the game you're trying to join, then paste the whole vip server link into the Job ID box and press Join Server
+
+
+**Q: Are there docs for the API?**
+
+**A:** Yes, there are Docs: https://ic3w0lf22.gitbook.io/roblox-account-manager/
+
+
+**Q: My anti virus detects this program as a virus. Should I not use it?**
+
+**A:** No. This program is in no way malicious, it's source code is fully available & trusted by a lot of people in the community. Some anti-virus programs may detect Account Manager as malicious because of the auto update function (a similar thing happens with Roblox Studio Mod Manager as well)
+
+
+**Q: Can you use this on Mac?**
+
+**A:** No, unfortunately we do not have compatibility with mac osx devices at this moment. This may change in the future.
+
+
+**Q: You should add ${feature}.**
+
+**A:** If you have a idea or a request for a feature you can submit such ideas/requests in suggestions
+
+
+**Q: I’ve encountered a bug/issue on this software**
+
+**A:** If you have a bug or issue please explain your issue with screenshots (if possible) and/or a highly descriptive explanation in bugs we will try to get back to you ASAP.
+Make sure you click "Open Details" before screenshotting. Please make sure your output is in English.
+
+
+**Q: I can’t launch multiple accounts repeatedly.**
+
+**A:** This is due to Roblox’s rate limiting
+
+
+**Q: Adding an account doesn't work**
+
+**A:** Restart the program, this issue will be fixed next update
+
+
+**Q: Can you get banned for using this?**
+
+**A:** No, you cannot get banned for using this as this does not break Roblox T.O.S although some games may disallow you from having alt accounts so please do your research if you are unsure.
+
+# Preview (Version 2.6)
+![github-large](Images/Image2.png)
+
+# Preview (Old)
 ![github-large](Images/Image1.png)

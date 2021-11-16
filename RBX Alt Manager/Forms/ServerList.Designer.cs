@@ -46,35 +46,35 @@
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.GamesPage = new System.Windows.Forms.TabPage();
+            this.label1 = new System.Windows.Forms.Label();
+            this.PageNum = new System.Windows.Forms.NumericUpDown();
+            this.Search = new System.Windows.Forms.Button();
+            this.Term = new Classes.BorderedTextBox();
             this.GamesListView = new BrightIdeasSoftware.ObjectListView();
             this.name = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.playerCount = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.likeRatio = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
-            this.Term = new System.Windows.Forms.TextBox();
-            this.Search = new System.Windows.Forms.Button();
-            this.PageNum = new System.Windows.Forms.NumericUpDown();
-            this.label1 = new System.Windows.Forms.Label();
             this.FavoritesPage = new System.Windows.Forms.TabPage();
+            this.Favorite = new System.Windows.Forms.Button();
             this.FavoritesListView = new BrightIdeasSoftware.ObjectListView();
             this.GameName = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
-            this.Favorite = new System.Windows.Forms.Button();
             this.ServersTab = new System.Windows.Forms.TabPage();
-            this.SearchPlayer = new System.Windows.Forms.Button();
-            this.UsernameLabel = new System.Windows.Forms.Label();
-            this.Username = new System.Windows.Forms.TextBox();
-            this.RefreshServers = new System.Windows.Forms.Button();
             this.ServerListView = new BrightIdeasSoftware.ObjectListView();
             this.JobId = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.Playing = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.PingColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.ServerTypeColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.Username = new Classes.BorderedTextBox();
+            this.RefreshServers = new System.Windows.Forms.Button();
+            this.UsernameLabel = new System.Windows.Forms.Label();
+            this.SearchPlayer = new System.Windows.Forms.Button();
             this.Tabs = new System.Windows.Forms.TabControl();
             this.ServerListStrip.SuspendLayout();
             this.GamesStrip.SuspendLayout();
             this.FavoritesStrip.SuspendLayout();
             this.GamesPage.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.GamesListView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PageNum)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.GamesListView)).BeginInit();
             this.FavoritesPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.FavoritesListView)).BeginInit();
             this.ServersTab.SuspendLayout();
@@ -198,6 +198,49 @@
             this.GamesPage.Text = "Games";
             this.GamesPage.UseVisualStyleBackColor = true;
             // 
+            // label1
+            // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(350, 8);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(20, 13);
+            this.label1.TabIndex = 10;
+            this.label1.Text = "Pg";
+            // 
+            // PageNum
+            // 
+            this.PageNum.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.PageNum.Location = new System.Drawing.Point(370, 6);
+            this.PageNum.Maximum = new decimal(new int[] {
+            999999,
+            0,
+            0,
+            0});
+            this.PageNum.Name = "PageNum";
+            this.PageNum.Size = new System.Drawing.Size(40, 20);
+            this.PageNum.TabIndex = 9;
+            // 
+            // Search
+            // 
+            this.Search.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.Search.Location = new System.Drawing.Point(416, 5);
+            this.Search.Name = "Search";
+            this.Search.Size = new System.Drawing.Size(54, 22);
+            this.Search.TabIndex = 8;
+            this.Search.Text = "Search";
+            this.Search.UseVisualStyleBackColor = true;
+            this.Search.Click += new System.EventHandler(this.Search_Click);
+            // 
+            // Term
+            // 
+            this.Term.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.Term.Location = new System.Drawing.Point(6, 6);
+            this.Term.Name = "Term";
+            this.Term.Size = new System.Drawing.Size(344, 20);
+            this.Term.TabIndex = 7;
+            // 
             // GamesListView
             // 
             this.GamesListView.AllColumns.Add(this.name);
@@ -206,6 +249,7 @@
             this.GamesListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.GamesListView.CellEditUseWholeCell = false;
             this.GamesListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.name,
             this.playerCount,
@@ -242,49 +286,6 @@
             this.likeRatio.AspectName = "likeRatio";
             this.likeRatio.Text = "Like %";
             // 
-            // Term
-            // 
-            this.Term.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.Term.Location = new System.Drawing.Point(6, 6);
-            this.Term.Name = "Term";
-            this.Term.Size = new System.Drawing.Size(344, 20);
-            this.Term.TabIndex = 7;
-            // 
-            // Search
-            // 
-            this.Search.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Search.Location = new System.Drawing.Point(416, 5);
-            this.Search.Name = "Search";
-            this.Search.Size = new System.Drawing.Size(54, 22);
-            this.Search.TabIndex = 8;
-            this.Search.Text = "Search";
-            this.Search.UseVisualStyleBackColor = true;
-            this.Search.Click += new System.EventHandler(this.Search_Click);
-            // 
-            // PageNum
-            // 
-            this.PageNum.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.PageNum.Location = new System.Drawing.Point(370, 6);
-            this.PageNum.Maximum = new decimal(new int[] {
-            999999,
-            0,
-            0,
-            0});
-            this.PageNum.Name = "PageNum";
-            this.PageNum.Size = new System.Drawing.Size(40, 20);
-            this.PageNum.TabIndex = 9;
-            // 
-            // label1
-            // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(350, 8);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(20, 13);
-            this.label1.TabIndex = 10;
-            this.label1.Text = "Pg";
-            // 
             // FavoritesPage
             // 
             this.FavoritesPage.Controls.Add(this.Favorite);
@@ -297,6 +298,16 @@
             this.FavoritesPage.Text = "Favorites";
             this.FavoritesPage.UseVisualStyleBackColor = true;
             // 
+            // Favorite
+            // 
+            this.Favorite.Location = new System.Drawing.Point(6, 6);
+            this.Favorite.Name = "Favorite";
+            this.Favorite.Size = new System.Drawing.Size(130, 23);
+            this.Favorite.TabIndex = 8;
+            this.Favorite.Text = "Favorite Current Game";
+            this.Favorite.UseVisualStyleBackColor = true;
+            this.Favorite.Click += new System.EventHandler(this.Favorite_Click);
+            // 
             // FavoritesListView
             // 
             this.FavoritesListView.AllColumns.Add(this.GameName);
@@ -304,6 +315,7 @@
             this.FavoritesListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.FavoritesListView.CellEditUseWholeCell = false;
             this.FavoritesListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.GameName});
             this.FavoritesListView.ContextMenuStrip = this.FavoritesStrip;
@@ -327,18 +339,9 @@
             this.GameName.Text = "Game Name";
             this.GameName.Width = 330;
             // 
-            // Favorite
-            // 
-            this.Favorite.Location = new System.Drawing.Point(6, 6);
-            this.Favorite.Name = "Favorite";
-            this.Favorite.Size = new System.Drawing.Size(130, 23);
-            this.Favorite.TabIndex = 8;
-            this.Favorite.Text = "Favorite Current Game";
-            this.Favorite.UseVisualStyleBackColor = true;
-            this.Favorite.Click += new System.EventHandler(this.Favorite_Click);
-            // 
             // ServersTab
             // 
+            this.ServersTab.BackColor = System.Drawing.Color.Transparent;
             this.ServersTab.Controls.Add(this.ServerListView);
             this.ServersTab.Controls.Add(this.Username);
             this.ServersTab.Controls.Add(this.RefreshServers);
@@ -350,46 +353,6 @@
             this.ServersTab.Size = new System.Drawing.Size(476, 281);
             this.ServersTab.TabIndex = 0;
             this.ServersTab.Text = "Servers";
-            this.ServersTab.UseVisualStyleBackColor = true;
-            // 
-            // SearchPlayer
-            // 
-            this.SearchPlayer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.SearchPlayer.Location = new System.Drawing.Point(388, 8);
-            this.SearchPlayer.Name = "SearchPlayer";
-            this.SearchPlayer.Size = new System.Drawing.Size(75, 21);
-            this.SearchPlayer.TabIndex = 2;
-            this.SearchPlayer.Text = "Search";
-            this.SearchPlayer.UseVisualStyleBackColor = true;
-            this.SearchPlayer.Click += new System.EventHandler(this.SearchPlayer_Click);
-            // 
-            // UsernameLabel
-            // 
-            this.UsernameLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.UsernameLabel.AutoSize = true;
-            this.UsernameLabel.Location = new System.Drawing.Point(159, 12);
-            this.UsernameLabel.Name = "UsernameLabel";
-            this.UsernameLabel.Size = new System.Drawing.Size(55, 13);
-            this.UsernameLabel.TabIndex = 3;
-            this.UsernameLabel.Text = "Username";
-            // 
-            // Username
-            // 
-            this.Username.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Username.Location = new System.Drawing.Point(220, 9);
-            this.Username.Name = "Username";
-            this.Username.Size = new System.Drawing.Size(162, 20);
-            this.Username.TabIndex = 1;
-            // 
-            // RefreshServers
-            // 
-            this.RefreshServers.Location = new System.Drawing.Point(6, 8);
-            this.RefreshServers.Name = "RefreshServers";
-            this.RefreshServers.Size = new System.Drawing.Size(75, 23);
-            this.RefreshServers.TabIndex = 0;
-            this.RefreshServers.Text = "Refresh";
-            this.RefreshServers.UseVisualStyleBackColor = true;
-            this.RefreshServers.Click += new System.EventHandler(this.RefreshServers_Click);
             // 
             // ServerListView
             // 
@@ -400,6 +363,7 @@
             this.ServerListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.ServerListView.CellEditUseWholeCell = false;
             this.ServerListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.JobId,
             this.Playing,
@@ -441,6 +405,45 @@
             this.ServerTypeColumn.Text = "Type";
             this.ServerTypeColumn.Width = 45;
             // 
+            // Username
+            // 
+            this.Username.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.Username.Location = new System.Drawing.Point(220, 9);
+            this.Username.Name = "Username";
+            this.Username.Size = new System.Drawing.Size(162, 20);
+            this.Username.TabIndex = 1;
+            // 
+            // RefreshServers
+            // 
+            this.RefreshServers.Location = new System.Drawing.Point(6, 8);
+            this.RefreshServers.Name = "RefreshServers";
+            this.RefreshServers.Size = new System.Drawing.Size(75, 23);
+            this.RefreshServers.TabIndex = 0;
+            this.RefreshServers.Text = "Refresh";
+            this.RefreshServers.UseVisualStyleBackColor = true;
+            this.RefreshServers.Click += new System.EventHandler(this.RefreshServers_Click);
+            // 
+            // UsernameLabel
+            // 
+            this.UsernameLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.UsernameLabel.AutoSize = true;
+            this.UsernameLabel.Location = new System.Drawing.Point(159, 12);
+            this.UsernameLabel.Name = "UsernameLabel";
+            this.UsernameLabel.Size = new System.Drawing.Size(55, 13);
+            this.UsernameLabel.TabIndex = 3;
+            this.UsernameLabel.Text = "Username";
+            // 
+            // SearchPlayer
+            // 
+            this.SearchPlayer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.SearchPlayer.Location = new System.Drawing.Point(388, 8);
+            this.SearchPlayer.Name = "SearchPlayer";
+            this.SearchPlayer.Size = new System.Drawing.Size(75, 21);
+            this.SearchPlayer.TabIndex = 2;
+            this.SearchPlayer.Text = "Search";
+            this.SearchPlayer.UseVisualStyleBackColor = true;
+            this.SearchPlayer.Click += new System.EventHandler(this.SearchPlayer_Click);
+            // 
             // Tabs
             // 
             this.Tabs.Controls.Add(this.ServersTab);
@@ -474,8 +477,8 @@
             this.FavoritesStrip.ResumeLayout(false);
             this.GamesPage.ResumeLayout(false);
             this.GamesPage.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.GamesListView)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PageNum)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.GamesListView)).EndInit();
             this.FavoritesPage.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.FavoritesListView)).EndInit();
             this.ServersTab.ResumeLayout(false);
@@ -506,7 +509,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.NumericUpDown PageNum;
         private System.Windows.Forms.Button Search;
-        private System.Windows.Forms.TextBox Term;
+        private Classes.BorderedTextBox Term;
         private BrightIdeasSoftware.ObjectListView GamesListView;
         private BrightIdeasSoftware.OLVColumn name;
         private BrightIdeasSoftware.OLVColumn playerCount;
@@ -521,7 +524,7 @@
         private BrightIdeasSoftware.OLVColumn Playing;
         private BrightIdeasSoftware.OLVColumn PingColumn;
         private BrightIdeasSoftware.OLVColumn ServerTypeColumn;
-        private System.Windows.Forms.TextBox Username;
+        private Classes.BorderedTextBox Username;
         private System.Windows.Forms.Button RefreshServers;
         private System.Windows.Forms.Label UsernameLabel;
         private System.Windows.Forms.Button SearchPlayer;

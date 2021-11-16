@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using CefSharp;
 using CefSharp.WinForms;
+using RBX_Alt_Manager.Forms;
 using Cookie = CefSharp.Cookie;
 
 namespace RBX_Alt_Manager
@@ -18,6 +19,8 @@ namespace RBX_Alt_Manager
 
         public AccountAdder()
         {
+            AccountManager.SetDarkBar(Handle);
+
             InitializeComponent();
             CefSettings settings = new CefSettings();
             settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36"; // just your normal browser visiting your website @ roblox! dont hurt alt manager pls : )
@@ -30,6 +33,50 @@ namespace RBX_Alt_Manager
             chromeBrowser.FrameLoadEnd += OnPageLoaded;
             // Add it to the form and fill it to the form window.
             Controls.Add(chromeBrowser);
+        }
+
+        public void ApplyTheme()
+        {
+            BackColor = ThemeEditor.FormsBackground;
+            ForeColor = ThemeEditor.FormsForeground;
+
+            foreach (Control control in this.Controls)
+            {
+                if (control is Button || control is CheckBox)
+                {
+                    if (control is Button)
+                    {
+                        Button b = control as Button;
+                        b.FlatStyle = ThemeEditor.ButtonStyle;
+                        b.FlatAppearance.BorderColor = ThemeEditor.ButtonsBorder;
+                    }
+
+                    if (!(control is CheckBox)) control.BackColor = ThemeEditor.ButtonsBackground;
+                    control.ForeColor = ThemeEditor.ButtonsForeground;
+                }
+                else if (control is TextBox || control is RichTextBox || control is Label)
+                {
+                    if (control is Classes.BorderedTextBox)
+                    {
+                        Classes.BorderedTextBox b = control as Classes.BorderedTextBox;
+                        b.BorderColor = ThemeEditor.TextBoxesBorder;
+                    }
+
+                    if (control is Classes.BorderedRichTextBox)
+                    {
+                        Classes.BorderedRichTextBox b = control as Classes.BorderedRichTextBox;
+                        b.BorderColor = ThemeEditor.TextBoxesBorder;
+                    }
+
+                    control.BackColor = ThemeEditor.TextBoxesBackground;
+                    control.ForeColor = ThemeEditor.TextBoxesForeground;
+                }
+                else if (control is ListBox)
+                {
+                    control.BackColor = ThemeEditor.ButtonsBackground;
+                    control.ForeColor = ThemeEditor.ButtonsForeground;
+                }
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)

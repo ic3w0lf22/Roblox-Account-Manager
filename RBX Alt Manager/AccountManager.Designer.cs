@@ -30,18 +30,13 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AccountManager));
-            this.PlaceID = new System.Windows.Forms.TextBox();
-            this.JobID = new System.Windows.Forms.TextBox();
             this.LabelJobID = new System.Windows.Forms.Label();
             this.Add = new System.Windows.Forms.Button();
             this.Remove = new System.Windows.Forms.Button();
             this.JoinServer = new System.Windows.Forms.Button();
             this.SetDescription = new System.Windows.Forms.Button();
-            this.DescriptionBox = new System.Windows.Forms.RichTextBox();
             this.SetAlias = new System.Windows.Forms.Button();
-            this.Alias = new System.Windows.Forms.TextBox();
             this.Follow = new System.Windows.Forms.Button();
-            this.UserID = new System.Windows.Forms.TextBox();
             this.LabelUserID = new System.Windows.Forms.Label();
             this.ServerList = new System.Windows.Forms.Button();
             this.AccountsStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -76,29 +71,15 @@
             this.AccountAlias = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.Description = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.Group = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.EditTheme = new System.Windows.Forms.Button();
+            this.UserID = new RBX_Alt_Manager.Classes.BorderedTextBox();
+            this.Alias = new RBX_Alt_Manager.Classes.BorderedTextBox();
+            this.DescriptionBox = new RBX_Alt_Manager.Classes.BorderedRichTextBox();
+            this.JobID = new RBX_Alt_Manager.Classes.BorderedTextBox();
+            this.PlaceID = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.AccountsStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).BeginInit();
             this.SuspendLayout();
-            // 
-            // PlaceID
-            // 
-            this.PlaceID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.PlaceID.Location = new System.Drawing.Point(504, 43);
-            this.PlaceID.Name = "PlaceID";
-            this.PlaceID.Size = new System.Drawing.Size(84, 20);
-            this.PlaceID.TabIndex = 1;
-            this.PlaceID.Text = "3016661674";
-            this.PlaceID.TextChanged += new System.EventHandler(this.PlaceID_TextChanged);
-            this.PlaceID.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.PlaceID_KeyPress);
-            // 
-            // JobID
-            // 
-            this.JobID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.JobID.Location = new System.Drawing.Point(594, 43);
-            this.JobID.Name = "JobID";
-            this.JobID.Size = new System.Drawing.Size(150, 20);
-            this.JobID.TabIndex = 2;
-            this.JobID.TextChanged += new System.EventHandler(this.JobID_TextChanged);
             // 
             // LabelJobID
             // 
@@ -154,55 +135,27 @@
             this.SetDescription.UseVisualStyleBackColor = true;
             this.SetDescription.Click += new System.EventHandler(this.SetDescription_Click);
             // 
-            // DescriptionBox
-            // 
-            this.DescriptionBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.DescriptionBox.Location = new System.Drawing.Point(504, 150);
-            this.DescriptionBox.Name = "DescriptionBox";
-            this.DescriptionBox.Size = new System.Drawing.Size(268, 109);
-            this.DescriptionBox.TabIndex = 11;
-            this.DescriptionBox.Text = "Description";
-            // 
             // SetAlias
             // 
             this.SetAlias.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.SetAlias.Location = new System.Drawing.Point(716, 122);
+            this.SetAlias.Location = new System.Drawing.Point(707, 122);
             this.SetAlias.Name = "SetAlias";
-            this.SetAlias.Size = new System.Drawing.Size(56, 23);
+            this.SetAlias.Size = new System.Drawing.Size(65, 23);
             this.SetAlias.TabIndex = 10;
             this.SetAlias.Text = "Set Alias";
-            this.SetAlias.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.SetAlias.UseVisualStyleBackColor = true;
             this.SetAlias.Click += new System.EventHandler(this.SetAlias_Click);
-            // 
-            // Alias
-            // 
-            this.Alias.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Alias.Location = new System.Drawing.Point(504, 124);
-            this.Alias.MaxLength = 30;
-            this.Alias.Name = "Alias";
-            this.Alias.Size = new System.Drawing.Size(206, 20);
-            this.Alias.TabIndex = 9;
-            this.Alias.Text = "Alias";
             // 
             // Follow
             // 
             this.Follow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Follow.Location = new System.Drawing.Point(716, 96);
+            this.Follow.Location = new System.Drawing.Point(707, 96);
             this.Follow.Name = "Follow";
-            this.Follow.Size = new System.Drawing.Size(56, 23);
+            this.Follow.Size = new System.Drawing.Size(65, 23);
             this.Follow.TabIndex = 8;
             this.Follow.Text = "Follow";
             this.Follow.UseVisualStyleBackColor = true;
             this.Follow.Click += new System.EventHandler(this.Follow_Click);
-            // 
-            // UserID
-            // 
-            this.UserID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.UserID.Location = new System.Drawing.Point(566, 98);
-            this.UserID.Name = "UserID";
-            this.UserID.Size = new System.Drawing.Size(144, 20);
-            this.UserID.TabIndex = 7;
             // 
             // LabelUserID
             // 
@@ -524,12 +477,75 @@
             this.Group.Text = "";
             this.Group.Width = 0;
             // 
+            // EditTheme
+            // 
+            this.EditTheme.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.EditTheme.Location = new System.Drawing.Point(504, 236);
+            this.EditTheme.Name = "EditTheme";
+            this.EditTheme.Size = new System.Drawing.Size(268, 23);
+            this.EditTheme.TabIndex = 12;
+            this.EditTheme.Text = "Edit Theme";
+            this.EditTheme.UseVisualStyleBackColor = true;
+            this.EditTheme.Click += new System.EventHandler(this.EditTheme_Click);
+            // 
+            // UserID
+            // 
+            this.UserID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.UserID.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
+            this.UserID.Location = new System.Drawing.Point(566, 98);
+            this.UserID.Name = "UserID";
+            this.UserID.Size = new System.Drawing.Size(135, 20);
+            this.UserID.TabIndex = 7;
+            // 
+            // Alias
+            // 
+            this.Alias.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.Alias.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
+            this.Alias.Location = new System.Drawing.Point(504, 124);
+            this.Alias.MaxLength = 30;
+            this.Alias.Name = "Alias";
+            this.Alias.Size = new System.Drawing.Size(197, 20);
+            this.Alias.TabIndex = 9;
+            this.Alias.Text = "Alias";
+            // 
+            // DescriptionBox
+            // 
+            this.DescriptionBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.DescriptionBox.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(255)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
+            this.DescriptionBox.Location = new System.Drawing.Point(504, 150);
+            this.DescriptionBox.Name = "DescriptionBox";
+            this.DescriptionBox.Size = new System.Drawing.Size(268, 80);
+            this.DescriptionBox.TabIndex = 11;
+            this.DescriptionBox.Text = "Description";
+            // 
+            // JobID
+            // 
+            this.JobID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.JobID.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
+            this.JobID.Location = new System.Drawing.Point(594, 43);
+            this.JobID.Name = "JobID";
+            this.JobID.Size = new System.Drawing.Size(150, 20);
+            this.JobID.TabIndex = 2;
+            this.JobID.TextChanged += new System.EventHandler(this.JobID_TextChanged);
+            // 
+            // PlaceID
+            // 
+            this.PlaceID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.PlaceID.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
+            this.PlaceID.Location = new System.Drawing.Point(504, 43);
+            this.PlaceID.Name = "PlaceID";
+            this.PlaceID.Size = new System.Drawing.Size(84, 20);
+            this.PlaceID.TabIndex = 1;
+            this.PlaceID.Text = "3016661674";
+            this.PlaceID.TextChanged += new System.EventHandler(this.PlaceID_TextChanged);
+            this.PlaceID.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.PlaceID_KeyPress);
+            // 
             // AccountManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 301);
-            this.Controls.Add(this.AccountsView);
+            this.Controls.Add(this.EditTheme);
             this.Controls.Add(this.SaveToAccount);
             this.Controls.Add(this.ImportByCookie);
             this.Controls.Add(this.OpenApp);
@@ -553,6 +569,7 @@
             this.Controls.Add(this.LabelPlaceID);
             this.Controls.Add(this.JobID);
             this.Controls.Add(this.PlaceID);
+            this.Controls.Add(this.AccountsView);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(800, 340);
@@ -569,18 +586,18 @@
         }
 
         #endregion
-        public System.Windows.Forms.TextBox PlaceID;
-        public System.Windows.Forms.TextBox JobID;
+        public Classes.BorderedTextBox PlaceID;
+        public Classes.BorderedTextBox JobID;
         private System.Windows.Forms.Label LabelJobID;
         private System.Windows.Forms.Button Add;
         private System.Windows.Forms.Button Remove;
         private System.Windows.Forms.Button JoinServer;
         private System.Windows.Forms.Button SetDescription;
-        private System.Windows.Forms.RichTextBox DescriptionBox;
+        private Classes.BorderedRichTextBox DescriptionBox;
         private System.Windows.Forms.Button SetAlias;
-        private System.Windows.Forms.TextBox Alias;
+        private Classes.BorderedTextBox Alias;
         private System.Windows.Forms.Button Follow;
-        private System.Windows.Forms.TextBox UserID;
+        private Classes.BorderedTextBox UserID;
         private System.Windows.Forms.Label LabelUserID;
         private System.Windows.Forms.Button ServerList;
         private System.Windows.Forms.ContextMenuStrip AccountsStrip;
@@ -615,5 +632,6 @@
         private BrightIdeasSoftware.OLVColumn Description;
         private System.Windows.Forms.ToolStripMenuItem sortAlphabeticallyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toggleToolStripMenuItem;
+        private System.Windows.Forms.Button EditTheme;
     }
 }

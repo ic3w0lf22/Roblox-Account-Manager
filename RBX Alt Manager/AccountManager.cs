@@ -16,6 +16,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Security.Cryptography;
+using Newtonsoft.Json.Linq;
+using RBX_Alt_Manager.Forms;
+using System.Runtime.InteropServices;
 
 #pragma warning disable CS0618 // stupid parameter warnings
 
@@ -41,9 +44,11 @@ namespace RBX_Alt_Manager
         private AccountUtils UtilsForm;
         private ImportForm ImportAccountsForm;
         private AccountFields FieldsForm;
+        private ThemeEditor ThemeForm;
         private readonly static DateTime startTime = DateTime.Now;
         public static bool IsTeleport = false;
         public static bool UseOldJoin = false;
+        public static string CurrentVersion;
         public OLVListItem SelectedAccountItem;
         private WebServer AltManagerWS;
         public static IniFile IniSettings;
@@ -52,6 +57,7 @@ namespace RBX_Alt_Manager
         private static System.Timers.Timer SaveAccountsTimer;
 
         private static Mutex rbxMultiMutex;
+        private readonly static object saveLock = new object();
 
         private delegate void SafeCallDelegateRefresh();
         private delegate void SafeCallDelegateGroup(string Group, OLVListItem Item = null);
@@ -61,9 +67,24 @@ namespace RBX_Alt_Manager
 
         private static readonly byte[] Entropy = new byte[] { 0x52, 0x4f, 0x42, 0x4c, 0x4f, 0x58, 0x20, 0x41, 0x43, 0x43, 0x4f, 0x55, 0x4e, 0x54, 0x20, 0x4d, 0x41, 0x4e, 0x41, 0x47, 0x45, 0x52, 0x20, 0x7c, 0x20, 0x3a, 0x29, 0x20, 0x7c, 0x20, 0x42, 0x52, 0x4f, 0x55, 0x47, 0x48, 0x54, 0x20, 0x54, 0x4f, 0x20, 0x59, 0x4f, 0x55, 0x20, 0x42, 0x55, 0x59, 0x20, 0x69, 0x63, 0x33, 0x77, 0x30, 0x6c, 0x66 };
 
+        [DllImport("DwmApi")]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, int[] attrValue, int attrSize);
+
+        public static void SetDarkBar(IntPtr Handle)
+        {
+            if (ThemeEditor.UseDarkTopBar && DwmSetWindowAttribute(Handle, 19, new[] { 1 }, 4) != 0)
+                DwmSetWindowAttribute(Handle, 20, new[] { 1 }, 4);
+        }
+
         public AccountManager()
         {
+            ThemeEditor.LoadTheme();
+
+            SetDarkBar(Handle);
+
             InitializeComponent();
+
+            if (ThemeEditor.UseDarkTopBar) Icon = Properties.Resources.team_KX4_icon_white; // this has to go after or icon wont actually change
 
             AccountsView.UnfocusedHighlightBackgroundColor = Color.FromArgb(0, 150, 215);
             AccountsView.UnfocusedHighlightForegroundColor = Color.FromArgb(240, 240, 240);
@@ -119,16 +140,12 @@ namespace RBX_Alt_Manager
                     string Decoded = Encoding.UTF8.GetString(ProtectedData.Unprotect(File.ReadAllBytes(SaveFilePath), Entropy, DataProtectionScope.CurrentUser));
 
                     AccountsList = JsonConvert.DeserializeObject<List<Account>>(Decoded);
-                    AccountsView.SetObjects(AccountsList);
-                    RefreshView();
                 }
                 catch
                 {
                     try
                     {
                         AccountsList = JsonConvert.DeserializeObject<List<Account>>(File.ReadAllText(SaveFilePath));
-                        AccountsView.SetObjects(AccountsList);
-                        RefreshView();
                     }
                     catch (Exception x)
                     {
@@ -150,16 +167,12 @@ namespace RBX_Alt_Manager
                         string Decoded = Encoding.UTF8.GetString(ProtectedData.Unprotect(File.ReadAllBytes(SaveFilePath + ".backup"), Entropy, DataProtectionScope.CurrentUser));
 
                         AccountsList = JsonConvert.DeserializeObject<List<Account>>(Decoded);
-                        AccountsView.SetObjects(AccountsList);
-                        RefreshView();
                     }
                     catch
                     {
                         try
                         {
                             AccountsList = JsonConvert.DeserializeObject<List<Account>>(File.ReadAllText(SaveFilePath + ".backup"));
-                            AccountsView.SetObjects(AccountsList);
-                            RefreshView();
                         }
                         catch
                         {
@@ -168,6 +181,9 @@ namespace RBX_Alt_Manager
                     }
                 }
             }
+
+            AccountsView.SetObjects(AccountsList);
+            RefreshView();
         }
 
         public static void SaveAccounts()
@@ -175,19 +191,22 @@ namespace RBX_Alt_Manager
             if ((DateTime.Now - startTime).Seconds < 5 || AccountsList.Count == 0) return;
             if ((DateTime.Now - LastAccountSave).Seconds < 1) return;
 
-            LastAccountSave = DateTime.Now;
+            lock (saveLock)
+            {
+                LastAccountSave = DateTime.Now;
 
-            string OldInfo = File.Exists(SaveFilePath) ? File.ReadAllText(SaveFilePath) : "";
-            string SaveData = JsonConvert.SerializeObject(AccountsList);
-            int OldSize = Encoding.Unicode.GetByteCount(OldInfo);
-            int NewSize = Encoding.Unicode.GetByteCount(SaveData);
+                string OldInfo = File.Exists(SaveFilePath) ? File.ReadAllText(SaveFilePath) : "";
+                string SaveData = JsonConvert.SerializeObject(AccountsList);
+                int OldSize = Encoding.Unicode.GetByteCount(OldInfo);
+                int NewSize = Encoding.Unicode.GetByteCount(SaveData);
 
-            FileInfo OldFile = new FileInfo(SaveFilePath);
+                FileInfo OldFile = new FileInfo(SaveFilePath);
 
-            if (OldFile.Exists && NewSize < OldSize || (OldFile.Exists && (DateTime.Now - OldFile.LastWriteTime).TotalHours > 36))
-                File.WriteAllText(SaveFilePath + ".backup", OldInfo);
+                if (OldFile.Exists && NewSize < OldSize || (OldFile.Exists && (DateTime.Now - OldFile.LastWriteTime).TotalHours > 36))
+                    File.WriteAllText(SaveFilePath + ".backup", OldInfo);
 
-            File.WriteAllBytes(SaveFilePath, ProtectedData.Protect(Encoding.UTF8.GetBytes(SaveData), Entropy, DataProtectionScope.LocalMachine));
+                File.WriteAllBytes(SaveFilePath, ProtectedData.Protect(Encoding.UTF8.GetBytes(SaveData), Entropy, DataProtectionScope.LocalMachine));
+            }
         }
 
         public static void DelayedSaveAccounts() // Prevent file being locked
@@ -306,9 +325,6 @@ namespace RBX_Alt_Manager
                 File.Delete("AU.exe");
             }
 
-            ArgumentsB.Visible = false; // has no use right now
-            JoinServer.Size = new Size(197, 23);
-
             IniSettings = new IniFile("RAMSettings.ini");
 
             if (!IniSettings.KeyExists("DisableAutoUpdate", "General")) IniSettings.Write("DisableAutoUpdate", "false", "General");
@@ -339,6 +355,8 @@ namespace RBX_Alt_Manager
                 ImportByCookie.Visible = true;
                 OpenApp.Location = new Point(398, 266);
                 OpenApp.Size = new Size(70, 23);
+                ArgumentsB.Visible = false;
+                JoinServer.Size = new Size(197, 23);
             }
 
             try
@@ -362,6 +380,7 @@ namespace RBX_Alt_Manager
             UtilsForm = new AccountUtils();
             ImportAccountsForm = new ImportForm();
             FieldsForm = new AccountFields();
+            ThemeForm = new ThemeEditor();
 
             AccountsView.Items.Clear();
 
@@ -435,6 +454,76 @@ namespace RBX_Alt_Manager
                     catch { }
                 });
             }
+
+            ApplyTheme();
+
+            try
+            {
+                WebClient WC = new WebClient();
+                string VersionJSON = WC.DownloadString("https://clientsettings.roblox.com/v1/client-version/WindowsPlayer");
+                JObject j = JObject.Parse(VersionJSON);
+
+                if (j.TryGetValue("clientVersionUpload", out JToken token))
+                    CurrentVersion = token.Value<string>();
+            }
+            catch { }
+        }
+
+        public void ApplyTheme()
+        {
+            this.BackColor = ThemeEditor.FormsBackground;
+            this.ForeColor = ThemeEditor.FormsForeground;
+
+            if (AccountsView.BackColor != ThemeEditor.AccountBackground || AccountsView.ForeColor != ThemeEditor.AccountForeground)
+            {
+                AccountsView.BackColor = ThemeEditor.AccountBackground;
+                AccountsView.ForeColor = ThemeEditor.AccountForeground;
+
+                RefreshView();
+            }
+
+            AccountsView.HeaderStyle = ThemeEditor.ShowHeaders ? ColumnHeaderStyle.Nonclickable : ColumnHeaderStyle.None;
+
+            foreach (Control control in this.Controls)
+            {
+                if (control is Button || control is CheckBox)
+                {
+                    if (control is Button)
+                    {
+                        Button b = control as Button;
+                        b.FlatStyle = ThemeEditor.ButtonStyle;
+                        b.FlatAppearance.BorderColor = ThemeEditor.ButtonsBorder;
+                    }
+
+                    if (!(control is CheckBox)) control.BackColor = ThemeEditor.ButtonsBackground;
+                    control.ForeColor = ThemeEditor.ButtonsForeground;
+                }
+                else if (control is TextBox || control is RichTextBox || control is Label)
+                {
+                    if (control is Classes.BorderedTextBox)
+                    {
+                        Classes.BorderedTextBox b = control as Classes.BorderedTextBox;
+                        b.BorderColor = ThemeEditor.TextBoxesBorder;
+                    }
+
+                    if (control is Classes.BorderedRichTextBox)
+                    {
+                        Classes.BorderedRichTextBox b = control as Classes.BorderedRichTextBox;
+                        b.BorderColor = ThemeEditor.TextBoxesBorder;
+                    }
+
+                    control.BackColor = ThemeEditor.TextBoxesBackground;
+                    control.ForeColor = ThemeEditor.TextBoxesForeground;
+                }
+            }
+
+            aaform.ApplyTheme();
+            afform.ApplyTheme();
+            ServerListForm.ApplyTheme();
+            UtilsForm.ApplyTheme();
+            ImportAccountsForm.ApplyTheme();
+            FieldsForm.ApplyTheme();
+            ThemeForm.ApplyTheme();
         }
 
         private string SendResponse(HttpListenerRequest request)
@@ -695,10 +784,28 @@ namespace RBX_Alt_Manager
                 return;
             }
 
-            string res = SelectedAccount.JoinServer(UserId, "", true);
+            if (AccountsView.SelectedObjects.Count > 1)
+            {
+                Task.Run(async () =>
+                {
+                    int Delay = 8;
+                    int.TryParse(IniSettings.Read("AccountJoinDelay", "General"), out Delay);
 
-            if (!res.Contains("Success"))
-                MessageBox.Show(res);
+                    foreach (Account account in SelectedAccounts)
+                    {
+                        account.JoinServer(UserId, "", true);
+
+                        await Task.Delay(Delay * 1000);
+                    }
+                });
+            }
+            else if (SelectedAccount != null)
+            {
+                string res = SelectedAccount.JoinServer(UserId, "", true);
+
+                if (!res.Contains("Success"))
+                    MessageBox.Show(res);
+            }
         }
 
         private void PlaceID_KeyPress(object sender, KeyPressEventArgs e)
@@ -1104,5 +1211,16 @@ namespace RBX_Alt_Manager
 
         private void toggleToolStripMenuItem_Click(object sender, EventArgs e) =>
             AccountsView.ShowGroups = !AccountsView.ShowGroups;
+
+        private void EditTheme_Click(object sender, EventArgs e)
+        {
+            if (ThemeForm != null && ThemeForm.Visible)
+            {
+                ThemeForm.Hide();
+                return;
+            }
+
+            ThemeForm.Show();
+        }
     }
 }
