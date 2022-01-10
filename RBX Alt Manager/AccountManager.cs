@@ -35,6 +35,7 @@ namespace RBX_Alt_Manager
         public static RestClient AuthClient;
         public static RestClient EconClient;
         public static RestClient AccountClient;
+        public static RestClient GameJoinClient;
         public static RestClient Web13Client;
         public static string CurrentPlaceId;
         public static string CurrentJobId;
@@ -355,8 +356,8 @@ namespace RBX_Alt_Manager
                 ImportByCookie.Visible = true;
                 OpenApp.Location = new Point(398, 266);
                 OpenApp.Size = new Size(70, 23);
-                ArgumentsB.Visible = false;
-                JoinServer.Size = new Size(197, 23);
+                ArgumentsB.Visible = true;
+                // JoinServer.Size = new Size(197, 23);
             }
 
             try
@@ -398,6 +399,9 @@ namespace RBX_Alt_Manager
 
             AccountClient = new RestClient("https://accountsettings.roblox.com/");
             AccountClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
+
+            GameJoinClient = new RestClient("https://gamejoin.roblox.com/");
+            GameJoinClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache); 
 
             Web13Client = new RestClient("https://web.roblox.com/");
             Web13Client.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
@@ -526,6 +530,8 @@ namespace RBX_Alt_Manager
             ThemeForm.ApplyTheme();
         }
 
+        private List<ServerData> AttemptedJoins = new List<ServerData>();
+
         private string SendResponse(HttpListenerRequest request)
         {
             if (!request.IsLocal || request.Url.AbsolutePath == "/favicon.ico") return "";
@@ -587,6 +593,32 @@ namespace RBX_Alt_Manager
             if (Method == "UnblockUser" && !string.IsNullOrEmpty(request.QueryString["UserId"])) return account.UnblockUserId(request.QueryString["UserId"]);
             if (Method == "UnblockEveryone") return account.UnblockEveryone();
             if (Method == "GetBlockedList") return account.GetBlockedList();
+
+            if (Method == "SetServer" && !string.IsNullOrEmpty(request.QueryString["PlaceId"]) && !string.IsNullOrEmpty(request.QueryString["JobId"])) return account.SetServer(Convert.ToInt64(request.QueryString["PlaceId"]), request.QueryString["JobId"]);
+            if (Method == "SetRecommendedServer")
+            {
+                int attempts = 0;
+                string res = "-1";
+
+                for (int i = RBX_Alt_Manager.ServerList.servers.Count - 1; i > 0; i--) {
+                    if (attempts > 10) return "Too many failed attempts";
+
+                    ServerData server = RBX_Alt_Manager.ServerList.servers[i];
+
+                    if (AttemptedJoins.FirstOrDefault(x => x.id == server.id) != null) continue;
+
+                    AttemptedJoins.Add(server);
+
+                    attempts++;
+
+                    res = account.SetServer(RBX_Alt_Manager.ServerList.CurrentPlaceID, server.id);
+
+                    if (res == "Success")
+                        return res;
+                }
+
+                return string.IsNullOrEmpty(res) ? "Failed" : res;
+            }
 
             if (Method == "GetField" && !string.IsNullOrEmpty(request.QueryString["Field"])) return account.GetField(request.QueryString["Field"]);
             if (Method == "SetField" && !string.IsNullOrEmpty(request.QueryString["Field"]) && !string.IsNullOrEmpty(request.QueryString["Value"]))
@@ -874,9 +906,6 @@ namespace RBX_Alt_Manager
             }
         }
 
-        private void infoToolStripMenuItem_Click(object sender, EventArgs e) =>
-            MessageBox.Show("Roblox Account Manager created by ic3w0lf under the GNU GPLv3 license.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
         private void AccountManager_FormClosed(object sender, FormClosedEventArgs e)
         {
             if (PlaceID == null || string.IsNullOrEmpty(PlaceID.Text)) return;
@@ -1001,22 +1030,22 @@ namespace RBX_Alt_Manager
 
         private void copySecurityTokenToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string Tokens = "";
+            List<string> Tokens = new List<string>();
 
             foreach (Account account in AccountsView.SelectedObjects)
-                Tokens += account.SecurityToken + "\n";
+                Tokens.Add(account.SecurityToken);
 
-            Clipboard.SetText(Tokens);
+            Clipboard.SetText(string.Join("\n", Tokens));
         }
 
         private void copyUsernameToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string Usernames = "";
+            List<string> Usernames = new List<string>();
 
             foreach (Account account in AccountsView.SelectedObjects)
-                Usernames += account.Username + "\n";
+                Usernames.Add(account.Username);
 
-            Clipboard.SetText(Usernames);
+            Clipboard.SetText(string.Join("\n", Usernames));
         }
 
         private void PlaceID_TextChanged(object sender, EventArgs e)
@@ -1121,12 +1150,12 @@ namespace RBX_Alt_Manager
 
         private void copyProfileToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string Profiles = "";
+            List<string> Profiles = new List<string>();
 
             foreach (Account account in AccountsView.SelectedObjects)
-                Profiles += $"https://www.roblox.com/users/{account.UserID}/profile" + "\n";
+                Profiles.Add($"https://www.roblox.com/users/{account.UserID}/profile");
 
-            Clipboard.SetText(Profiles);
+            Clipboard.SetText(string.Join("\n", Profiles));
         }
 
         private void viewFieldsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1222,5 +1251,15 @@ namespace RBX_Alt_Manager
 
             ThemeForm.Show();
         }
+
+        private void AccountManager_HelpButtonClicked(object sender, System.ComponentModel.CancelEventArgs e) =>
+        MessageBox.Show("Some elements may have tooltips, hover over them for about 2 seconds to see instructions.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        
+
+        private void infoToolStripMenuItem1_Click(object sender, EventArgs e) =>
+            MessageBox.Show("Roblox Account Manager created by ic3w0lf under the GNU GPLv3 license.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+        private void groupsToolStripMenuItem_Click(object sender, EventArgs e) =>
+            MessageBox.Show("Groups can be sorted by naming them a number then whatever you want.\nFor example: You can put Group Apple on top by naming it '001 Apple' or '1Apple'.\nThe numbers will be hidden from the name but will be correctly sorted depending on the number.\nAccounts can also be dragged into groups.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 }

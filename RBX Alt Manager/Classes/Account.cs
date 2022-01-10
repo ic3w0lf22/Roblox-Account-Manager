@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
 using System.Collections.Generic;
@@ -586,6 +587,29 @@ namespace RBX_Alt_Manager
             }
             else
                 return "ERROR: Invalid Authentication Ticket";
+        }
+
+        public string SetServer(long PlaceID, string JobID)
+        {
+            string Token = GetCSRFToken();
+
+            if (string.IsNullOrEmpty(Token))
+                return "ERROR: Account Session Expired, re-add the account or try again. (1)";
+
+            RestRequest request = new RestRequest("v1/join-game-instance", Method.POST);
+            request.AddCookie(".ROBLOSECURITY", SecurityToken);
+            request.AddHeader("User-Agent", "Roblox/WinInet");
+            request.AddHeader("Content-Type", "application/json");
+            request.AddJsonBody(new { gameId = JobID, placeId = PlaceID });
+
+            AccountManager.GameJoinClient.UserAgent = "Roblox/WinInet";
+
+            IRestResponse response = AccountManager.GameJoinClient.Execute(request);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+                return Regex.IsMatch(response.Content, "\"joinScriptUrl\":null") ? response.Content : "Success";
+            else
+                return $"Failed {response.StatusCode}: {response.Content} {response.ErrorMessage}";
         }
 
         public string LaunchApp()

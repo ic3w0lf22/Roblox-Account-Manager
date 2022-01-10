@@ -49,7 +49,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.PageNum = new System.Windows.Forms.NumericUpDown();
             this.Search = new System.Windows.Forms.Button();
-            this.Term = new Classes.BorderedTextBox();
+            this.Term = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.GamesListView = new BrightIdeasSoftware.ObjectListView();
             this.name = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.playerCount = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
@@ -59,16 +59,19 @@
             this.FavoritesListView = new BrightIdeasSoftware.ObjectListView();
             this.GameName = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.ServersTab = new System.Windows.Forms.TabPage();
+            this.OtherPlaceId = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.ServerListView = new BrightIdeasSoftware.ObjectListView();
             this.JobId = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.Playing = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.PingColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.ServerTypeColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
-            this.Username = new Classes.BorderedTextBox();
+            this.Username = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.RefreshServers = new System.Windows.Forms.Button();
             this.UsernameLabel = new System.Windows.Forms.Label();
             this.SearchPlayer = new System.Windows.Forms.Button();
             this.Tabs = new System.Windows.Forms.TabControl();
+            this.OPITip = new System.Windows.Forms.ToolTip(this.components);
+            this.copyPlaceIDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ServerListStrip.SuspendLayout();
             this.GamesStrip.SuspendLayout();
             this.FavoritesStrip.SuspendLayout();
@@ -158,28 +161,29 @@
             this.FavoritesStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem1,
             this.toolStripMenuItem2,
-            this.removeToolStripMenuItem});
+            this.removeToolStripMenuItem,
+            this.copyPlaceIDToolStripMenuItem});
             this.FavoritesStrip.Name = "GamesStrip";
-            this.FavoritesStrip.Size = new System.Drawing.Size(130, 70);
+            this.FavoritesStrip.Size = new System.Drawing.Size(181, 114);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(129, 22);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItem1.Text = "Join Game";
             this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(129, 22);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItem2.Text = "Rename";
             this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
             // removeToolStripMenuItem
             // 
             this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            this.removeToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
+            this.removeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.removeToolStripMenuItem.Text = "Remove";
             this.removeToolStripMenuItem.Click += new System.EventHandler(this.removeToolStripMenuItem_Click);
             // 
@@ -236,6 +240,7 @@
             // 
             this.Term.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.Term.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
             this.Term.Location = new System.Drawing.Point(6, 6);
             this.Term.Name = "Term";
             this.Term.Size = new System.Drawing.Size(344, 20);
@@ -305,6 +310,8 @@
             this.Favorite.Size = new System.Drawing.Size(130, 23);
             this.Favorite.TabIndex = 8;
             this.Favorite.Text = "Favorite Current Game";
+            this.OPITip.SetToolTip(this.Favorite, "To add a private server to your favorites, make sure the entire private server li" +
+        "nk is in the JobId box.");
             this.Favorite.UseVisualStyleBackColor = true;
             this.Favorite.Click += new System.EventHandler(this.Favorite_Click);
             // 
@@ -342,6 +349,7 @@
             // ServersTab
             // 
             this.ServersTab.BackColor = System.Drawing.Color.Transparent;
+            this.ServersTab.Controls.Add(this.OtherPlaceId);
             this.ServersTab.Controls.Add(this.ServerListView);
             this.ServersTab.Controls.Add(this.Username);
             this.ServersTab.Controls.Add(this.RefreshServers);
@@ -353,6 +361,16 @@
             this.ServersTab.Size = new System.Drawing.Size(476, 281);
             this.ServersTab.TabIndex = 0;
             this.ServersTab.Text = "Servers";
+            // 
+            // OtherPlaceId
+            // 
+            this.OtherPlaceId.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.OtherPlaceId.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
+            this.OtherPlaceId.Location = new System.Drawing.Point(87, 9);
+            this.OtherPlaceId.Name = "OtherPlaceId";
+            this.OtherPlaceId.Size = new System.Drawing.Size(111, 20);
+            this.OtherPlaceId.TabIndex = 6;
+            this.OPITip.SetToolTip(this.OtherPlaceId, resources.GetString("OtherPlaceId.ToolTip"));
             // 
             // ServerListView
             // 
@@ -408,10 +426,13 @@
             // Username
             // 
             this.Username.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Username.Location = new System.Drawing.Point(220, 9);
+            this.Username.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
+            this.Username.Location = new System.Drawing.Point(265, 9);
             this.Username.Name = "Username";
-            this.Username.Size = new System.Drawing.Size(162, 20);
+            this.Username.Size = new System.Drawing.Size(117, 20);
             this.Username.TabIndex = 1;
+            this.OPITip.SetToolTip(this.Username, "The Roblox Username of who you are searching for (PlaceId must be correct or it m" +
+        "ay not find anyone)");
             // 
             // RefreshServers
             // 
@@ -427,7 +448,7 @@
             // 
             this.UsernameLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.UsernameLabel.AutoSize = true;
-            this.UsernameLabel.Location = new System.Drawing.Point(159, 12);
+            this.UsernameLabel.Location = new System.Drawing.Point(204, 13);
             this.UsernameLabel.Name = "UsernameLabel";
             this.UsernameLabel.Size = new System.Drawing.Size(55, 13);
             this.UsernameLabel.TabIndex = 3;
@@ -455,6 +476,13 @@
             this.Tabs.SelectedIndex = 0;
             this.Tabs.Size = new System.Drawing.Size(484, 307);
             this.Tabs.TabIndex = 6;
+            // 
+            // copyPlaceIDToolStripMenuItem
+            // 
+            this.copyPlaceIDToolStripMenuItem.Name = "copyPlaceIDToolStripMenuItem";
+            this.copyPlaceIDToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.copyPlaceIDToolStripMenuItem.Text = "Copy PlaceID";
+            this.copyPlaceIDToolStripMenuItem.Click += new System.EventHandler(this.copyPlaceIDToolStripMenuItem_Click);
             // 
             // ServerList
             // 
@@ -529,5 +557,8 @@
         private System.Windows.Forms.Label UsernameLabel;
         private System.Windows.Forms.Button SearchPlayer;
         private System.Windows.Forms.TabControl Tabs;
+        private Classes.BorderedTextBox OtherPlaceId;
+        private System.Windows.Forms.ToolTip OPITip;
+        private System.Windows.Forms.ToolStripMenuItem copyPlaceIDToolStripMenuItem;
     }
 }

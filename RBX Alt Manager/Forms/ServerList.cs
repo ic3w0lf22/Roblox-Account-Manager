@@ -67,7 +67,7 @@ namespace RBX_Alt_Manager
                     }
                     else if (control is ListBox || control is ObjectListView)
                     {
-                        if (control is ObjectListView) ((ObjectListView)control).HeaderStyle = ThemeEditor.ShowHeaders ? ColumnHeaderStyle.Nonclickable : ColumnHeaderStyle.None;
+                        if (control is ObjectListView) ((ObjectListView)control).HeaderStyle = ThemeEditor.ShowHeaders ? ColumnHeaderStyle.Clickable : ColumnHeaderStyle.None;
                         control.BackColor = ThemeEditor.ButtonsBackground;
                         control.ForeColor = ThemeEditor.ButtonsForeground;
                     }
@@ -83,6 +83,8 @@ namespace RBX_Alt_Manager
         private DateTime startTime;
         private string FavGamesFN = Path.Combine(Environment.CurrentDirectory, "FavoriteGames.json");
         private delegate void SafeCallDelegateFavorite(FavoriteGame game);
+        public static List<ServerData> servers = new List<ServerData>();
+        public static long CurrentPlaceID = 0;
 
         private void ServerList_Load(object sender, EventArgs e)
         {
@@ -121,32 +123,42 @@ namespace RBX_Alt_Manager
         {
             if (Busy || !Int64.TryParse(Program.MainForm.PlaceID.Text, out long PlaceId)) return;
 
+            if (OtherPlaceId.Text.Length > 3 && Int64.TryParse(OtherPlaceId.Text, out long OPI))
+                PlaceId = OPI;
+
+            CurrentPlaceID = PlaceId;
+
+            servers.Clear();
             ServerListView.Items.Clear();
             IRestResponse response;
 
             ServersInfo publicInfo = new ServersInfo();
             ServersInfo vipInfo = new ServersInfo();
+
             publicInfo.nextPageCursor = "";
             vipInfo.nextPageCursor = "";
-            List<ServerData> servers = new List<ServerData>();
 
-            Task.Factory.StartNew(() =>
+            Task.Factory.StartNew(async () =>
             {
                 while (publicInfo.nextPageCursor != null)
                 {
-                    RestRequest request = new RestRequest("v1/games/" + Program.MainForm.PlaceID.Text + "/servers/public?sortOrder=Asc&limit=50." + (string.IsNullOrEmpty(publicInfo.nextPageCursor) ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
-                    response = gamesclient.Execute(request);
+                    RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?sortOrder=Asc&limit=100" + (string.IsNullOrEmpty(publicInfo.nextPageCursor) ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
+                    response = await gamesclient.ExecuteAsync(request);
 
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
                         publicInfo = JsonConvert.DeserializeObject<ServersInfo>(response.Content);
 
+                        List<ServerData> sservers = new List<ServerData>();
+
                         foreach (ServerData data in publicInfo.data)
                         {
                             data.type = "Public";
                             servers.Add(data);
-                            ServerListView.AddObject(data);
+                            sservers.Add(data);
                         }
+
+                        ServerListView.AddObjects(sservers);
                     }
                 }
 
@@ -189,10 +201,22 @@ namespace RBX_Alt_Manager
         {
             if (AccountManager.SelectedAccount == null) return;
 
-            string res = AccountManager.SelectedAccount.JoinServer(Convert.ToInt64(Program.MainForm.PlaceID.Text), ServerListView.SelectedItem.Text, false, false);
+            if (OtherPlaceId.Text.Length > 3)
+            {
+                string res = AccountManager.SelectedAccount.SetServer(Convert.ToInt64(OtherPlaceId.Text), ServerListView.SelectedItem.Text);
 
-            if (!res.Contains("Success"))
-                MessageBox.Show(res);
+                if (!res.Contains("Success"))
+                    MessageBox.Show(res);
+                else
+                    Console.Beep();
+            }
+            else
+            {
+                string res = AccountManager.SelectedAccount.JoinServer(Convert.ToInt64(Program.MainForm.PlaceID.Text), ServerListView.SelectedItem.Text, false, false);
+
+                if (!res.Contains("Success"))
+                    MessageBox.Show(res);
+            }
         }
 
         private void SearchPlayer_Click(object sender, EventArgs e)
@@ -508,9 +532,15 @@ namespace RBX_Alt_Manager
             }
         }
 
-        private void ServerList_HelpButtonClicked(object sender, CancelEventArgs e)
+        private void ServerList_HelpButtonClicked(object sender, CancelEventArgs e) =>
+            MessageBox.Show("Some elements may have tooltips, hover over them for about 2 seconds to see instructions.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+        private void copyPlaceIDToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("To add a private server to your favorites, make sure the entire private server link is in the JobId box,", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            FavoriteGame game = FavoritesListView.SelectedObject as FavoriteGame;
+
+            if (game != null)
+                Clipboard.SetText(game.PlaceID.ToString());
         }
     }
 }

@@ -97,6 +97,9 @@ function Account:GetField(Field) return GET('GetField', self.Username, 'Field=' 
 function Account:SetField(Field, Value) return GET('SetField', self.Username, 'Field=' .. Field, 'Value=' .. tostring(Value)) end
 function Account:RemoveField(Field) return GET('RemoveField', self.Username, 'Field=' .. Field) end
 
+function Account:SetServer(PlaceId, JobId) return GET('SetServer', self.Username, 'PlaceId=' .. PlaceId, 'JobId=' .. JobId) end
+function Account:SetRecommendedServer(PlaceId) return GET('SetServer', self.Username, 'PlaceId=' .. PlaceId) end
+
 function Account:GetCookie() return GET('GetCookie', self.Username) end
 function Account:LaunchAccount(PlaceId, JobId, FollowUser, JoinVip) -- if you want to follow someone, PlaceId must be their user id
     return GET('LaunchAccount', self.Username, 'PlaceId=' .. PlaceId, JobId and ('JobId=' .. JobId), FollowUser and 'FollowUser=true', JoinVip and 'JoinVIP=true')

@@ -122,6 +122,9 @@ namespace RBX_Alt_Manager
 
         private async void OnPageLoaded(object sender, FrameLoadEndEventArgs args)
         {
+            chromeBrowser.ExecuteScriptAsync(@"document.body.classList.remove(""light-theme"");document.body.classList.add(""dark-theme"");");
+            chromeBrowser.ExecuteScriptAsyncWhenPageLoaded(@"document.body.classList.remove(""light-theme"");document.body.classList.add(""dark-theme"");");
+
             if (!string.IsNullOrEmpty(SetUsername))
             {
                 chromeBrowser.ExecuteScriptAsyncWhenPageLoaded($"document.getElementById('login-username').value='{SetUsername}'");
@@ -134,7 +137,6 @@ namespace RBX_Alt_Manager
                 Program.MainForm.GetType().GetMethod("AddAccount", BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static).Invoke(null, new object[] { SecurityToken, src });
                 HideForm();
                 chromeBrowser.Load("https://roblox.com/login");
-                // CloseForm();
             }
         }
 
