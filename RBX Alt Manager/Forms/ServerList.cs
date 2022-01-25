@@ -77,7 +77,7 @@ namespace RBX_Alt_Manager
 
         public static RestClient rbxclient;
         public static RestClient gamesclient;
-        private bool Busy;
+        public bool Busy;
         private int Page = 0;
         private List<FavoriteGame> Favorites;
         private DateTime startTime;
@@ -121,7 +121,11 @@ namespace RBX_Alt_Manager
 
         private void RefreshServers_Click(object sender, EventArgs e)
         {
-            if (Busy || !Int64.TryParse(Program.MainForm.PlaceID.Text, out long PlaceId)) return;
+            if (Busy || !Int64.TryParse(Program.MainForm.PlaceID.Text, out long PlaceId))
+            {
+                MessageBox.Show("Server List is currently busy", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
             if (OtherPlaceId.Text.Length > 3 && Int64.TryParse(OtherPlaceId.Text, out long OPI))
                 PlaceId = OPI;
@@ -140,6 +144,8 @@ namespace RBX_Alt_Manager
 
             Task.Factory.StartNew(async () =>
             {
+                Busy = true;
+
                 while (publicInfo.nextPageCursor != null)
                 {
                     RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?sortOrder=Asc&limit=100" + (string.IsNullOrEmpty(publicInfo.nextPageCursor) ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
@@ -162,11 +168,13 @@ namespace RBX_Alt_Manager
                     }
                 }
 
+                Busy = false;
+
                 if (AccountManager.SelectedAccount != null)
                 {
                     while (vipInfo.nextPageCursor != null)
                     {
-                        RestRequest request = new RestRequest("v1/games/" + Program.MainForm.PlaceID.Text + " /servers/VIP?sortOrder=Asc&limit=25" + (string.IsNullOrEmpty(vipInfo.nextPageCursor) ? "" : "&cursor=" + vipInfo.nextPageCursor), Method.GET);
+                        RestRequest request = new RestRequest("v1/games/" + PlaceId + " /servers/VIP?sortOrder=Asc&limit=25" + (string.IsNullOrEmpty(vipInfo.nextPageCursor) ? "" : "&cursor=" + vipInfo.nextPageCursor), Method.GET);
                         request.AddCookie(".ROBLOSECURITY", AccountManager.SelectedAccount.SecurityToken);
                         request.AddHeader("Accept", "application/json");
                         response = gamesclient.Execute(request);
@@ -184,8 +192,6 @@ namespace RBX_Alt_Manager
                         }
                     }
                 }
-
-                Busy = false;
             });
         }
 
@@ -253,10 +259,17 @@ namespace RBX_Alt_Manager
                 return;
             }
 
+            if (Busy || !Int64.TryParse(Program.MainForm.PlaceID.Text, out long PlaceId)) return;
+
+            if (OtherPlaceId.Text.Length > 3 && Int64.TryParse(OtherPlaceId.Text, out long OPI))
+                PlaceId = OPI;
+
             Avatar avatar = JsonConvert.DeserializeObject<Avatar>(response.Content);
             int index = 0;
 
-            request = new RestRequest("games/getgameinstancesjson?placeId=" + Program.MainForm.PlaceID.Text + "&startIndex=" + index.ToString());
+            Console.WriteLine(avatar.Url);
+
+            request = new RestRequest("games/getgameinstancesjson?placeId=" + PlaceId + "&startIndex=" + index.ToString());
             request.AddCookie(".ROBLOSECURITY", token);
             request.AddHeader("Host", "www.roblox.com");
             response = rbxclient.Execute(request);
@@ -273,14 +286,17 @@ namespace RBX_Alt_Manager
 
             foreach (GameInstance t in instances.Collection)
             {
-                foreach (GamePlayer p in t.CurrentPlayers)
+                if (t.CurrentPlayers.Find(p => p.Thumbnail.Url == avatar.Url) != null)
                 {
-                    if (p.Thumbnail.Url == avatar.Url)
-                        UserFound = t.Guid;
+                    UserFound = t.Guid;
+                    serverData.id = t.Guid;
+                    serverData.playing = t.CurrentPlayers.Count;
+                    serverData.ping = t.Ping;
+                    serverData.fps = t.Fps;
                 }
             }
 
-            request = new RestRequest("games/getgameinstancesjson?placeId=" + Program.MainForm.PlaceID.Text + "&startIndex=0");
+            request = new RestRequest("games/getgameinstancesjson?placeId=" + PlaceId + "&startIndex=0");
             request.AddCookie(".ROBLOSECURITY", token);
             request.AddHeader("Host", "www.roblox.com");
             response = rbxclient.Execute(request);
@@ -291,12 +307,14 @@ namespace RBX_Alt_Manager
 
             if (instances == null) return;
 
+            Busy = true;
+
             for (int i = 0; i < instances.TotalCollectionSize; i += 50)
-            {
+            { // wow this search is so shittily made
                 int startIndex = i;
                 int tindex = startIndex;
                 bool FirstTime = true;
-                GameInstancesCollection tinstances = new GameInstancesCollection();
+                GameInstancesCollection tinstances = instances;
 
                 Task.Run(() =>
                 {
@@ -304,30 +322,29 @@ namespace RBX_Alt_Manager
                     {
                         if (!string.IsNullOrEmpty(UserFound) || tindex >= startIndex + 50) break;
 
-                        request = new RestRequest("games/getgameinstancesjson?placeId=" + Program.MainForm.PlaceID.Text + "&startIndex=" + tindex.ToString());
+                        request = new RestRequest("games/getgameinstancesjson?placeId=" + PlaceId + "&startIndex=" + tindex.ToString());
                         request.AddCookie(".ROBLOSECURITY", token);
                         request.AddHeader("Host", "www.roblox.com");
                         response = rbxclient.Execute(request);
+
+                        Console.WriteLine(response.Content);
                         tinstances = JsonConvert.DeserializeObject<GameInstancesCollection>(response.Content);
 
                         FirstTime = false;
 
                         tindex += 10;
 
-                        if (tinstances == null) break;
+                        if (tinstances == null || tinstances.Collection == null) break;
 
                         foreach (GameInstance t in tinstances.Collection)
                         {
-                            foreach (GamePlayer p in t.CurrentPlayers)
+                            if (t.CurrentPlayers.Find(p => p.Thumbnail.Url == avatar.Url) != null)
                             {
-                                if (p.Thumbnail.Url == avatar.Url)
-                                {
-                                    UserFound = t.Guid;
-                                    serverData.id = t.Guid;
-                                    serverData.playing = t.CurrentPlayers.Count;
-                                    serverData.ping = t.Ping;
-                                    serverData.fps = t.Fps;
-                                }
+                                UserFound = t.Guid;
+                                serverData.id = t.Guid;
+                                serverData.playing = t.CurrentPlayers.Count;
+                                serverData.ping = t.Ping;
+                                serverData.fps = t.Fps;
                             }
                         }
                     }

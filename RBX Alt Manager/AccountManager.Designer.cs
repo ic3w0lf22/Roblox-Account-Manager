@@ -558,7 +558,7 @@
             this.PlaceID.Name = "PlaceID";
             this.PlaceID.Size = new System.Drawing.Size(84, 20);
             this.PlaceID.TabIndex = 1;
-            this.PlaceID.Text = "3016661674";
+            this.PlaceID.Text = "5315046213";
             this.PlaceID.TextChanged += new System.EventHandler(this.PlaceID_TextChanged);
             this.PlaceID.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.PlaceID_KeyPress);
             // 
@@ -595,12 +595,11 @@
             this.HelpButton = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(800, 340);
             this.Name = "AccountManager";
             this.Text = "Roblox Account Manager";
             this.HelpButtonClicked += new System.ComponentModel.CancelEventHandler(this.AccountManager_HelpButtonClicked);
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.AccountManager_FormClosed);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AccountManager_FormClosing);
             this.Load += new System.EventHandler(this.AccountManager_Load);
             this.Shown += new System.EventHandler(this.AccountManager_Shown);
             this.AccountsStrip.ResumeLayout(false);

@@ -45,6 +45,7 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyPlaceIDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.GamesPage = new System.Windows.Forms.TabPage();
             this.label1 = new System.Windows.Forms.Label();
             this.PageNum = new System.Windows.Forms.NumericUpDown();
@@ -71,7 +72,6 @@
             this.SearchPlayer = new System.Windows.Forms.Button();
             this.Tabs = new System.Windows.Forms.TabControl();
             this.OPITip = new System.Windows.Forms.ToolTip(this.components);
-            this.copyPlaceIDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ServerListStrip.SuspendLayout();
             this.GamesStrip.SuspendLayout();
             this.FavoritesStrip.SuspendLayout();
@@ -164,28 +164,35 @@
             this.removeToolStripMenuItem,
             this.copyPlaceIDToolStripMenuItem});
             this.FavoritesStrip.Name = "GamesStrip";
-            this.FavoritesStrip.Size = new System.Drawing.Size(181, 114);
+            this.FavoritesStrip.Size = new System.Drawing.Size(145, 92);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(144, 22);
             this.toolStripMenuItem1.Text = "Join Game";
             this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(180, 22);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(144, 22);
             this.toolStripMenuItem2.Text = "Rename";
             this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
             // removeToolStripMenuItem
             // 
             this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            this.removeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.removeToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
             this.removeToolStripMenuItem.Text = "Remove";
             this.removeToolStripMenuItem.Click += new System.EventHandler(this.removeToolStripMenuItem_Click);
+            // 
+            // copyPlaceIDToolStripMenuItem
+            // 
+            this.copyPlaceIDToolStripMenuItem.Name = "copyPlaceIDToolStripMenuItem";
+            this.copyPlaceIDToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.copyPlaceIDToolStripMenuItem.Text = "Copy PlaceID";
+            this.copyPlaceIDToolStripMenuItem.Click += new System.EventHandler(this.copyPlaceIDToolStripMenuItem_Click);
             // 
             // GamesPage
             // 
@@ -477,13 +484,6 @@
             this.Tabs.Size = new System.Drawing.Size(484, 307);
             this.Tabs.TabIndex = 6;
             // 
-            // copyPlaceIDToolStripMenuItem
-            // 
-            this.copyPlaceIDToolStripMenuItem.Name = "copyPlaceIDToolStripMenuItem";
-            this.copyPlaceIDToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.copyPlaceIDToolStripMenuItem.Text = "Copy PlaceID";
-            this.copyPlaceIDToolStripMenuItem.Click += new System.EventHandler(this.copyPlaceIDToolStripMenuItem_Click);
-            // 
             // ServerList
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -493,7 +493,6 @@
             this.HelpButton = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(500, 346);
             this.Name = "ServerList";
             this.Text = "Server List";

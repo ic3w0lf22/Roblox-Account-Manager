@@ -56,6 +56,7 @@ namespace RBX_Alt_Manager
         private string WSPassword = "";
         private static DateTime LastAccountSave = DateTime.Now;
         private static System.Timers.Timer SaveAccountsTimer;
+        private StreamWriter ConsoleWriter;
 
         private static Mutex rbxMultiMutex;
         private readonly static object saveLock = new object();
@@ -134,6 +135,11 @@ namespace RBX_Alt_Manager
 
         private void LoadAccounts()
         {
+            Console.WriteLine("LoadAccounts");
+            Console.WriteLine(SaveFilePath);
+            Console.WriteLine(AccountsList);
+            Console.WriteLine(AccountsView);
+
             if (File.Exists(SaveFilePath))
             {
                 try
@@ -317,61 +323,6 @@ namespace RBX_Alt_Manager
             }
             catch { }
 
-            if (File.Exists("AU.exe"))
-            {
-                if (File.Exists("Auto Update.exe"))
-                    File.Delete("Auto Update.exe");
-
-                File.Copy("AU.exe", "Auto Update.exe");
-                File.Delete("AU.exe");
-            }
-
-            IniSettings = new IniFile("RAMSettings.ini");
-
-            if (!IniSettings.KeyExists("DisableAutoUpdate", "General")) IniSettings.Write("DisableAutoUpdate", "false", "General");
-            if (!IniSettings.KeyExists("AccountJoinDelay", "General")) IniSettings.Write("AccountJoinDelay", "8", "General");
-
-            if (!IniSettings.KeyExists("DevMode", "Developer")) IniSettings.Write("DevMode", "false", "Developer");
-            if (!IniSettings.KeyExists("EnableWebServer", "Developer")) IniSettings.Write("EnableWebServer", "false", "Developer");
-            if (!IniSettings.KeyExists("WebServerPort", "WebServer")) IniSettings.Write("WebServerPort", "7963", "WebServer");
-            if (!IniSettings.KeyExists("AllowGetCookie", "WebServer")) IniSettings.Write("AllowGetCookie", "false", "WebServer");
-            if (!IniSettings.KeyExists("AllowGetAccounts", "WebServer")) IniSettings.Write("AllowGetAccounts", "false", "WebServer");
-            if (!IniSettings.KeyExists("AllowLaunchAccount", "WebServer")) IniSettings.Write("AllowLaunchAccount", "false", "WebServer");
-            if (!IniSettings.KeyExists("AllowAccountEditing", "WebServer")) IniSettings.Write("AllowAccountEditing", "false", "WebServer");
-            if (!IniSettings.KeyExists("Password", "WebServer")) IniSettings.Write("Password", "", "WebServer"); else WSPassword = IniSettings.Read("Password", "WebServer");
-            if (!IniSettings.KeyExists("EveryRequestRequiresPassword", "WebServer")) IniSettings.Write("EveryRequestRequiresPassword", "false", "WebServer");
-
-            PlaceID.Text = IniSettings.KeyExists("SavedPlaceId", "General") ? IniSettings.Read("SavedPlaceId", "General") : "2788229376";
-
-            if (IniSettings.Read("DevMode", "Developer") != "true" && !File.Exists("dev.mode"))
-            {
-                AccountsStrip.Items.Remove(viewFieldsToolStripMenuItem);
-                AccountsStrip.Items.Remove(getAuthenticationTicketToolStripMenuItem);
-                AccountsStrip.Items.Remove(copyRbxplayerLinkToolStripMenuItem);
-                AccountsStrip.Items.Remove(copySecurityTokenToolStripMenuItem);
-                AccountsStrip.Items.Remove(copyAppLinkToolStripMenuItem);
-            }
-            else
-            {
-                ImportByCookie.Visible = true;
-                OpenApp.Location = new Point(398, 266);
-                OpenApp.Size = new Size(70, 23);
-                ArgumentsB.Visible = true;
-                // JoinServer.Size = new Size(197, 23);
-            }
-
-            try
-            {
-                if (IniSettings.Read("EnableWebServer", "Developer") == "true")
-                {
-                    string Port = IniSettings.KeyExists("WebServerPort", "WebServer") ? IniSettings.Read("WebServerPort", "WebServer") : "7963";
-
-                    AltManagerWS = new WebServer(SendResponse, $"http://localhost:{Port}/");
-                    AltManagerWS.Run();
-                }
-            }
-            catch (Exception x) { MessageBox.Show("Failed to start webserver! " + x, "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error); }
-
             SaveAccountsTimer = new System.Timers.Timer(2500);
             SaveAccountsTimer.Elapsed += SaveTimer_Tick;
 
@@ -382,8 +333,6 @@ namespace RBX_Alt_Manager
             ImportAccountsForm = new ImportForm();
             FieldsForm = new AccountFields();
             ThemeForm = new ThemeEditor();
-
-            AccountsView.Items.Clear();
 
             MainClient = new RestClient("https://www.roblox.com/");
             MainClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
@@ -401,7 +350,7 @@ namespace RBX_Alt_Manager
             AccountClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
             GameJoinClient = new RestClient("https://gamejoin.roblox.com/");
-            GameJoinClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache); 
+            GameJoinClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
             Web13Client = new RestClient("https://web.roblox.com/");
             Web13Client.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
@@ -409,7 +358,57 @@ namespace RBX_Alt_Manager
             FriendsClient = new RestClient("https://friends.roblox.com");
             FriendsClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
+            ApplyTheme();
+
             PlaceID_TextChanged(PlaceID, new EventArgs());
+
+            IniSettings = new IniFile("RAMSettings.ini");
+
+            if (!IniSettings.KeyExists("DisableAutoUpdate", "General")) IniSettings.Write("DisableAutoUpdate", "false", "General");
+            if (!IniSettings.KeyExists("AccountJoinDelay", "General")) IniSettings.Write("AccountJoinDelay", "8", "General");
+
+            if (!IniSettings.KeyExists("DevMode", "Developer")) IniSettings.Write("DevMode", "false", "Developer");
+            if (!IniSettings.KeyExists("EnableWebServer", "Developer")) IniSettings.Write("EnableWebServer", "false", "Developer");
+            if (!IniSettings.KeyExists("WebServerPort", "WebServer")) IniSettings.Write("WebServerPort", "7963", "WebServer");
+            if (!IniSettings.KeyExists("AllowGetCookie", "WebServer")) IniSettings.Write("AllowGetCookie", "false", "WebServer");
+            if (!IniSettings.KeyExists("AllowGetAccounts", "WebServer")) IniSettings.Write("AllowGetAccounts", "false", "WebServer");
+            if (!IniSettings.KeyExists("AllowLaunchAccount", "WebServer")) IniSettings.Write("AllowLaunchAccount", "false", "WebServer");
+            if (!IniSettings.KeyExists("AllowAccountEditing", "WebServer")) IniSettings.Write("AllowAccountEditing", "false", "WebServer");
+            if (!IniSettings.KeyExists("Password", "WebServer")) IniSettings.Write("Password", "", "WebServer"); else WSPassword = IniSettings.Read("Password", "WebServer");
+            if (!IniSettings.KeyExists("EveryRequestRequiresPassword", "WebServer")) IniSettings.Write("EveryRequestRequiresPassword", "false", "WebServer");
+
+            PlaceID.Text = IniSettings.KeyExists("SavedPlaceId", "General") ? IniSettings.Read("SavedPlaceId", "General") : "5315046213";
+
+            if (IniSettings.Read("DevMode", "Developer") != "true" && !File.Exists("dev.mode"))
+            {
+                AccountsStrip.Items.Remove(viewFieldsToolStripMenuItem);
+                AccountsStrip.Items.Remove(getAuthenticationTicketToolStripMenuItem);
+                AccountsStrip.Items.Remove(copyRbxplayerLinkToolStripMenuItem);
+                AccountsStrip.Items.Remove(copySecurityTokenToolStripMenuItem);
+                AccountsStrip.Items.Remove(copyAppLinkToolStripMenuItem);
+            }
+            else
+            {
+                ImportByCookie.Visible = true;
+                OpenApp.Location = new Point(398, 266);
+                OpenApp.Size = new Size(70, 23);
+                ArgumentsB.Visible = true;
+            }
+
+            FileStream fs = new FileStream("console.txt", FileMode.Create);
+
+            ConsoleWriter = new StreamWriter(fs);
+
+            Console.SetOut(ConsoleWriter);
+
+            if (File.Exists("AU.exe"))
+            {
+                if (File.Exists("Auto Update.exe"))
+                    File.Delete("Auto Update.exe");
+
+                File.Copy("AU.exe", "Auto Update.exe");
+                File.Delete("AU.exe");
+            }
 
             if (IniSettings.Read("DisableAutoUpdate", "General") != "true")
             {
@@ -459,7 +458,17 @@ namespace RBX_Alt_Manager
                 });
             }
 
-            ApplyTheme();
+            try
+            {
+                if (IniSettings.Read("EnableWebServer", "Developer") == "true")
+                {
+                    string Port = IniSettings.KeyExists("WebServerPort", "WebServer") ? IniSettings.Read("WebServerPort", "WebServer") : "7963";
+
+                    AltManagerWS = new WebServer(SendResponse, $"http://localhost:{Port}/");
+                    AltManagerWS.Run();
+                }
+            }
+            catch (Exception x) { MessageBox.Show("Failed to start webserver! " + x, "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error); }
 
             try
             {
@@ -600,7 +609,8 @@ namespace RBX_Alt_Manager
                 int attempts = 0;
                 string res = "-1";
 
-                for (int i = RBX_Alt_Manager.ServerList.servers.Count - 1; i > 0; i--) {
+                for (int i = RBX_Alt_Manager.ServerList.servers.Count - 1; i > 0; i--)
+                {
                     if (attempts > 10) return "Too many failed attempts";
 
                     ServerData server = RBX_Alt_Manager.ServerList.servers[i];
@@ -726,6 +736,9 @@ namespace RBX_Alt_Manager
 
         private void Add_Click(object sender, EventArgs e)
         {
+            Console.WriteLine("Add_Click");
+            Console.WriteLine(aaform);
+
             if (aaform != null && aaform.Visible)
                 aaform.HideForm();
 
@@ -855,9 +868,11 @@ namespace RBX_Alt_Manager
             else
                 ServerListForm.Show();
 
+            ServerListForm.Busy = false; // incase it somehow bugs out
+
             ServerListForm.StartPosition = FormStartPosition.Manual;
-            ServerListForm.Top = this.Top;
-            ServerListForm.Left = this.Right;
+            ServerListForm.Top = Top;
+            ServerListForm.Left = Right;
         }
 
         private void HideUsernamesCheckbox_CheckedChanged(object sender, EventArgs e)
@@ -906,17 +921,16 @@ namespace RBX_Alt_Manager
             }
         }
 
-        private void AccountManager_FormClosed(object sender, FormClosedEventArgs e)
+        private void AccountManager_FormClosing(object sender, FormClosingEventArgs e)
         {
+            ConsoleWriter.Close();
+
+            if (AltManagerWS != null)
+                AltManagerWS.Stop();
+
             if (PlaceID == null || string.IsNullOrEmpty(PlaceID.Text)) return;
 
             IniSettings.Write("SavedPlaceId", PlaceID.Text, "General");
-
-            if (AltManagerWS != null)
-            {
-                AltManagerWS.Stop();
-                SaveAccounts();
-            }
         }
 
         private void BrowserButton_Click(object sender, EventArgs e)
@@ -1254,7 +1268,7 @@ namespace RBX_Alt_Manager
 
         private void AccountManager_HelpButtonClicked(object sender, System.ComponentModel.CancelEventArgs e) =>
         MessageBox.Show("Some elements may have tooltips, hover over them for about 2 seconds to see instructions.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        
+
 
         private void infoToolStripMenuItem1_Click(object sender, EventArgs e) =>
             MessageBox.Show("Roblox Account Manager created by ic3w0lf under the GNU GPLv3 license.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);

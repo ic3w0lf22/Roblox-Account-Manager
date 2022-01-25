@@ -110,19 +110,14 @@ namespace RBX_Alt_Manager
             }
         }
 
-        public void ShowForm()
-        {
+        public void ShowForm() =>
             Show();
-        }
 
-        public void ClearData()
-        {
+        public void ClearData() =>
             Cef.GetGlobalCookieManager().DeleteCookies();
-        }
 
         private async void OnPageLoaded(object sender, FrameLoadEndEventArgs args)
         {
-            chromeBrowser.ExecuteScriptAsync(@"document.body.classList.remove(""light-theme"");document.body.classList.add(""dark-theme"");");
             chromeBrowser.ExecuteScriptAsyncWhenPageLoaded(@"document.body.classList.remove(""light-theme"");document.body.classList.add(""dark-theme"");");
 
             if (!string.IsNullOrEmpty(SetUsername))
@@ -131,7 +126,7 @@ namespace RBX_Alt_Manager
                 SetUsername = "";
             }
 
-            if (args.Url.Contains("my/account/json"))
+            if (!string.IsNullOrEmpty(args.Url) && args.Url.Contains("my/account/json"))
             {
                 string src = await args.Frame.GetSourceAsync();
                 Program.MainForm.GetType().GetMethod("AddAccount", BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static).Invoke(null, new object[] { SecurityToken, src });
@@ -149,20 +144,20 @@ namespace RBX_Alt_Manager
                 var cookieManager = Cef.GetGlobalCookieManager();
 
                 await cookieManager.VisitAllCookiesAsync().ContinueWith(t =>
-            {
-                if (t.Status == TaskStatus.RanToCompletion)
                 {
-                    List<Cookie> cookies = t.Result;
-
-                    Cookie RSec = cookies.Find(x => x.Name == ".ROBLOSECURITY");
-
-                    if (RSec != null)
+                    if (t.Status == TaskStatus.RanToCompletion)
                     {
-                        SecurityToken = RSec.Value;
-                        chromeBrowser.Load("https://www.roblox.com/my/account/json");
+                        List<Cookie> cookies = t.Result;
+
+                        Cookie RSec = cookies.Find(x => x.Name == ".ROBLOSECURITY");
+
+                        if (RSec != null)
+                        {
+                            SecurityToken = RSec.Value;
+                            chromeBrowser.Load("https://www.roblox.com/my/account/json");
+                        }
                     }
-                }
-            });
+                });
             }
         }
 
