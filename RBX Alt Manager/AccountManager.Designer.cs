@@ -74,6 +74,7 @@
             this.AccountAlias = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.Description = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.Group = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.activityRenderer = new BrightIdeasSoftware.MultiImageRenderer();
             this.EditTheme = new System.Windows.Forms.Button();
             this.UserID = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.Alias = new RBX_Alt_Manager.Classes.BorderedTextBox();
@@ -509,6 +510,11 @@
             this.Group.Text = "";
             this.Group.Width = 0;
             // 
+            // activityRenderer
+            // 
+            this.activityRenderer.ImageName = "activity";
+            this.activityRenderer.MaxNumberImages = 5;
+            // 
             // EditTheme
             // 
             this.EditTheme.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -560,7 +566,6 @@
             this.PlaceID.TabIndex = 1;
             this.PlaceID.Text = "5315046213";
             this.PlaceID.TextChanged += new System.EventHandler(this.PlaceID_TextChanged);
-            this.PlaceID.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.PlaceID_KeyPress);
             // 
             // AccountManager
             // 
@@ -659,5 +664,6 @@
         private System.Windows.Forms.Button EditTheme;
         private System.Windows.Forms.ToolStripMenuItem groupsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem infoToolStripMenuItem1;
+        private BrightIdeasSoftware.MultiImageRenderer activityRenderer;
     }
 }

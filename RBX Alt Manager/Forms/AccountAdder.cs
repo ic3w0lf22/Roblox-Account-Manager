@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -22,17 +25,34 @@ namespace RBX_Alt_Manager
             AccountManager.SetDarkBar(Handle);
 
             InitializeComponent();
-            CefSettings settings = new CefSettings();
-            settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36"; // just your normal browser visiting your website @ roblox! dont hurt alt manager pls : )
-            // Initialize cef with the provided settings
-            Cef.EnableHighDPISupport();
-            Cef.Initialize(settings);
-            // Create a browser component
-            chromeBrowser = new ChromiumWebBrowser("https://roblox.com/login");
-            chromeBrowser.AddressChanged += OnNavigated;
-            chromeBrowser.FrameLoadEnd += OnPageLoaded;
-            // Add it to the form and fill it to the form window.
-            Controls.Add(chromeBrowser);
+
+            try
+            {
+                CefSettings settings = new CefSettings();
+
+                settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36"; // just your normal browser visiting your website @ roblox! dont hurt alt manager pls : )
+                                                                                                                                                           // Initialize cef with the provided settings
+                Cef.EnableHighDPISupport();
+                Cef.Initialize(settings);
+                // Create a browser component
+                chromeBrowser = new ChromiumWebBrowser("https://roblox.com/login");
+                chromeBrowser.AddressChanged += OnNavigated;
+                chromeBrowser.FrameLoadEnd += OnPageLoaded;
+                // Add it to the form and fill it to the form window.
+                Controls.Add(chromeBrowser);
+            }
+            catch
+            {
+                string TempPath = Path.GetTempFileName();
+                WebClient VCDL = new WebClient();
+
+                VCDL.DownloadFile("https://aka.ms/vs/17/release/vc_redist.x86.exe", TempPath);
+
+                ProcessStartInfo VC = new ProcessStartInfo(TempPath);
+                VC.UseShellExecute = false;
+
+                Process.Start(VC).WaitForExit();
+            }
         }
 
         public void ApplyTheme()

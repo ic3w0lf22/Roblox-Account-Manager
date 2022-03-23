@@ -121,9 +121,13 @@ namespace RBX_Alt_Manager
 
         private void RefreshServers_Click(object sender, EventArgs e)
         {
-            if (Busy || !Int64.TryParse(Program.MainForm.PlaceID.Text, out long PlaceId))
+            if (!Int64.TryParse(Program.MainForm.PlaceID.Text, out long PlaceId))
+                return;
+
+            if (Busy)
             {
-                MessageBox.Show("Server List is currently busy", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Busy = false;
+
                 return;
             }
 
@@ -144,14 +148,15 @@ namespace RBX_Alt_Manager
 
             Task.Factory.StartNew(async () =>
             {
+                Program.InvokeIfRequired(RefreshServers, () => { RefreshServers.Text = "Cancel"; });
                 Busy = true;
 
-                while (publicInfo.nextPageCursor != null)
+                while (publicInfo.nextPageCursor != null && Busy)
                 {
                     RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?sortOrder=Asc&limit=100" + (string.IsNullOrEmpty(publicInfo.nextPageCursor) ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
                     response = await gamesclient.ExecuteAsync(request);
 
-                    if (response.StatusCode == HttpStatusCode.OK)
+                    if (response.StatusCode == HttpStatusCode.OK && Busy)
                     {
                         publicInfo = JsonConvert.DeserializeObject<ServersInfo>(response.Content);
 
@@ -169,6 +174,7 @@ namespace RBX_Alt_Manager
                 }
 
                 Busy = false;
+                Program.InvokeIfRequired(RefreshServers, () => { RefreshServers.Text = "Refresh"; });
 
                 if (AccountManager.SelectedAccount != null)
                 {
@@ -267,8 +273,6 @@ namespace RBX_Alt_Manager
             Avatar avatar = JsonConvert.DeserializeObject<Avatar>(response.Content);
             int index = 0;
 
-            Console.WriteLine(avatar.Url);
-
             request = new RestRequest("games/getgameinstancesjson?placeId=" + PlaceId + "&startIndex=" + index.ToString());
             request.AddCookie(".ROBLOSECURITY", token);
             request.AddHeader("Host", "www.roblox.com");
@@ -327,7 +331,6 @@ namespace RBX_Alt_Manager
                         request.AddHeader("Host", "www.roblox.com");
                         response = rbxclient.Execute(request);
 
-                        Console.WriteLine(response.Content);
                         tinstances = JsonConvert.DeserializeObject<GameInstancesCollection>(response.Content);
 
                         FirstTime = false;

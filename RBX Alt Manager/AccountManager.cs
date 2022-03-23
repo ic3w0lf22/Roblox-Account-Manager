@@ -56,7 +56,6 @@ namespace RBX_Alt_Manager
         private string WSPassword = "";
         private static DateTime LastAccountSave = DateTime.Now;
         private static System.Timers.Timer SaveAccountsTimer;
-        private StreamWriter ConsoleWriter;
 
         private static Mutex rbxMultiMutex;
         private readonly static object saveLock = new object();
@@ -135,11 +134,6 @@ namespace RBX_Alt_Manager
 
         private void LoadAccounts()
         {
-            Console.WriteLine("LoadAccounts");
-            Console.WriteLine(SaveFilePath);
-            Console.WriteLine(AccountsList);
-            Console.WriteLine(AccountsView);
-
             if (File.Exists(SaveFilePath))
             {
                 try
@@ -334,6 +328,8 @@ namespace RBX_Alt_Manager
             FieldsForm = new AccountFields();
             ThemeForm = new ThemeEditor();
 
+            // if (Process.GetCurrentProcess().Modules.)
+
             MainClient = new RestClient("https://www.roblox.com/");
             MainClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
@@ -394,12 +390,6 @@ namespace RBX_Alt_Manager
                 OpenApp.Size = new Size(70, 23);
                 ArgumentsB.Visible = true;
             }
-
-            FileStream fs = new FileStream("console.txt", FileMode.Create);
-
-            ConsoleWriter = new StreamWriter(fs);
-
-            Console.SetOut(ConsoleWriter);
 
             if (File.Exists("AU.exe"))
             {
@@ -736,9 +726,6 @@ namespace RBX_Alt_Manager
 
         private void Add_Click(object sender, EventArgs e)
         {
-            Console.WriteLine("Add_Click");
-            Console.WriteLine(aaform);
-
             if (aaform != null && aaform.Visible)
                 aaform.HideForm();
 
@@ -791,7 +778,16 @@ namespace RBX_Alt_Manager
 
         private void JoinServer_Click(object sender, EventArgs e)
         {
+            Match IDMatch = Regex.Match(PlaceID.Text, @"\/games\/(\d+)[\/|\?]?"); // idiotproofing
+
+            if (PlaceID.Text.Contains("privateServerLinkCode") && IDMatch.Success)
+                JobID.Text = PlaceID.Text;
+
+            PlaceID.Text = IDMatch.Success ? IDMatch.Groups[1].Value : Regex.Replace(PlaceID.Text, "[^0-9]", "");
+
             bool VIPServer = JobID.TextLength > 4 ? JobID.Text.Substring(0, 4) == "VIP:" : false;
+
+            if (!long.TryParse(PlaceID.Text, out long PlaceId)) return;
 
             if (AccountsView.SelectedObjects.Count > 1)
             {
@@ -802,7 +798,7 @@ namespace RBX_Alt_Manager
 
                     foreach (Account account in SelectedAccounts)
                     {
-                        account.JoinServer(Convert.ToInt64(PlaceID.Text), VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer);
+                        account.JoinServer(PlaceId, VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer);
 
                         await Task.Delay(Delay * 1000);
                     }
@@ -810,7 +806,7 @@ namespace RBX_Alt_Manager
             }
             else if (SelectedAccount != null)
             {
-                string res = SelectedAccount.JoinServer(Convert.ToInt64(PlaceID.Text), VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer);
+                string res = SelectedAccount.JoinServer(PlaceId, VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer);
 
                 if (!res.Contains("Success"))
                     MessageBox.Show(res);
@@ -851,11 +847,6 @@ namespace RBX_Alt_Manager
                 if (!res.Contains("Success"))
                     MessageBox.Show(res);
             }
-        }
-
-        private void PlaceID_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
         }
 
         private void ServerList_Click(object sender, EventArgs e)
@@ -923,8 +914,6 @@ namespace RBX_Alt_Manager
 
         private void AccountManager_FormClosing(object sender, FormClosingEventArgs e)
         {
-            ConsoleWriter.Close();
-
             if (AltManagerWS != null)
                 AltManagerWS.Stop();
 

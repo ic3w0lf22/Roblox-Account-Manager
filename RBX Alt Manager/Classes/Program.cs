@@ -42,5 +42,13 @@ namespace RBX_Alt_Manager
             int j = Array.IndexOf<T>(Arr, src) + 1;
             return (Arr.Length == j) ? Arr[0] : Arr[j];
         }
+
+        public static void InvokeIfRequired(this Control _Control, MethodInvoker _Action)
+        {
+            if (_Control.InvokeRequired)
+                _Control.Invoke(_Action);
+            else
+                _Action();
+        }
     }
 }

@@ -27,6 +27,7 @@ namespace RBX_Alt_Manager
         public bool Valid;
         public string SecurityToken;
         public string Username;
+        private DateTime LastUse;
         private string _Alias = "";
         private string _Description = "";
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public string Group { get; set; } = "Default";
@@ -104,7 +105,11 @@ namespace RBX_Alt_Manager
             string Token = "";
 
             if (result != null)
+            {
                 Token = (string)result.Value;
+                LastUse = DateTime.Now;
+                AccountManager.DelayedSaveAccounts();
+            }
 
             CSRFToken = Token;
 
@@ -519,7 +524,7 @@ namespace RBX_Alt_Manager
                             AccessCode = parsedCode;
                         }
                     }
-                    else if (response.StatusCode == HttpStatusCode.Redirect) // thx wally
+                    else if (response.StatusCode == HttpStatusCode.Redirect) // thx wally (p.s. i hate wally)
                     {
                         RestRequest cRequest = new RestRequest(string.Format("/games/{0}?privateServerLinkCode={1}", PlaceID, LinkCode), Method.GET);
 
@@ -558,12 +563,12 @@ namespace RBX_Alt_Manager
                     ProcessStartInfo Roblox = new ProcessStartInfo(RPath);
                     if (JoinVIP)
                     {
-                        Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}\"", Token, PlaceID, JobID);
+                        Roblox.Arguments = string.Format("--play -a https://auth.roblox.com/v1/authentication-ticket/redeem -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode={3}\"", Token, PlaceID, AccessCode, LinkCode);
                     }
                     else if (FollowUser)
-                        Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}\"", Token, PlaceID);
+                        Roblox.Arguments = string.Format("--play -a https://auth.roblox.com/v1/authentication-ticket/redeem -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}\"", Token, PlaceID);
                     else
-                        Roblox.Arguments = string.Format("--play -a https://www.roblox.com/Login/Negotiate.ashx -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}&isPlayTogetherGame=false\"", Token, PlaceID, "&gameId=" + JobID, string.IsNullOrEmpty(JobID) ? "" : "Job");
+                        Roblox.Arguments = string.Format("--play -a https://auth.roblox.com/v1/authentication-ticket/redeem -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}&isPlayTogetherGame=false\"", Token, PlaceID, "&gameId=" + JobID, string.IsNullOrEmpty(JobID) ? "" : "Job");
 
                     Process.Start(Roblox);
 
