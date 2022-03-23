@@ -317,6 +317,18 @@ namespace RBX_Alt_Manager
             }
             catch { }
 
+            if (File.Exists("AU.exe"))
+            {
+                if (File.Exists("Auto Update.exe"))
+                    File.Delete("Auto Update.exe");
+
+                File.Copy("AU.exe", "Auto Update.exe");
+                File.Delete("AU.exe");
+            }
+
+            if (Directory.Exists(Path.Combine(Environment.CurrentDirectory, "Update")))
+                Directory.Delete(Path.Combine(Environment.CurrentDirectory, "Update"));
+
             SaveAccountsTimer = new System.Timers.Timer(2500);
             SaveAccountsTimer.Elapsed += SaveTimer_Tick;
 
@@ -389,15 +401,6 @@ namespace RBX_Alt_Manager
                 OpenApp.Location = new Point(398, 266);
                 OpenApp.Size = new Size(70, 23);
                 ArgumentsB.Visible = true;
-            }
-
-            if (File.Exists("AU.exe"))
-            {
-                if (File.Exists("Auto Update.exe"))
-                    File.Delete("Auto Update.exe");
-
-                File.Copy("AU.exe", "Auto Update.exe");
-                File.Delete("AU.exe");
             }
 
             if (IniSettings.Read("DisableAutoUpdate", "General") != "true")

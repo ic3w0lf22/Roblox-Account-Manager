@@ -43,15 +43,28 @@ namespace RBX_Alt_Manager
             }
             catch
             {
-                string TempPath = Path.GetTempFileName();
-                WebClient VCDL = new WebClient();
+                if (Directory.Exists(Path.Combine(Environment.CurrentDirectory, "x86")))
+                {
+                    string TempPath = Path.GetTempFileName();
+                    WebClient VCDL = new WebClient();
 
-                VCDL.DownloadFile("https://aka.ms/vs/17/release/vc_redist.x86.exe", TempPath);
+                    VCDL.DownloadFile("https://aka.ms/vs/17/release/vc_redist.x86.exe", TempPath);
 
-                ProcessStartInfo VC = new ProcessStartInfo(TempPath);
-                VC.UseShellExecute = false;
+                    ProcessStartInfo VC = new ProcessStartInfo(TempPath);
+                    VC.UseShellExecute = false;
 
-                Process.Start(VC).WaitForExit();
+                    Process.Start(VC).WaitForExit();
+                }
+                else
+                {
+                    string AFN = Path.Combine(Directory.GetCurrentDirectory(), "Auto Update.exe");
+
+                    if (File.Exists(AFN))
+                    {
+                        Process.Start(AFN, "skip");
+                        Environment.Exit(1);
+                    }
+                }
             }
         }
 

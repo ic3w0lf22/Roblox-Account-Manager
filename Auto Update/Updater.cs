@@ -21,12 +21,22 @@ namespace Auto_Update
 
         private Thread currentThread;
         private string FileName = "Update.zip";
+        private string UpdatePath = Path.Combine(Environment.CurrentDirectory, "Update");
         private delegate void SafeCallDelegateSetProgress(int Progress);
         private delegate void SafeCallDelegateSetStatus(string Text);
 
         private void AutoUpdater_Load(object sender, EventArgs e)
         {
-            DialogResult result = MessageBox.Show($"Auto Update?", "Alt Manager Auto Updater", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            string[] args = Environment.GetCommandLineArgs();
+            DialogResult result;
+
+            if (args.Length > 1 && args[1] == "skip")
+                result = DialogResult.Yes;
+            else
+                result = MessageBox.Show($"Auto Update?", "Alt Manager Auto Updater", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            if (Directory.Exists(UpdatePath)) Directory.Delete(UpdatePath, true);
+
             FileName = Path.Combine(Directory.GetCurrentDirectory(), FileName);
 
             if (result == DialogResult.Yes)
@@ -63,20 +73,6 @@ namespace Auto_Update
             return;
         }
 
-        static string GetMD5HashFromFile(Stream stream)
-        {
-            using (var md5 = new MD5CryptoServiceProvider())
-            {
-                var buffer = md5.ComputeHash(stream);
-                var sb = new StringBuilder();
-
-                for (int i = 0; i < buffer.Length; i++)
-                    sb.Append(buffer[i].ToString("x2"));
-
-                return sb.ToString();
-            }
-        }
-
         static double B2MB(double bytes) => Math.Round((bytes / 1024f) / 1024f, 2);
 
         private void progressChanged(object sender, DownloadProgressChangedEventArgs e)
@@ -98,7 +94,7 @@ namespace Auto_Update
         {
             WebClient WC = new WebClient();
             WC.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36";
-            string Releases = WC.DownloadString("https://api.github.com/repos/ic3w0lf22/Roblox-Account-Manager/releases/latest");
+            string Releases = WC.DownloadString("https://api.github.com/repos/ic3w0lf22/Roblox-Account-Manager/releases/tags/0.0");
             Match match = Regex.Match(Releases, @"""browser_download_url"":\s*""?([^""]+)");
 
             if (match.Success && match.Groups.Count >= 2)
@@ -123,42 +119,47 @@ namespace Auto_Update
             {
                 using (ZipArchive archive = ZipFile.OpenRead(FileName))
                 {
-                    foreach (ZipArchiveEntry newFile in archive.Entries)
+                    archive.ExtractToDirectory(UpdatePath);
+
+                    string UP = Path.Combine(Environment.CurrentDirectory, "Update", "Auto Update.exe");
+
+                    if (File.Exists(UP))
+                        File.Move(UP, Path.Combine(Environment.CurrentDirectory, "Update", "AU.exe"));
+
+                    foreach (string s in Directory.GetFiles(UpdatePath))
                     {
-                        string path = Path.Combine(Directory.GetCurrentDirectory(), newFile.Name);
+                        string FN = Path.GetFileName(s);
 
-                        if (newFile.Name == System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + ".exe") path = Path.Combine(Directory.GetCurrentDirectory(), "AU.exe");
+                        if (File.Exists(Path.Combine(Environment.CurrentDirectory, FN)))
+                            File.Delete(Path.Combine(Environment.CurrentDirectory, FN));
+                    }
 
-                        if (File.Exists(path))
+                    foreach (string s in Directory.GetDirectories(UpdatePath))
+                    {
+                        string FN = Path.GetFileName(s);
+
+                        if (Directory.Exists(Path.Combine(Environment.CurrentDirectory, FN)))
+                            Directory.Delete(Path.Combine(Environment.CurrentDirectory, FN), true);
+                    }
+
+                    DirectoryInfo UpdateDir = new DirectoryInfo(UpdatePath);
+
+                    foreach (FileInfo file in UpdateDir.GetFiles())
+                        file.MoveTo(Path.Combine(Environment.CurrentDirectory, file.Name));
+
+                    foreach (DirectoryInfo dir in UpdateDir.GetDirectories())
+                    {
+                        dir.MoveTo(Path.Combine(Environment.CurrentDirectory, dir.Name));
+
+                        foreach (FileInfo file in dir.GetFiles()) // remove old files from main directory
                         {
-                            FileStream existingStream = File.OpenRead(path);
-                            Stream newStream = newFile.Open();
-                            string ExistingMD5 = GetMD5HashFromFile(existingStream);
-                            string NewMD5 = GetMD5HashFromFile(newStream);
-
-                            existingStream.Close();
-                            newStream.Close();
-
-                            if (ExistingMD5 != NewMD5)
-                            {
-                                try
-                                {
-                                    Console.WriteLine("Replacing " + path);
-                                    File.Delete(path);
-                                    newFile.ExtractToFile(path);
-                                }
-                                catch (Exception x)
-                                {
-                                    SetStatus("Error");
-                                    Invoke(new Action(() => { MessageBox.Show(this, "Failed to extract file, make sure the alt manager is completely closed.\n" + x.Message); }));
-                                    Environment.Exit(0);
-                                }
-                            }
+                            if (File.Exists(Path.Combine(Environment.CurrentDirectory, file.Name)))
+                                File.Delete(Path.Combine(Environment.CurrentDirectory, file.Name));
                         }
-                        else newFile.ExtractToFile(path);
                     }
                 }
-            } catch(Exception x)
+            }
+            catch (Exception x)
             {
                 SetStatus("Error");
                 Invoke(new Action(() => { MessageBox.Show(this, "Something went wrong! " + x.Message); }));

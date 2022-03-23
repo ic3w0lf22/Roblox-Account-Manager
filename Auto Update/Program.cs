@@ -8,11 +8,12 @@ namespace Auto_Update
 {
     static class Program
     {
+        public static bool SkipPrompt = false;
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
