@@ -39,6 +39,7 @@ namespace RBX_Alt_Manager
         public static RestClient Web13Client;
         public static string CurrentPlaceId;
         public static string CurrentJobId;
+        public static string Token;
         private AccountAdder aaform;
         private ArgumentsForm afform;
         private ServerList ServerListForm;
@@ -534,6 +535,15 @@ namespace RBX_Alt_Manager
 
         private List<ServerData> AttemptedJoins = new List<ServerData>();
 
+        public void ImportAccount(String Token) {
+            RestRequest myAcc = new RestRequest("my/account/json", Method.GET);
+            myAcc.AddCookie(".ROBLOSECURITY", Token);
+            IRestResponse response = AccountManager.MainClient.Execute(myAcc);
+
+            if (response.StatusCode == HttpStatusCode.OK && response.Content.Contains("DisplayName")) // shitty check i know ...
+                AccountManager.AddAccount(Token, response.Content);
+        }
+
         private string SendResponse(HttpListenerRequest request)
         {
             if (!request.IsLocal || request.Url.AbsolutePath == "/favicon.ico") return "";
@@ -547,6 +557,12 @@ namespace RBX_Alt_Manager
             if (IniSettings.Read("EveryRequestRequiresPassword", "WebServer") == "true" && (WSPassword.Length < 6 || Password != WSPassword)) return "Invalid Password";
 
             if ((Method == "GetCookie" || Method == "GetAccounts" || Method == "LaunchAccount") && (WSPassword.Length < 6 || Password != WSPassword)) return "Invalid Password";
+
+            if (Method == "ImportAccount") 
+            {
+                string Token = request.QueryString["Token"];
+                ImportAccount(Token);
+            }
 
             if (Method == "GetAccounts")
             {
