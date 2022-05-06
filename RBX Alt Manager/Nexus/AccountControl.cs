@@ -417,10 +417,10 @@ namespace RBX_Alt_Manager.Forms
 
             File.WriteAllText(path, "pcall(function() loadstring(game:HttpGet'https://raw.githubusercontent.com/ic3w0lf22/Roblox-Account-Manager/master/RBX%20Alt%20Manager/Nexus/Nexus.lua')() end)");
 
-            Process.Start("explorer.exe", " / select, " + path);
+            Process.Start("explorer.exe", "/select, " + path);
         }
 
-        private void NexusDocsButton_Click(object sender, EventArgs e) => Process.Start("https://raw.githubusercontent.com/ic3w0lf22/Roblox-Account-Manager/master/RBX%20Alt%20Manager/Nexus/");
+        private void NexusDocsButton_Click(object sender, EventArgs e) => Process.Start("https://github.com/ic3w0lf22/Roblox-Account-Manager/blob/master/RBX%20Alt%20Manager/Nexus/NexusDocs.md");
 
         private void AutoRelaunchTimer_Tick(object sender, EventArgs e)
         {
