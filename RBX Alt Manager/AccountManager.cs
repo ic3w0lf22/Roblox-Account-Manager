@@ -1,5 +1,8 @@
 ﻿using BrightIdeasSoftware;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using RBX_Alt_Manager.Classes;
+using RBX_Alt_Manager.Forms;
 using RestSharp;
 using System;
 using System.Collections.Generic;
@@ -9,16 +12,14 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Security.Cryptography;
-using Newtonsoft.Json.Linq;
-using RBX_Alt_Manager.Forms;
-using System.Runtime.InteropServices;
 
 #pragma warning disable CS0618 // stupid parameter warnings
 
@@ -26,8 +27,9 @@ namespace RBX_Alt_Manager
 {
     public partial class AccountManager : Form
     {
-        public static List<Account> AccountsList = new List<Account>();
-        public static List<Account> SelectedAccounts = new List<Account>();
+        public static AccountManager Instance;
+        public static List<Account> AccountsList;
+        public static List<Account> SelectedAccounts;
         public static Account SelectedAccount;
         public static RestClient MainClient;
         public static RestClient FriendsClient;
@@ -46,6 +48,7 @@ namespace RBX_Alt_Manager
         private ImportForm ImportAccountsForm;
         private AccountFields FieldsForm;
         private ThemeEditor ThemeForm;
+        private AccountControl ControlForm;
         private readonly static DateTime startTime = DateTime.Now;
         public static bool IsTeleport = false;
         public static bool UseOldJoin = false;
@@ -59,6 +62,9 @@ namespace RBX_Alt_Manager
 
         private static Mutex rbxMultiMutex;
         private readonly static object saveLock = new object();
+
+        private bool LaunchNext;
+        private CancellationTokenSource LauncherToken;
 
         private delegate void SafeCallDelegateRefresh();
         private delegate void SafeCallDelegateGroup(string Group, OLVListItem Item = null);
@@ -79,11 +85,16 @@ namespace RBX_Alt_Manager
 
         public AccountManager()
         {
+            Instance = this;
+
             ThemeEditor.LoadTheme();
 
             SetDarkBar(Handle);
 
             InitializeComponent();
+
+            AccountsList = new List<Account>();
+            SelectedAccounts = new List<Account>();
 
             if (ThemeEditor.UseDarkTopBar) Icon = Properties.Resources.team_KX4_icon_white; // this has to go after or icon wont actually change
 
@@ -92,9 +103,11 @@ namespace RBX_Alt_Manager
 
             SimpleDropSink sink = AccountsView.DropSink as SimpleDropSink;
             sink.CanDropBetween = true;
+            sink.CanDropOnItem = true;
             sink.CanDropOnBackground = false;
-            sink.CanDropOnItem = false;
             sink.CanDropOnSubItem = false;
+            sink.CanDrop += Sink_CanDrop;
+            sink.Dropped += Sink_Dropped;
             sink.FeedbackColor = Color.FromArgb(33, 33, 33);
 
             AccountsView.AlwaysGroupByColumn = Group;
@@ -114,6 +127,26 @@ namespace RBX_Alt_Manager
                 else
                     return GroupName;
             };
+        }
+
+        private void Sink_CanDrop(object sender, OlvDropEventArgs e)
+        {
+            if (e.DataObject.GetType() != typeof(OLVDataObject) && e.DragEventArgs.Data.GetDataPresent(DataFormats.Text))
+                e.Effect = DragDropEffects.Copy;
+        }
+
+        private void Sink_Dropped(object sender, OlvDropEventArgs e)
+        {
+            if (e.Effect == DragDropEffects.Copy)
+            {
+                string Text = (string)e.DragEventArgs.Data.GetData(DataFormats.Text);
+
+                var RSecRegex = new Regex(@"(_\|WARNING:-DO-NOT-SHARE-THIS\.--Sharing-this-will-allow-someone-to-log-in-as-you-and-to-steal-your-ROBUX-and-items\.\|\w+)");
+                MatchCollection RSecMatches = RSecRegex.Matches(Text);
+
+                foreach (Match match in RSecMatches)
+                    AddAccount(match.Value);
+            }
         }
 
         private readonly static string SaveFilePath = Path.Combine(Environment.CurrentDirectory, "AccountData.json");
@@ -156,6 +189,8 @@ namespace RBX_Alt_Manager
                     }
                 }
             }
+
+            if (AccountsList == null) AccountsList = new List<Account>();
 
             if (AccountsList.Count == 0 && File.Exists(SaveFilePath + ".backup"))
             {
@@ -212,7 +247,7 @@ namespace RBX_Alt_Manager
 
         public static void DelayedSaveAccounts() // Prevent file being locked
         {
-            if ((DateTime.Now - startTime).TotalMilliseconds < 5000) return;
+            if ((DateTime.Now - startTime).TotalMilliseconds < 2000) return;
 
             if (SaveAccountsTimer.Enabled)
                 SaveAccountsTimer.Stop();
@@ -220,7 +255,7 @@ namespace RBX_Alt_Manager
             SaveAccountsTimer.Start();
         }
 
-        public static long GetUserID(string Username)
+        public static bool GetUserID(string Username, out long UserId)
         {
             RestRequest request = new RestRequest("users/get-by-username?username=" + Username, Method.GET);
             request.AddHeader("Accept", "application/json");
@@ -230,13 +265,15 @@ namespace RBX_Alt_Manager
             {
                 UsernameReponse userData = JsonConvert.DeserializeObject<UsernameReponse>(response.Content);
 
-                return userData.Id;
+                UserId = userData.Id;
+
+                return true;
             }
 
-            return -1;
-        }
+            UserId = -1;
 
-        public void AddAccountToList(Account account) => RefreshView();
+            return false;
+        }
 
         public void UpdateAccountView(Account account)
         {
@@ -249,13 +286,11 @@ namespace RBX_Alt_Manager
                 AccountsView.UpdateObject(account);
         }
 
-        public static void AddAccount(string SecurityToken, string UserData)
+        public static void AddAccount(string SecurityToken)
         {
-            Account account = new Account();
+            Account account = new Account(SecurityToken);
 
-            string res = account.Validate(SecurityToken, UserData);
-
-            if (res == "Success")
+            if (account.Valid)
             {
                 Account exists = AccountsList.FirstOrDefault(acc => acc.UserID == account.UserID);
 
@@ -265,12 +300,13 @@ namespace RBX_Alt_Manager
                 {
                     AccountsList.Add(account);
 
-                    Program.MainForm.AddAccountToList(account);
+                    Instance.RefreshView();
                 }
 
                 SaveAccounts();
+
+                Utilities.InvokeIfRequired(Instance.AccountsView, () => Instance.AccountsView.EnsureModelVisible(account));
             }
-            else MessageBox.Show(res);
         }
 
         public static string ShowDialog(string text, string caption) // tbh pasted from stackoverflow
@@ -340,8 +376,6 @@ namespace RBX_Alt_Manager
             FieldsForm = new AccountFields();
             ThemeForm = new ThemeEditor();
 
-            // if (Process.GetCurrentProcess().Modules.)
-
             MainClient = new RestClient("https://www.roblox.com/");
             MainClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
@@ -374,6 +408,8 @@ namespace RBX_Alt_Manager
 
             if (!IniSettings.KeyExists("DisableAutoUpdate", "General")) IniSettings.Write("DisableAutoUpdate", "false", "General");
             if (!IniSettings.KeyExists("AccountJoinDelay", "General")) IniSettings.Write("AccountJoinDelay", "8", "General");
+            if (!IniSettings.KeyExists("AsyncJoin", "General")) IniSettings.Write("AsyncJoin", "true", "General");
+            if (!IniSettings.KeyExists("DisableAgingAlert", "General")) IniSettings.Write("DisableAgingAlert", "false", "General");
 
             if (!IniSettings.KeyExists("DevMode", "Developer")) IniSettings.Write("DevMode", "false", "Developer");
             if (!IniSettings.KeyExists("EnableWebServer", "Developer")) IniSettings.Write("EnableWebServer", "false", "Developer");
@@ -450,6 +486,9 @@ namespace RBX_Alt_Manager
                     catch { }
                 });
             }
+
+            if (IniSettings.Read("DisableAgingAlert", "General") != "true")
+                Username.Renderer = new AccountRenderer();
 
             try
             {
@@ -530,6 +569,9 @@ namespace RBX_Alt_Manager
             ImportAccountsForm.ApplyTheme();
             FieldsForm.ApplyTheme();
             ThemeForm.ApplyTheme();
+
+            if (ControlForm != null)
+                ControlForm.ApplyTheme();
         }
 
         private List<ServerData> AttemptedJoins = new List<ServerData>();
@@ -560,6 +602,8 @@ namespace RBX_Alt_Manager
                 return Names.Remove(Names.Length - 1);
             }
 
+            if (Method == "ImportCookie") AddAccount(request.QueryString["Token"]);
+
             if (string.IsNullOrEmpty(Account)) return "Empty Account";
 
             Account account = AccountsList.FirstOrDefault(x => x.Username == Account || x.UserID.ToString() == Account);
@@ -572,6 +616,7 @@ namespace RBX_Alt_Manager
 
                 return account.SecurityToken;
             }
+
             if (Method == "LaunchAccount")
             {
                 if (IniSettings.Read("AllowLaunchAccount", "WebServer") != "true") return "Method not allowed";
@@ -792,20 +837,13 @@ namespace RBX_Alt_Manager
 
             if (!long.TryParse(PlaceID.Text, out long PlaceId)) return;
 
+            CancelLaunching();
+
             if (AccountsView.SelectedObjects.Count > 1)
             {
-                Task.Run(async () =>
-                {
-                    int Delay = 8;
-                    int.TryParse(IniSettings.Read("AccountJoinDelay", "General"), out Delay);
+                LauncherToken = new CancellationTokenSource();
 
-                    foreach (Account account in SelectedAccounts)
-                    {
-                        account.JoinServer(PlaceId, VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer);
-
-                        await Task.Delay(Delay * 1000);
-                    }
-                });
+                Task.Run(() => LaunchAccounts(SelectedAccounts, PlaceId, VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer), LauncherToken.Token);
             }
             else if (SelectedAccount != null)
             {
@@ -820,28 +858,19 @@ namespace RBX_Alt_Manager
         {
             if (SelectedAccount == null) return;
 
-            long UserId = GetUserID(UserID.Text);
-
-            if (UserId < 0)
+            if (!GetUserID(UserID.Text, out long UserId))
             {
                 MessageBox.Show("Failed to get UserId");
                 return;
             }
 
+            CancelLaunching();
+
             if (AccountsView.SelectedObjects.Count > 1)
             {
-                Task.Run(async () =>
-                {
-                    int Delay = 8;
-                    int.TryParse(IniSettings.Read("AccountJoinDelay", "General"), out Delay);
+                LauncherToken = new CancellationTokenSource();
 
-                    foreach (Account account in SelectedAccounts)
-                    {
-                        account.JoinServer(UserId, "", true);
-
-                        await Task.Delay(Delay * 1000);
-                    }
-                });
+                Task.Run(() => LaunchAccounts(SelectedAccounts, UserId, "", true), LauncherToken.Token);
             }
             else if (SelectedAccount != null)
             {
@@ -955,74 +984,21 @@ namespace RBX_Alt_Manager
         {
             if (SelectedAccount == null) return;
 
-            RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
-
-            request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
-
-            IRestResponse response = AuthClient.Execute(request);
-            Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
-
-            string Token = "";
-
-            if (result != null)
-                Token = (string)result.Value;
-            else
-                return;
-
-            if (string.IsNullOrEmpty(Token) || result == null)
-                return;
-
-            request = new RestRequest("/v1/authentication-ticket/", Method.POST);
-            request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
-            request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
-            response = AuthClient.Execute(request);
-
-            Parameter Ticket = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
-
-            if (Ticket != null)
-                Clipboard.SetText((string)Ticket.Value);
+            if (SelectedAccount.GetAuthTicket(out string Ticket))
+                Clipboard.SetText(Ticket);
         }
 
         private void copyRbxplayerLinkToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (SelectedAccount == null) return;
 
-            RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
-
-            request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
-
-            IRestResponse response = AuthClient.Execute(request);
-            Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
-
-            string Token = "";
-
-            if (result != null)
-                Token = (string)result.Value;
-            else
-                return;
-
-            if (string.IsNullOrEmpty(Token) || result == null)
-                return;
-
-            request = new RestRequest("/v1/authentication-ticket/", Method.POST);
-            request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
-            request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
-            response = AuthClient.Execute(request);
-
-            Parameter Ticket = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
-
-            if (Ticket != null)
+            if (SelectedAccount.GetAuthTicket(out string Ticket))
             {
-                Token = (string)Ticket.Value;
                 bool HasJobId = string.IsNullOrEmpty(JobID.Text);
                 double LaunchTime = Math.Floor((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds * 1000);
 
                 Random r = new Random();
-                Clipboard.SetText(string.Format("<roblox-player://1/1+launchmode:play+gameinfo:{0}+launchtime:{4}+browsertrackerid:{5}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}+robloxLocale:en_us+gameLocale:en_us>", Token, PlaceID.Text, HasJobId ? "" : ("&gameId=" + JobID.Text), HasJobId ? "" : "Job", LaunchTime, r.Next(100000, 130000).ToString() + r.Next(100000, 900000).ToString()));
+                Clipboard.SetText(string.Format("<roblox-player://1/1+launchmode:play+gameinfo:{0}+launchtime:{4}+browsertrackerid:{5}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}+robloxLocale:en_us+gameLocale:en_us>", Ticket, PlaceID.Text, HasJobId ? "" : ("&gameId=" + JobID.Text), HasJobId ? "" : "Job", LaunchTime, r.Next(100000, 130000).ToString() + r.Next(100000, 900000).ToString()));
             }
         }
 
@@ -1100,40 +1076,13 @@ namespace RBX_Alt_Manager
         {
             if (SelectedAccount == null) return;
 
-            RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
-
-            request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
-
-            IRestResponse response = AuthClient.Execute(request);
-            Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
-
-            string Token = "";
-
-            if (result != null)
-                Token = (string)result.Value;
-            else
-                return;
-
-            if (string.IsNullOrEmpty(Token) || result == null)
-                return;
-
-            request = new RestRequest("/v1/authentication-ticket/", Method.POST);
-            request.AddCookie(".ROBLOSECURITY", SelectedAccount.SecurityToken);
-            request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
-            response = AuthClient.Execute(request);
-
-            Parameter Ticket = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
-
-            if (Ticket != null)
+            if (SelectedAccount.GetAuthTicket(out string Ticket))
             {
-                Token = (string)Ticket.Value;
                 bool HasJobId = string.IsNullOrEmpty(JobID.Text);
                 double LaunchTime = Math.Floor((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds * 1000);
 
                 Random r = new Random();
-                Clipboard.SetText(string.Format("<roblox-player://1/1+launchmode:app+gameinfo:{0}+launchtime:{1}+browsertrackerid:{2}+robloxLocale:en_us+gameLocale:en_us>", Token, LaunchTime, r.Next(500000, 600000).ToString() + r.Next(10000, 90000).ToString()));
+                Clipboard.SetText(string.Format("<roblox-player://1/1+launchmode:app+gameinfo:{0}+launchtime:{1}+browsertrackerid:{2}+robloxLocale:en_us+gameLocale:en_us>", Ticket, LaunchTime, r.Next(500000, 600000).ToString() + r.Next(10000, 90000).ToString()));
             }
         }
 
@@ -1258,14 +1207,72 @@ namespace RBX_Alt_Manager
             ThemeForm.Show();
         }
 
+        private void LaunchNexus_Click(object sender, EventArgs e)
+        {
+            if (ControlForm != null)
+            {
+                ControlForm.Top = Bottom;
+                ControlForm.Left = Left;
+                ControlForm.Show();
+                ControlForm.BringToFront();
+            }
+            else
+            {
+                ControlForm = new AccountControl();
+                ControlForm.StartPosition = FormStartPosition.Manual;
+                ControlForm.Top = Bottom;
+                ControlForm.Left = Left;
+                ControlForm.Show();
+                ControlForm.ApplyTheme();
+            }
+        }
+
+        private async void LaunchAccounts(List<Account> Accounts, long PlaceId, string JobID, bool FollowUser = false, bool VIPServer = false)
+        {
+            int Delay = 8;
+            int.TryParse(IniSettings.Read("AccountJoinDelay", "General"), out Delay);
+
+            bool AsyncJoin = IniSettings.Read("AsyncJoin", "General") == "true";
+            CancellationTokenSource Token = LauncherToken;
+
+            foreach (Account account in Accounts)
+            {
+                if (Token.IsCancellationRequested) break;
+
+                account.JoinServer(PlaceId, JobID, FollowUser, VIPServer);
+
+                if (AsyncJoin)
+                    while (!LaunchNext)
+                        await Task.Delay(50);
+                else
+                    await Task.Delay(Delay * 1000);
+
+                LaunchNext = false;
+            }
+
+            LaunchNext = false;
+
+            Token.Cancel();
+            Token.Dispose();
+        }
+
+        public void NextAccount() => LaunchNext = true;
+        public void CancelLaunching()
+        {
+            if (LauncherToken != null && !LauncherToken.IsCancellationRequested)
+                LauncherToken.Cancel();
+        }
+
         private void AccountManager_HelpButtonClicked(object sender, System.ComponentModel.CancelEventArgs e) =>
         MessageBox.Show("Some elements may have tooltips, hover over them for about 2 seconds to see instructions.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
 
         private void infoToolStripMenuItem1_Click(object sender, EventArgs e) =>
             MessageBox.Show("Roblox Account Manager created by ic3w0lf under the GNU GPLv3 license.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
         private void groupsToolStripMenuItem_Click(object sender, EventArgs e) =>
             MessageBox.Show("Groups can be sorted by naming them a number then whatever you want.\nFor example: You can put Group Apple on top by naming it '001 Apple' or '1Apple'.\nThe numbers will be hidden from the name but will be correctly sorted depending on the number.\nAccounts can also be dragged into groups.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+        private void DonateButton_Click(object sender, EventArgs e) =>
+            Process.Start("https://ic3w0lf22.github.io/donate.html");
     }
 }

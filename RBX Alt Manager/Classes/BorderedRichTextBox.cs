@@ -49,7 +49,7 @@ namespace RBX_Alt_Manager.Classes
             if (m.Msg == WM_NCPAINT && BorderColor != Color.Transparent && BorderStyle == BorderStyle.Fixed3D)
             {
                 var hdc = GetWindowDC(this.Handle);
-                
+
                 using (var g = Graphics.FromHdcInternal(hdc))
                 using (var p = new Pen(BorderColor))
                 {

@@ -129,9 +129,6 @@
   <metadata name="OPITip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>426, 17</value>
   </metadata>
-  <metadata name="OPITip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>426, 17</value>
-  </metadata>
   <data name="OtherPlaceId.ToolTip" xml:space="preserve">
     <value>Ignore this textbox unless you know what you are doing.
 This textbox allows you to see servers from a different place id than the one you have in the main window.

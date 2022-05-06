@@ -53,7 +53,7 @@ namespace RBX_Alt_Manager.Classes
                 using (var g = Graphics.FromHdcInternal(hdc))
                 using (var p = new Pen(BorderColor, 1f))
                 {
-                    SolidBrush opaqueBrush = new SolidBrush(Color.FromArgb(128, BorderColor.R, BorderColor.G, BorderColor.B));
+                    SolidBrush opaqueBrush = new SolidBrush(Color.FromArgb(255, BorderColor.R, BorderColor.G, BorderColor.B));
 
                     g.DrawRectangle(new Pen(opaqueBrush), new Rectangle(0, 0, Width - 1, Height - 1));
                     g.DrawRectangle(p, new Rectangle(1, 1, Width - 3, Height - 3));
@@ -64,6 +64,7 @@ namespace RBX_Alt_Manager.Classes
         protected override void OnSizeChanged(EventArgs e)
         {
             base.OnSizeChanged(e);
+
             RedrawWindow(Handle, IntPtr.Zero, IntPtr.Zero,
                    RDW_FRAME | RDW_IUPDATENOW | RDW_INVALIDATE);
         }

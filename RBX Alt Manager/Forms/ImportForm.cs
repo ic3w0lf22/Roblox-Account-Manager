@@ -1,7 +1,5 @@
 ﻿using RBX_Alt_Manager.Forms;
-using RestSharp;
 using System;
-using System.Net;
 using System.Windows.Forms;
 
 namespace RBX_Alt_Manager
@@ -68,16 +66,7 @@ namespace RBX_Alt_Manager
         private void ImportButton_Click(object sender, EventArgs e)
         {
             foreach (string Token in Accounts.Text.Split('\n'))
-            {
-                RestRequest myAcc = new RestRequest("my/account/json", Method.GET);
-
-                myAcc.AddCookie(".ROBLOSECURITY", Token);
-
-                IRestResponse response = AccountManager.MainClient.Execute(myAcc);
-
-                if (response.StatusCode == HttpStatusCode.OK && response.Content.Contains("DisplayName")) // shitty check i know ...
-                    AccountManager.AddAccount(Token, response.Content);
-            }
+                AccountManager.AddAccount(Token);
         }
     }
 }

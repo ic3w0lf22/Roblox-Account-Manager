@@ -1,5 +1,6 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿#pragma warning disable CS0618
+
+using Newtonsoft.Json;
 using RestSharp;
 using System;
 using System.Collections.Generic;
@@ -11,23 +12,14 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-#pragma warning disable CS0618
-
 namespace RBX_Alt_Manager
 {
-    public class PinStatus
-    {
-        public bool isEnabled { get; set; }
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public double unlockedUntil { get; set; }
-    }
-
     public class Account : IComparable<Account>
     {
         public bool Valid;
         public string SecurityToken;
         public string Username;
-        private DateTime LastUse;
+        public DateTime LastUse;
         private string _Alias = "";
         private string _Description = "";
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public string Group { get; set; } = "Default";
@@ -74,25 +66,54 @@ namespace RBX_Alt_Manager
             }
         }
 
-        public string Validate(string Token, string UserData)
+        public Account() { }
+
+        public Account(string Token)
         {
-            if (!string.IsNullOrEmpty(UserData) && UserData.Contains("UserEmail"))
+            RestRequest DataRequest = new RestRequest("my/account/json", Method.GET);
+
+            DataRequest.AddCookie(".ROBLOSECURITY", Token);
+
+            IRestResponse response = AccountManager.MainClient.Execute(DataRequest);
+
+            if (response.StatusCode == HttpStatusCode.OK && Utilities.TryParseJson(response.Content, out AccountJson Data))
             {
+                Username = Data.Name;
+                UserID = Data.UserId;
+
                 Valid = true;
                 SecurityToken = Token;
-                Match MUsername = Regex.Match(UserData, @"""Name"":""(\w+)""");
-                Match MUserID = Regex.Match(UserData, @"""UserId"":(\d+)");
-                if (MUsername.Success && MUsername.Groups.Count >= 2) Username = MUsername.Groups[1].ToString();
-                if (MUserID.Success && MUserID.Groups.Count >= 2) UserID = Convert.ToInt64(MUserID.Groups[1].Value);
-                return "Success";
-            }
 
-            return "false";
+                LastUse = DateTime.Now;
+            }
         }
 
-        public string GetCSRFToken()
+        public bool GetAuthTicket(out string Ticket)
         {
-            if ((DateTime.Now - TokenSet).TotalMinutes < 5) return CSRFToken;
+            Ticket = string.Empty;
+
+            RestRequest request = new RestRequest("/v1/authentication-ticket/", Method.POST);
+            request.AddCookie(".ROBLOSECURITY", SecurityToken);
+            request.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
+            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
+
+            IRestResponse response = AccountManager.AuthClient.Execute(request);
+
+            Parameter TicketHeader = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
+
+            if (TicketHeader != null)
+            {
+                Ticket = (string)TicketHeader.Value;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public string GetCSRFToken(bool ForceRequest = false)
+        {
+            if (!ForceRequest && (DateTime.Now - TokenSet).TotalMinutes < 3) return CSRFToken;
 
             RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
 
@@ -102,16 +123,18 @@ namespace RBX_Alt_Manager
             IRestResponse response = AccountManager.AuthClient.Execute(request);
             Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
 
-            string Token = "";
+            string Token = string.Empty;
 
             if (result != null)
             {
                 Token = (string)result.Value;
                 LastUse = DateTime.Now;
+
                 AccountManager.DelayedSaveAccounts();
             }
 
             CSRFToken = Token;
+            TokenSet = DateTime.Now;
 
             return Token;
         }
@@ -325,7 +348,7 @@ namespace RBX_Alt_Manager
         {
             if (!CheckPin()) return false;
 
-            long BlockeeID = AccountManager.GetUserID(Username);
+            if (!AccountManager.GetUserID(Username, out long BlockeeID)) return false;
 
             RestRequest request = new RestRequest($"userblock/getblockedusers?userId={UserID}&page=1", Method.GET);
 
@@ -395,7 +418,8 @@ namespace RBX_Alt_Manager
             return blockRes.Content;
         }
 
-        public string UnblockUserId(string UserID, bool SkipPinCheck = false) {
+        public string UnblockUserId(string UserID, bool SkipPinCheck = false)
+        {
             if (!SkipPinCheck && !CheckPin(true)) return "Pin Locked";
 
             RestRequest blockReq = new RestRequest("userblock/unblockuser", Method.POST);
@@ -433,7 +457,8 @@ namespace RBX_Alt_Manager
 
                         foreach (string UserId in UserIDs)
                         {
-                            if (!UnblockUserId(UserId, true).Contains("true")) {
+                            if (!UnblockUserId(UserId, true).Contains("true"))
+                            {
                                 await Task.Delay(20000);
 
                                 UnblockUserId(UserId, true);
@@ -489,30 +514,19 @@ namespace RBX_Alt_Manager
             if (string.IsNullOrEmpty(Token))
                 return "ERROR: Account Session Expired, re-add the account or try again. (1)";
 
-            RestRequest request = new RestRequest("/v1/authentication-ticket/", Method.POST);
-            request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
-
-            IRestResponse response = AccountManager.AuthClient.Execute(request);
-
-            Parameter Ticket = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
-
-            if (Ticket != null)
+            if (GetAuthTicket(out string Ticket))
             {
-                Token = (string)Ticket.Value;
-
-                string LinkCode = Regex.Match(JobID, "privateServerLinkCode=(.+)")?.Groups[1]?.Value;
+                string LinkCode = string.IsNullOrEmpty(JobID) ? string.Empty : Regex.Match(JobID, "privateServerLinkCode=(.+)")?.Groups[1]?.Value;
                 string AccessCode = JobID;
 
                 if (!string.IsNullOrEmpty(LinkCode))
                 {
-                    request = new RestRequest(string.Format("/games/{0}?privateServerLinkCode={1}", PlaceID, LinkCode), Method.GET);
+                    RestRequest request = new RestRequest(string.Format("/games/{0}?privateServerLinkCode={1}", PlaceID, LinkCode), Method.GET);
                     request.AddCookie(".ROBLOSECURITY", SecurityToken);
                     request.AddHeader("X-CSRF-TOKEN", Token);
                     request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
-                    response = AccountManager.MainClient.Execute(request);
+                    IRestResponse response = AccountManager.MainClient.Execute(request);
 
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
@@ -526,13 +540,13 @@ namespace RBX_Alt_Manager
                     }
                     else if (response.StatusCode == HttpStatusCode.Redirect) // thx wally (p.s. i hate wally)
                     {
-                        RestRequest cRequest = new RestRequest(string.Format("/games/{0}?privateServerLinkCode={1}", PlaceID, LinkCode), Method.GET);
+                        request = new RestRequest(string.Format("/games/{0}?privateServerLinkCode={1}", PlaceID, LinkCode), Method.GET);
 
-                        cRequest.AddCookie(".ROBLOSECURITY", SecurityToken);
-                        cRequest.AddHeader("X-CSRF-TOKEN", Token);
-                        cRequest.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
+                        request.AddCookie(".ROBLOSECURITY", SecurityToken);
+                        request.AddHeader("X-CSRF-TOKEN", Token);
+                        request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
 
-                        IRestResponse result = AccountManager.Web13Client.Execute(cRequest);
+                        IRestResponse result = AccountManager.Web13Client.Execute(request);
 
                         if (result.StatusCode == HttpStatusCode.OK)
                         {
@@ -560,32 +574,45 @@ namespace RBX_Alt_Manager
                         return "ERROR: Failed to find ROBLOX executable";
 
                     RPath = RPath + @"\RobloxPlayerBeta.exe";
-                    ProcessStartInfo Roblox = new ProcessStartInfo(RPath);
-                    if (JoinVIP)
-                    {
-                        Roblox.Arguments = string.Format("--play -a https://auth.roblox.com/v1/authentication-ticket/redeem -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode={3}\"", Token, PlaceID, AccessCode, LinkCode);
-                    }
-                    else if (FollowUser)
-                        Roblox.Arguments = string.Format("--play -a https://auth.roblox.com/v1/authentication-ticket/redeem -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}\"", Token, PlaceID);
-                    else
-                        Roblox.Arguments = string.Format("--play -a https://auth.roblox.com/v1/authentication-ticket/redeem -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}&isPlayTogetherGame=false\"", Token, PlaceID, "&gameId=" + JobID, string.IsNullOrEmpty(JobID) ? "" : "Job");
 
-                    Process.Start(Roblox);
+                    Task.Run(() => // somehow some people are crashing when roblox is tryna launch??? (probably bad executor taking making the process hang)
+                    {
+                        ProcessStartInfo Roblox = new ProcessStartInfo(RPath);
+
+                        if (JoinVIP)
+                            Roblox.Arguments = string.Format("--play -a https://auth.roblox.com/v1/authentication-ticket/redeem -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode={3}\"", Ticket, PlaceID, AccessCode, LinkCode);
+                        else if (FollowUser)
+                            Roblox.Arguments = string.Format("--play -a https://auth.roblox.com/v1/authentication-ticket/redeem -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}\"", Ticket, PlaceID);
+                        else
+                            Roblox.Arguments = string.Format("--play -a https://auth.roblox.com/v1/authentication-ticket/redeem -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}&isPlayTogetherGame=false\"", Ticket, PlaceID, "&gameId=" + JobID, string.IsNullOrEmpty(JobID) ? "" : "Job");
+
+                        Process.Start(Roblox);
+                    });
 
                     return "Success";
                 }
                 else
                 {
-                    if (JoinVIP)
+                    Task.Run(() => // somehow some people are crashing when roblox is tryna launch??? (probably bad executor taking making the process hang)
                     {
-                        string Argument = string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{4}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode={3}+browsertrackerid:{5}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, AccessCode, LinkCode, LaunchTime, BrowserTrackerID);
+                        try
+                        {
+                            if (JoinVIP)
+                                Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{4}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode={3}+browsertrackerid:{5}+robloxLocale:en_us+gameLocale:en_us", Ticket, PlaceID, AccessCode, LinkCode, LaunchTime, BrowserTrackerID)).WaitForExit();
+                            else if (FollowUser)
+                                Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{2}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}+browsertrackerid:{3}+robloxLocale:en_us+gameLocale:en_us", Ticket, PlaceID, LaunchTime, BrowserTrackerID)).WaitForExit();
+                            else
+                                Process.Start($"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{ (string.IsNullOrEmpty(JobID) ? "" : "Job") }&browserTrackerId={BrowserTrackerID}&placeId={PlaceID}{(string.IsNullOrEmpty(JobID) ? "" : ("&gameId=" + JobID))}&isPlayTogetherGame=false{(AccountManager.IsTeleport ? "&isTeleport=true" : "")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us").WaitForExit();
 
-                        Process.Start(Argument);
-                    }
-                    else if (FollowUser)
-                        Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{2}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}+browsertrackerid:{3}+robloxLocale:en_us+gameLocale:en_us", Token, PlaceID, LaunchTime, BrowserTrackerID));
-                    else
-                        Process.Start($"roblox-player:1+launchmode:play+gameinfo:{Token}+launchtime:{LaunchTime}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{ (string.IsNullOrEmpty(JobID) ? "" : "Job") }&browserTrackerId={BrowserTrackerID}&placeId={PlaceID}{(string.IsNullOrEmpty(JobID) ? "" : ("&gameId=" + JobID))}&isPlayTogetherGame=false{(AccountManager.IsTeleport ? "&isTeleport=true" : "")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us");
+                            AccountManager.Instance.NextAccount();
+                        }
+                        catch
+                        {
+                            Utilities.InvokeIfRequired(AccountManager.Instance, () => MessageBox.Show("ERROR: Failed to launch roblox.\nTry reinstalling roblox", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error));
+                            AccountManager.Instance.CancelLaunching();
+                            AccountManager.Instance.NextAccount();
+                        }
+                    });
 
                     return "Success";
                 }
@@ -628,32 +655,11 @@ namespace RBX_Alt_Manager
                 BrowserTrackerID = r.Next(100000, 120000).ToString() + r.Next(100000, 900000).ToString();
             }
 
-            RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
-
-            request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
-
-            string Token = GetCSRFToken();
-
-            if (string.IsNullOrEmpty(Token))
-                return "ERROR: Account Session Expired, re-add the account or try again. (1)";
-
-            request = new RestRequest("/v1/authentication-ticket/", Method.POST);
-            request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
-
-            IRestResponse response = AccountManager.AuthClient.Execute(request);
-
-            Parameter Ticket = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
-
-            if (Ticket != null)
+            if (GetAuthTicket(out string Ticket))
             {
-                Token = (string)Ticket.Value;
-
                 double LaunchTime = Math.Floor((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds * 1000);
 
-                Process.Start($"roblox-player:1+launchmode:app+gameinfo:{Token}+launchtime:{LaunchTime}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us");
+                Process.Start($"roblox-player:1+launchmode:app+gameinfo:{Ticket}+launchtime:{LaunchTime}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us");
 
                 return "Success";
             }
@@ -663,7 +669,7 @@ namespace RBX_Alt_Manager
 
         public bool SendFriendRequest(string Username)
         {
-            long UserId = AccountManager.GetUserID(Username);
+            if (!AccountManager.GetUserID(Username, out long UserId)) return false;
 
             RestRequest friendRequest = new RestRequest($"/v1/users/{UserId}/request-friendship", Method.POST);
             friendRequest.AddCookie(".ROBLOSECURITY", SecurityToken);
@@ -680,5 +686,23 @@ namespace RBX_Alt_Manager
         public string GetField(string Name) => Fields.ContainsKey(Name) ? Fields[Name] : "";
         public void SetField(string Name, string Value) { Fields[Name] = Value; AccountManager.DelayedSaveAccounts(); }
         public void RemoveField(string Name) { Fields.Remove(Name); AccountManager.DelayedSaveAccounts(); }
+    }
+
+    public class AccountJson
+    {
+        public long UserId { get; set; }
+        public string Name { get; set; }
+        public string DisplayName { get; set; }
+        public string UserEmail { get; set; }
+        public bool IsEmailVerified { get; set; }
+        public int AgeBracket { get; set; }
+        public bool UserAbove13 { get; set; }
+    }
+
+    public class PinStatus
+    {
+        public bool isEnabled { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public double unlockedUntil { get; set; }
     }
 }

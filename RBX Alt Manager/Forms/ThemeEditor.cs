@@ -149,7 +149,7 @@ namespace RBX_Alt_Manager.Forms
                         break;
                 }
 
-                Program.MainForm.ApplyTheme();
+                AccountManager.Instance.ApplyTheme();
                 SaveTheme();
             }
         }
@@ -181,7 +181,7 @@ namespace RBX_Alt_Manager.Forms
                         break;
                 }
 
-                Program.MainForm.ApplyTheme();
+                AccountManager.Instance.ApplyTheme();
                 SaveTheme();
             }
         }
@@ -254,7 +254,7 @@ namespace RBX_Alt_Manager.Forms
                         break;
                 }
 
-                Program.MainForm.ApplyTheme();
+                AccountManager.Instance.ApplyTheme();
                 SaveTheme();
             }
         }
@@ -262,14 +262,14 @@ namespace RBX_Alt_Manager.Forms
         private void ChangeStyle_Click(object sender, EventArgs e)
         {
             ButtonStyle = ButtonStyle.Next();
-            Program.MainForm.ApplyTheme();
+            AccountManager.Instance.ApplyTheme();
             SaveTheme();
         }
 
         private void HideHeaders_Click(object sender, EventArgs e)
         {
             ShowHeaders = !ShowHeaders;
-            Program.MainForm.ApplyTheme();
+            AccountManager.Instance.ApplyTheme();
             SaveTheme();
         }
 
