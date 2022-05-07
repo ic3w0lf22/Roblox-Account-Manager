@@ -8,6 +8,7 @@ local TeleportService = game:GetService'TeleportService'
 local InputService = game:GetService'UserInputService'
 local HttpService = game:GetService'HttpService'
 local RunService = game:GetService'RunService'
+local GuiService = game:GetService'GuiService'
 local Players = game:GetService'Players'
 local LocalPlayer = Players.LocalPlayer if not LocalPlayer then repeat LocalPlayer = Players.LocalPlayer task.wait() until LocalPlayer end task.wait(0.5)
 
@@ -59,6 +60,8 @@ do -- Nexus
 
     Nexus.Commands = {}
     Nexus.Connections = {}
+
+    Nexus.ShutdownTime = 45
 
     function Nexus:Send(Command, Payload)
         assert(self.Socket ~= nil, 'websocket is nil')
@@ -227,7 +230,7 @@ do -- Nexus
     function Nexus:OnButtonClick(Name, Function)
         self:AddCommand('ButtonClicked:' .. Name, Function)
     end
-    
+
     Nexus.MessageReceived:Connect(function(Message)
         local S = Message:find(' ')
 
@@ -331,6 +334,16 @@ do -- Default Commands
         end)
 
         setfpscap(6)
+    end)
+end
+
+do -- Connections
+    GuiService.ErrorMessageChanged:Connect(function()
+        local Code = GuiService:GetErrorCode().Value
+
+        if Code >= Enum.ConnectionError.DisconnectErrors.Value and Code <= Enum.ConnectionError.DisconnectModeratedGame.Value then
+            task.delay(Nexus.ShutdownTime, game.Shutdown, game)
+        end
     end)
 end
 

@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -61,6 +62,10 @@ namespace RBX_Alt_Manager
                             VC.UseShellExecute = false;
 
                             Process.Start(VC).WaitForExit();
+
+                            MessageBox.Show("Roblox Account Manager must be restarted in order to function", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            Process.Start("explorer.exe", "/select, " + Assembly.GetExecutingAssembly().Location);
+                            Environment.Exit(1);
                         }
                         else
                         {

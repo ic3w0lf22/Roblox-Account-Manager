@@ -103,6 +103,9 @@ Nexus:CreateButton('SendButton', 'Send', { 100, 20 }, { 10, 10, 10, 10 })
 Nexus:OnButtonClick('SendButton', function() print('SendButton was pressed!') end)
 ```
 
+## \<int\> Nexus.ShutdownTime
+### The amount of time Nexus waits when disconnected before shutting down the game
+
 # Default Commands
 
 ## Execute \<Script\>

@@ -80,11 +80,11 @@ namespace RBX_Alt_Manager.Forms
                         else
                             Accounts.Remove(cAccount);
                     }
-
-                    if (Accounts.Count > 0) AccountsView.SetObjects(Accounts);
                 }
                 catch { }
             }
+
+            AccountsView.SetObjects(Accounts);
         }
 
         #endregion
@@ -277,7 +277,7 @@ namespace RBX_Alt_Manager.Forms
 
                 return acc.Status;
             };
-            cStatus.Renderer = new MappedImageRenderer(new Object[] {
+            cStatus.Renderer = new MappedImageRenderer(new object[] {
                 AccountStatus.Online, Resources.online,
                 AccountStatus.Offline, Resources.offline
             });
