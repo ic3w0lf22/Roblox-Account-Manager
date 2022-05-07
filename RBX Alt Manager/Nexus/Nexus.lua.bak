@@ -1,4 +1,4 @@
-if Nexus then Nexus:Stop() end
+﻿if Nexus then Nexus:Stop() end
 
 if not game:IsLoaded() then game.Loaded:Wait() end
 
