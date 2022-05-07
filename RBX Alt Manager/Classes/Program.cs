@@ -51,7 +51,7 @@ namespace RBX_Alt_Manager
                 {
                     if (Directory.Exists(Path.Combine(Environment.CurrentDirectory, "x86")))
                     {
-                        if (MessageBox.Show("Failed to detect Visual Studio Redistrituble, would you like to install it now?\n(Required in order to use the account manager)\nIn case this error persists, fully re-install the account manager.", "Roblox Account Manager", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                        if (MessageBox.Show("Failed to detect Visual Studio Redistributable, would you like to install it now?\n(Required in order to use the account manager)\nIn case this error persists, fully re-install the account manager.", "Roblox Account Manager", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                         {
                             string TempPath = Path.GetTempFileName();
                             WebClient VCDL = new WebClient();
