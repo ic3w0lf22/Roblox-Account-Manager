@@ -10,7 +10,6 @@ local HttpService = game:GetService'HttpService'
 local RunService = game:GetService'RunService'
 local Players = game:GetService'Players'
 local LocalPlayer = Players.LocalPlayer if not LocalPlayer then repeat LocalPlayer = Players.LocalPlayer task.wait() until LocalPlayer end task.wait(0.5)
-local Key
 
 local UGS = UserSettings():GetService'UserGameSettings'
 local OldVolume = UGS.MasterVolume
@@ -52,14 +51,14 @@ local Signal = {} do
 end
 
 do -- Nexus
+    local BTN_CLICK = 'ButtonClicked:'
+
     Nexus.Connected = Signal.new()
     Nexus.Disconnected = Signal.new()
     Nexus.MessageReceived = Signal.new()
 
     Nexus.Commands = {}
     Nexus.Connections = {}
-
-    Nexus.Disconnected:Connect(function() Key = nil end)
 
     function Nexus:Send(Command, Payload)
         assert(self.Socket ~= nil, 'websocket is nil')
@@ -75,10 +74,7 @@ do -- Nexus
             Payload = Payload
         }
 
-        local Nonce = syn.crypt.random(16)
-        local S, Message = pcall(syn.crypt.custom.encrypt, 'aes-cbc', Message, Key, Nonce) if not S or not Message then return end
-
-        self.Socket:Send(Message .. '*' .. syn.crypt.base64.encode(Nonce))
+        self.Socket:Send(Message)
     end
 
     function Nexus:Log(...)
@@ -188,24 +184,6 @@ do -- Nexus
             self.IsConnected = true
 
             table.insert(self.Connections, Socket.OnMessage:Connect(function(Message)
-                if not Key then
-                    local S, K = pcall(syn.crypt.base64.decode, Message)
-        
-                    if S then
-                        Key = K
-
-                        self.Connected:Fire()
-
-                        self:Send('ping')
-                    end
-        
-                    return
-                end
-        
-                local Num = string.find(Message, '*') if not Num then return end
-                local IV = syn.crypt.base64.decode(string.sub(Message, Num + 1, #Message)) if not IV then return end
-                local S, Message = pcall(syn.crypt.custom.decrypt, 'aes-cbc', string.sub(Message, 1, Num - 1), Key, IV) if not S or not Message then return end
-        
                 self.MessageReceived:Fire(Message)
             end))
 
@@ -214,7 +192,7 @@ do -- Nexus
                 self.Disconnected:Fire()
             end))
 
-            self.Connected:Wait()
+            self.Connected:Fire()
 
             while self.IsConnected do
                 local Success, Error = pcall(self.Send, self, 'ping')
@@ -246,6 +224,10 @@ do -- Nexus
         self.Commands[Name] = nil
     end
 
+    function Nexus:OnButtonClick(Name, Function)
+        self:AddCommand('ButtonClicked:' .. Name, Function)
+    end
+    
     Nexus.MessageReceived:Connect(function(Message)
         local S = Message:find(' ')
 

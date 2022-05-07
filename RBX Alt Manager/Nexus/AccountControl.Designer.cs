@@ -63,6 +63,8 @@
             this.StatusRenderer = new BrightIdeasSoftware.MultiImageRenderer();
             this.cUsername = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.cJobId = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.ACStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.HelpPage = new System.Windows.Forms.TabPage();
             this.label7 = new System.Windows.Forms.Label();
             this.NexusDocsButton = new System.Windows.Forms.Button();
@@ -71,8 +73,6 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.AutoRelaunchTimer = new System.Windows.Forms.Timer(this.components);
-            this.ACStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ControlsPanel.SuspendLayout();
             this.ScriptLayoutPanel.SuspendLayout();
             this.ScriptTabs.SuspendLayout();
@@ -85,8 +85,8 @@
             this.ControlPage.SuspendLayout();
             this.CPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).BeginInit();
-            this.HelpPage.SuspendLayout();
             this.ACStrip.SuspendLayout();
+            this.HelpPage.SuspendLayout();
             this.SuspendLayout();
             // 
             // ControlsPanel
@@ -248,7 +248,7 @@
         '\'',
         '\''};
             this.ScriptBox.AutoIndentCharsPatterns = "\r\n^\\s*[\\w\\.]+(\\s\\w+)?\\s*(?<range>=)\\s*(?<range>.+)\r\n";
-            this.ScriptBox.AutoScrollMinSize = new System.Drawing.Size(131, 42);
+            this.ScriptBox.AutoScrollMinSize = new System.Drawing.Size(195, 14);
             this.ScriptBox.BackBrush = null;
             this.ScriptBox.BracketsHighlightStrategy = FastColoredTextBoxNS.BracketsHighlightStrategy.Strategy2;
             this.ScriptBox.CharHeight = 14;
@@ -257,6 +257,7 @@
             this.ScriptBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.ScriptBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.ScriptBox.Dock = System.Windows.Forms.DockStyle.Top;
+            this.ScriptBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.ScriptBox.IsReplaceMode = false;
             this.ScriptBox.Language = FastColoredTextBoxNS.Language.Lua;
             this.ScriptBox.LeftBracket = '(';
@@ -271,7 +272,7 @@
             this.ScriptBox.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("ScriptBox.ServiceColors")));
             this.ScriptBox.Size = new System.Drawing.Size(248, 136);
             this.ScriptBox.TabIndex = 8;
-            this.ScriptBox.Text = "asdasd . \r\nprint(\"ASD\");\r\n";
+            this.ScriptBox.Text = "print(\"Hello World!\")";
             this.ScriptBox.Zoom = 100;
             // 
             // ClearButton
@@ -331,6 +332,7 @@
             this.AutoExecuteScriptBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.AutoExecuteScriptBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.AutoExecuteScriptBox.Dock = System.Windows.Forms.DockStyle.Top;
+            this.AutoExecuteScriptBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.AutoExecuteScriptBox.IsReplaceMode = false;
             this.AutoExecuteScriptBox.Language = FastColoredTextBoxNS.Language.Lua;
             this.AutoExecuteScriptBox.LeftBracket = '(';
@@ -521,6 +523,20 @@
             this.cJobId.Text = "Job ID";
             this.cJobId.Width = 89;
             // 
+            // ACStrip
+            // 
+            this.ACStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.removeToolStripMenuItem});
+            this.ACStrip.Name = "ACStrip";
+            this.ACStrip.Size = new System.Drawing.Size(118, 26);
+            // 
+            // removeToolStripMenuItem
+            // 
+            this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
+            this.removeToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+            this.removeToolStripMenuItem.Text = "Remove";
+            this.removeToolStripMenuItem.Click += new System.EventHandler(this.removeToolStripMenuItem_Click);
+            // 
             // HelpPage
             // 
             this.HelpPage.Controls.Add(this.label7);
@@ -602,20 +618,6 @@
             this.AutoRelaunchTimer.Interval = 9000;
             this.AutoRelaunchTimer.Tick += new System.EventHandler(this.AutoRelaunchTimer_Tick);
             // 
-            // ACStrip
-            // 
-            this.ACStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.removeToolStripMenuItem});
-            this.ACStrip.Name = "ACStrip";
-            this.ACStrip.Size = new System.Drawing.Size(118, 26);
-            // 
-            // removeToolStripMenuItem
-            // 
-            this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            this.removeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.removeToolStripMenuItem.Text = "Remove";
-            this.removeToolStripMenuItem.Click += new System.EventHandler(this.removeToolStripMenuItem_Click);
-            // 
             // AccountControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -643,9 +645,9 @@
             this.CPanel.ResumeLayout(false);
             this.CPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).EndInit();
+            this.ACStrip.ResumeLayout(false);
             this.HelpPage.ResumeLayout(false);
             this.HelpPage.PerformLayout();
-            this.ACStrip.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }

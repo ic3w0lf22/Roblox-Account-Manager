@@ -4,8 +4,6 @@ using RBX_Alt_Manager.Forms;
 using System;
 using System.Drawing;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WebSocketSharp.Net.WebSockets;
@@ -31,17 +29,6 @@ namespace RBX_Alt_Manager.Nexus
         public bool IsChecked;
 
         [JsonIgnore] public WebSocketContext Context;
-        [JsonIgnore] public static byte[] Key;
-
-        private static byte[] GenerateIV()
-        {
-            var ByteArray = new byte[16];
-
-            using (var Rnd = RandomNumberGenerator.Create())
-                Rnd.GetBytes(ByteArray);
-
-            return ByteArray;
-        }
 
         public ControlledAccount(Account account)
         {
@@ -49,10 +36,6 @@ namespace RBX_Alt_Manager.Nexus
             Username = LinkedAccount?.Username;
             Status = AccountStatus.Offline;
             LastPing = DateTime.Now;
-
-            Random r = new Random();
-            Key = new byte[16];
-            r.NextBytes(Key);
         }
 
         public void Connect(WebSocketContext Context)
@@ -67,13 +50,9 @@ namespace RBX_Alt_Manager.Nexus
 
             new Task(() =>
             {
-                Task.Delay(250);
-
-                SendMessage(Convert.ToBase64String(Key), false);
-
                 if (!string.IsNullOrEmpty(AutoExecute))
                 {
-                    Task.Delay(1000);
+                    Task.Delay(500);
                     SendMessage("execute " + AutoExecute);
                 }
             }).Start();
@@ -88,36 +67,15 @@ namespace RBX_Alt_Manager.Nexus
             AccountControl.Instance.AccountsView.RefreshObject(this);
         }
 
-        public void HandleMessage(string Data)
+        public void HandleMessage(string Message)
         {
-            string Message = string.Empty;
-
-            if (Data.Contains("*"))
-            {
-                try // useless encryption
-                {
-                    int Idx = Data.IndexOf('*');
-
-                    if (Idx < 1 || Idx >= Data.Length - 1) return;
-
-                    byte[] Encrypted = Convert.FromBase64String(Data.Substring(0, Idx));
-                    byte[] IV = Convert.FromBase64String(Data.Substring(Idx + 1));
-
-                    AesManaged Encryption = new AesManaged();
-                    ICryptoTransform Decryptor = Encryption.CreateDecryptor(Key, IV);
-
-                    byte[] b = Decryptor.TransformFinalBlock(Encrypted, 0, Encrypted.Length);
-                    Message = Encoding.UTF8.GetString(b);
-                }
-                catch { }
-            }
-
+            Console.WriteLine(Message);
             if (string.IsNullOrEmpty(Message)) return;
 
             if (Message.TryParseJson(out Command command))
             {
-                /*if (command.Name != "ping")
-                    Console.WriteLine($"{command.Name}: {Message}");*/
+                if (command.Name != "ping")
+                    Console.WriteLine($"{command.Name}: {Message}");
 
                 if (command.Name == "ping")
                     LastPing = DateTime.Now;
@@ -182,18 +140,9 @@ namespace RBX_Alt_Manager.Nexus
             }
         }
 
-        public void SendMessage(string Message, bool Encrypted = true)
+        public void SendMessage(string Message)
         {
             if (Status == AccountStatus.Offline) return;
-            if (!Encrypted) { Context.WebSocket.Send(Message); return; }
-
-            AesManaged Encryption = new AesManaged();
-            byte[] IV = GenerateIV();
-
-            ICryptoTransform Encryptor = Encryption.CreateEncryptor(Key, IV);
-
-            var plainText = Encoding.UTF8.GetBytes(Message);
-            Message = Convert.ToBase64String(Encryptor.TransformFinalBlock(plainText, 0, plainText.Length)) + "*" + Convert.ToBase64String(IV);
 
             Context.WebSocket.Send(Message);
         }

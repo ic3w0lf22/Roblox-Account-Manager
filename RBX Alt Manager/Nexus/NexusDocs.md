@@ -79,8 +79,8 @@ print(Nexus:WaitForMessage('ElementText:', 'GetText', { Name = 'Test' }))
 ```lua
 Nexus:CreateTextBox('Test', 'Hello', { 100, 20 }, { 10, 10, 10, 10 })
 print(Nexus:GetText('Test'))
--- Output: Test
 ```
+-> Hello
 
 ## \<void\> Nexus:SetRelaunch(\<number\> Seconds)
 ### Set an account's relaunch timer if Auto Relaunch is enabled
@@ -94,6 +94,14 @@ Nexus:SetRelaunch(60 * 30) -- Account will relaunch in 30 minutes
 
 ## \<void\> Nexus:RemoveCommand(\<string\> CommandName)
 ### Removes a command
+
+## \<void\> Nexus:OnButtonClick(\<string\> Name, \<function\> Function)
+### Adds a command, which is fired only when the associated button is pressed in the control panel
+### Example
+```lua
+Nexus:CreateButton('SendButton', 'Send', { 100, 20 }, { 10, 10, 10, 10 })
+Nexus:OnButtonClick('SendButton', function() print('SendButton was pressed!') end)
+```
 
 # Default Commands
 

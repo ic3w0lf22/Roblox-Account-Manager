@@ -262,7 +262,7 @@ namespace RBX_Alt_Manager.Forms
         {
             Button btn = (Button)sender;
 
-            EmitMessage($"CustomButtonClicked:{btn.Name}");
+            EmitMessage($"ButtonClicked:{btn.Name}");
         }
 
         #endregion
