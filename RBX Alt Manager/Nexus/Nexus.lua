@@ -195,6 +195,8 @@ do -- Nexus
                         Key = K
 
                         self.Connected:Fire()
+
+                        self:Send('ping')
                     end
         
                     return
@@ -211,6 +213,8 @@ do -- Nexus
                 self.IsConnected = false
                 self.Disconnected:Fire()
             end))
+
+            self.Connected:Wait()
 
             while self.IsConnected do
                 local Success, Error = pcall(self.Send, self, 'ping')
