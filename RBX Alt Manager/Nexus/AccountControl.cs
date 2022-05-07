@@ -424,12 +424,14 @@ namespace RBX_Alt_Manager.Forms
 
         private void AutoRelaunchTimer_Tick(object sender, EventArgs e)
         {
+            if (!double.TryParse(AccountManager.IniSettings.Read("RelaunchDelay", "AccountControl"), out double RelaunchDelay)) return;
+
             foreach (ControlledAccount account in Accounts)
             {
                 if (account.AutoRelaunch && (DateTime.Now - account.LastPing).TotalSeconds > account.RelaunchDelay)
                 {
                     account.LastPing = DateTime.Now;
-                    account.RelaunchDelay = 30;
+                    account.RelaunchDelay = RelaunchDelay;
 
                     account.LinkedAccount.JoinServer(account.PlaceId, account.JobId);
 

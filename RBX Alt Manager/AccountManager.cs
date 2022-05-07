@@ -427,6 +427,8 @@ namespace RBX_Alt_Manager
             if (!IniSettings.KeyExists("Password", "WebServer")) IniSettings.Write("Password", "", "WebServer"); else WSPassword = IniSettings.Read("Password", "WebServer");
             if (!IniSettings.KeyExists("EveryRequestRequiresPassword", "WebServer")) IniSettings.Write("EveryRequestRequiresPassword", "false", "WebServer");
 
+            if (!IniSettings.KeyExists("RelaunchDelay", "AccountControl")) IniSettings.Write("RelaunchDelay", "60", "AccountControl");
+
             PlaceID.Text = IniSettings.KeyExists("SavedPlaceId", "General") ? IniSettings.Read("SavedPlaceId", "General") : "5315046213";
 
             if (IniSettings.Read("DevMode", "Developer") != "true" && !File.Exists("dev.mode"))
