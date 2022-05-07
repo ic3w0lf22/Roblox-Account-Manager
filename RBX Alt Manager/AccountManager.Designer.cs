@@ -81,6 +81,7 @@
             this.DescriptionBox = new RBX_Alt_Manager.Classes.BorderedRichTextBox();
             this.PlaceID = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.LaunchNexus = new System.Windows.Forms.Button();
+            this.copyPasswordToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AccountsStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).BeginInit();
             this.SuspendLayout();
@@ -191,6 +192,7 @@
             this.addAccountsToolStripMenuItem,
             this.removeAccountToolStripMenuItem,
             this.copyUsernameToolStripMenuItem,
+            this.copyPasswordToolStripMenuItem,
             this.copyProfileToolStripMenuItem,
             this.sortAlphabeticallyToolStripMenuItem,
             this.moveGroupUpToolStripMenuItem,
@@ -201,7 +203,7 @@
             this.copyRbxplayerLinkToolStripMenuItem,
             this.copyAppLinkToolStripMenuItem});
             this.AccountsStrip.Name = "contextMenuStrip1";
-            this.AccountsStrip.Size = new System.Drawing.Size(209, 268);
+            this.AccountsStrip.Size = new System.Drawing.Size(209, 312);
             // 
             // addAccountsToolStripMenuItem
             // 
@@ -590,6 +592,13 @@
             this.LaunchNexus.UseVisualStyleBackColor = true;
             this.LaunchNexus.Click += new System.EventHandler(this.LaunchNexus_Click);
             // 
+            // copyPasswordToolStripMenuItem
+            // 
+            this.copyPasswordToolStripMenuItem.Name = "copyPasswordToolStripMenuItem";
+            this.copyPasswordToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.copyPasswordToolStripMenuItem.Text = "Copy Password";
+            this.copyPasswordToolStripMenuItem.Click += new System.EventHandler(this.copyPasswordToolStripMenuItem_Click);
+            // 
             // AccountManager
             // 
             this.AllowDrop = true;
@@ -692,5 +701,6 @@
         private System.Windows.Forms.ToolStripMenuItem infoToolStripMenuItem1;
         private System.Windows.Forms.Button DonateButton;
         private System.Windows.Forms.Button LaunchNexus;
+        private System.Windows.Forms.ToolStripMenuItem copyPasswordToolStripMenuItem;
     }
 }

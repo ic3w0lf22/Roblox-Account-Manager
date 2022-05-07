@@ -22,6 +22,7 @@ namespace RBX_Alt_Manager
         public DateTime LastUse;
         private string _Alias = "";
         private string _Description = "";
+        private string _Password = "";
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public string Group { get; set; } = "Default";
         public long UserID;
         public Dictionary<string, string> Fields = new Dictionary<string, string>();
@@ -62,6 +63,18 @@ namespace RBX_Alt_Manager
                     return;
 
                 _Description = value;
+                AccountManager.DelayedSaveAccounts();
+            }
+        }
+        public string Password
+        {
+            get => _Password;
+            set
+            {
+                if (value == null || value.Length > 5000)
+                    return;
+
+                _Password = value;
                 AccountManager.DelayedSaveAccounts();
             }
         }

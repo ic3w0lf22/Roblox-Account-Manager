@@ -108,7 +108,7 @@ namespace RBX_Alt_Manager
 
         private void OnPageLoaded(object sender, FrameLoadEndEventArgs args)
         {
-            if (args != null && !string.IsNullOrEmpty(args.Url) && args.Url.Contains("/login"))
+            if (args != null && !string.IsNullOrEmpty(args.Url) && args.Url.Contains("/login") && AccountManager.IniSettings.Read("SavePasswords", "General") == "true")
             {
                 Task.Factory.StartNew(async () =>
                 {
@@ -151,7 +151,7 @@ namespace RBX_Alt_Manager
                         if (RSec != null)
                         {
                             SecurityToken = RSec.Value;
-                            AccountManager.AddAccount(SecurityToken);
+                            AccountManager.AddAccount(SecurityToken, Password);
                             HideForm();
                             chromeBrowser.Load("https://roblox.com/login");
                         }

@@ -286,16 +286,21 @@ namespace RBX_Alt_Manager
                 AccountsView.UpdateObject(account);
         }
 
-        public static void AddAccount(string SecurityToken)
+        public static void AddAccount(string SecurityToken, string Password = "")
         {
             Account account = new Account(SecurityToken);
 
             if (account.Valid)
             {
+                account.Password = Password;
+
                 Account exists = AccountsList.FirstOrDefault(acc => acc.UserID == account.UserID);
 
                 if (exists != null)
+                {
                     exists.SecurityToken = account.SecurityToken;
+                    exists.Password = Password;
+                }
                 else
                 {
                     AccountsList.Add(account);
@@ -410,6 +415,7 @@ namespace RBX_Alt_Manager
             if (!IniSettings.KeyExists("AccountJoinDelay", "General")) IniSettings.Write("AccountJoinDelay", "8", "General");
             if (!IniSettings.KeyExists("AsyncJoin", "General")) IniSettings.Write("AsyncJoin", "true", "General");
             if (!IniSettings.KeyExists("DisableAgingAlert", "General")) IniSettings.Write("DisableAgingAlert", "false", "General");
+            if (!IniSettings.KeyExists("SavePasswords", "General")) IniSettings.Write("SavePasswords", "true", "General");
 
             if (!IniSettings.KeyExists("DevMode", "Developer")) IniSettings.Write("DevMode", "false", "Developer");
             if (!IniSettings.KeyExists("EnableWebServer", "Developer")) IniSettings.Write("EnableWebServer", "false", "Developer");
@@ -1028,6 +1034,16 @@ namespace RBX_Alt_Manager
                 Usernames.Add(account.Username);
 
             Clipboard.SetText(string.Join("\n", Usernames));
+        }
+
+        private void copyPasswordToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            List<string> Passwords = new List<string>();
+
+            foreach (Account account in AccountsView.SelectedObjects)
+                Passwords.Add($"{account.Username}:{account.Password}");
+
+            Clipboard.SetText(string.Join("\n", Passwords));
         }
 
         private void PlaceID_TextChanged(object sender, EventArgs e)
