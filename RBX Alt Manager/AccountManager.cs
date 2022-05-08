@@ -33,6 +33,7 @@ namespace RBX_Alt_Manager
         public static Account SelectedAccount;
         public static RestClient MainClient;
         public static RestClient FriendsClient;
+        public static RestClient UsersClient;
         public static RestClient APIClient;
         public static RestClient AuthClient;
         public static RestClient EconClient;
@@ -404,6 +405,9 @@ namespace RBX_Alt_Manager
 
             FriendsClient = new RestClient("https://friends.roblox.com");
             FriendsClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
+
+            UsersClient = new RestClient("https://users.roblox.com");
+            UsersClient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
             ApplyTheme();
 
@@ -1260,8 +1264,10 @@ namespace RBX_Alt_Manager
                 account.JoinServer(PlaceId, JobID, FollowUser, VIPServer);
 
                 if (AsyncJoin)
+                {
                     while (!LaunchNext)
                         await Task.Delay(50);
+                }
                 else
                     await Task.Delay(Delay * 1000);
 

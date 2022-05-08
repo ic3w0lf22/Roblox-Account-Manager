@@ -1,6 +1,7 @@
 ﻿#pragma warning disable CS0618
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
 using System.Collections.Generic;
@@ -588,8 +589,10 @@ namespace RBX_Alt_Manager
 
                     RPath = RPath + @"\RobloxPlayerBeta.exe";
 
-                    Task.Run(() => // somehow some people are crashing when roblox is tryna launch??? (probably bad executor taking making the process hang)
+                    Task.Run(() => // somehow some people are crashing when roblox is tryna launch??? (probably bad executor making the process hang)
                     {
+                        AccountManager.Instance.NextAccount();
+
                         ProcessStartInfo Roblox = new ProcessStartInfo(RPath);
 
                         if (JoinVIP)
@@ -606,7 +609,7 @@ namespace RBX_Alt_Manager
                 }
                 else
                 {
-                    Task.Run(() => // somehow some people are crashing when roblox is tryna launch??? (probably bad executor taking making the process hang)
+                    Task.Run(() => // somehow some people are crashing when roblox is tryna launch??? (probably bad executor making the process hang)
                     {
                         try
                         {
@@ -616,7 +619,7 @@ namespace RBX_Alt_Manager
                                 Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{2}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}+browsertrackerid:{3}+robloxLocale:en_us+gameLocale:en_us", Ticket, PlaceID, LaunchTime, BrowserTrackerID)).WaitForExit();
                             else
                                 Process.Start($"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{ (string.IsNullOrEmpty(JobID) ? "" : "Job") }&browserTrackerId={BrowserTrackerID}&placeId={PlaceID}{(string.IsNullOrEmpty(JobID) ? "" : ("&gameId=" + JobID))}&isPlayTogetherGame=false{(AccountManager.IsTeleport ? "&isTeleport=true" : "")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us").WaitForExit();
-
+                            
                             AccountManager.Instance.NextAccount();
                         }
                         catch
@@ -690,10 +693,20 @@ namespace RBX_Alt_Manager
 
             IRestResponse friendResponse = AccountManager.FriendsClient.Execute(friendRequest);
 
-            if (friendResponse.IsSuccessful && friendResponse.StatusCode == HttpStatusCode.OK)
-                return true;
+            return friendResponse.IsSuccessful && friendResponse.StatusCode == HttpStatusCode.OK;
+        }
 
-            return false;
+        public void SetDisplayName(string DisplayName)
+        {
+            RestRequest dpRequest = new RestRequest($"/v1/users/{UserID}/display-names", Method.PATCH);
+            dpRequest.AddCookie(".ROBLOSECURITY", SecurityToken);
+            dpRequest.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
+            dpRequest.AddJsonBody(new { newDisplayName = DisplayName });
+
+            IRestResponse dpResponse = AccountManager.UsersClient.Execute(dpRequest);
+
+            if (dpResponse.StatusCode != HttpStatusCode.OK)
+                throw new Exception(JObject.Parse(dpResponse.Content)?["errors"]?[0]?["message"].Value<string>() ?? $"Something went wrong\n{dpResponse.StatusCode}: {dpResponse.Content}");
         }
 
         public string GetField(string Name) => Fields.ContainsKey(Name) ? Fields[Name] : "";

@@ -287,7 +287,7 @@ namespace RBX_Alt_Manager
 
                 while (!string.IsNullOrEmpty(publicInfo.nextPageCursor) && Busy)
                 {
-                    RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?sortOrder=Dsc&limit=100" + (publicInfo.nextPageCursor == "_" ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
+                    RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?limit=100" + (publicInfo.nextPageCursor == "_" ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
 
                     IRestResponse response = await gamesclient.ExecuteAsync(request);
 
@@ -295,30 +295,27 @@ namespace RBX_Alt_Manager
                     {
                         publicInfo = JsonConvert.DeserializeObject<ServersInfo>(response.Content);
 
-                        Task.Factory.StartNew(() =>
+                        foreach (ServerData server in publicInfo.data)
                         {
-                            foreach (ServerData server in publicInfo.data)
+                            if (!Busy) break;
+
+                            RestRequest batchRequest = new RestRequest("v1/batch", Method.POST);
+
+                            batchRequest.AddJsonBody(server.playerTokens.ConvertAll(s => new TokenRequest(s)));
+
+                            IRestResponse batchResponse = await thumbclient.ExecuteAsync(batchRequest);
+
+                            TokenAvatarRoot avatars = JsonConvert.DeserializeObject<TokenAvatarRoot>(batchResponse.Content);
+
+                            if (avatars.data.Exists(x => x.imageUrl == avatar.imageUrl))
                             {
-                                if (!Busy) break;
-
-                                RestRequest batchRequest = new RestRequest("v1/batch", Method.POST);
-
-                                batchRequest.AddJsonBody(server.playerTokens.ConvertAll(s => new TokenRequest(s)));
-
-                                IRestResponse batchResponse = thumbclient.Execute(batchRequest);
-
-                                TokenAvatarRoot avatars = JsonConvert.DeserializeObject<TokenAvatarRoot>(batchResponse.Content);
-
-                                if (avatars.data.Exists(x => x.imageUrl == avatar.imageUrl))
-                                {
-                                    Busy = false;
-                                    ServerListView.ClearObjects();
-                                    ServerListView.SetObjects(new List<ServerData> { server });
-                                }
+                                Busy = false;
+                                ServerListView.ClearObjects();
+                                ServerListView.SetObjects(new List<ServerData> { server });
                             }
-                        });
+                        }
 
-                        await Task.Delay(200);
+                        await Task.Delay(750);
                     }
                 }
 

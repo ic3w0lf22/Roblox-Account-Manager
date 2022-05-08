@@ -132,10 +132,17 @@ namespace RBX_Alt_Manager
 
         private void SetDisplayName_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("To set your display name, click 'Open App', go to settings, account info, then change your display name there");
+            if (AccountManager.SelectedAccount == null) return;
+
+            try
+            {
+                AccountManager.SelectedAccount.SetDisplayName(DisplayName.Text);
+                MessageBox.Show($"Successfully set {AccountManager.SelectedAccount.Username}'s Display Name to {DisplayName.Text}", "Account Utilities", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception x) { MessageBox.Show(x.Message, "Account Utilities", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
 
-        private void button4_Click(object sender, EventArgs e)
+        private void AddFriend_Click(object sender, EventArgs e)
         {
             if (AccountManager.SelectedAccount == null) return;
 

@@ -112,13 +112,15 @@ namespace RBX_Alt_Manager
             {
                 Task.Factory.StartNew(async () =>
                 {
-                    while (chromeBrowser.Address == args.Url && Visible)
+                    await Task.Delay(200);
+
+                    while (chromeBrowser.Address.Contains("/login") && Visible)
                     {
                         JavascriptResponse response = await chromeBrowser.EvaluateScriptAsync("document.getElementById('login-password').value");
 
                         Password = (string)response.Result;
 
-                        await Task.Delay(200);
+                        await Task.Delay(50);
                     }
                 });
             }

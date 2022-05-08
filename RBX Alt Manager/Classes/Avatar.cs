@@ -4,7 +4,7 @@ namespace RBX_Alt_Manager
 {
     public class Avatar
     {
-        public int targetId { get; set; }
+        public long targetId { get; set; }
         public string state { get; set; }
         public string imageUrl { get; set; }
     }
@@ -18,7 +18,7 @@ namespace RBX_Alt_Manager
     {
         public string requestId { get; set; }
         public string type { get; set; }
-        public int targetId { get; set; }
+        public long targetId { get; set; }
         public string token { get; set; }
         public string format { get; set; }
         public string size { get; set; }
@@ -39,7 +39,7 @@ namespace RBX_Alt_Manager
         public string requestId { get; set; }
         public int errorCode { get; set; }
         public string errorMessage { get; set; }
-        public int targetId { get; set; }
+        public long targetId { get; set; }
         public string state { get; set; }
         public string imageUrl { get; set; }
     }

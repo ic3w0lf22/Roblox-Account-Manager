@@ -69,13 +69,12 @@ namespace RBX_Alt_Manager.Nexus
 
         public void HandleMessage(string Message)
         {
-            Console.WriteLine(Message);
             if (string.IsNullOrEmpty(Message)) return;
 
             if (Message.TryParseJson(out Command command))
             {
-                if (command.Name != "ping")
-                    Console.WriteLine($"{command.Name}: {Message}");
+                /*if (command.Name != "ping")
+                    Console.WriteLine($"{command.Name}: {Message}");*/
 
                 if (command.Name == "ping")
                     LastPing = DateTime.Now;
