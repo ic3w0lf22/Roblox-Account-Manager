@@ -427,7 +427,7 @@ namespace RBX_Alt_Manager.Forms
         {
             string path = Path.Combine(Environment.CurrentDirectory, "Nexus.lua");
 
-            File.WriteAllText(path, "pcall(function()\n\tNexus_Version = 101'\n\tloadstring(game:HttpGet'https://raw.githubusercontent.com/ic3w0lf22/Roblox-Account-Manager/master/RBX%20Alt%20Manager/Nexus/Nexus.lua')()\n\tNexus:Connect()\nend)");
+            File.WriteAllText(path, "pcall(function()\n\tNexus_Version = 101\n\tloadstring(game:HttpGet'https://raw.githubusercontent.com/ic3w0lf22/Roblox-Account-Manager/master/RBX%20Alt%20Manager/Nexus/Nexus.lua')()\n\tNexus:Connect()\nend)");
 
             Process.Start("explorer.exe", "/select, " + path);
         }

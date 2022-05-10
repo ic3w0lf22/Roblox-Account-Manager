@@ -119,13 +119,8 @@ namespace RBX_Alt_Manager
                     if (!response.Success)
                         response = await chromeBrowser.EvaluateScriptAsync("document.getElementById('signup-password').value");
 
-                    if (!response.Success)
-                    {
-                        await Task.Delay(50);
-                        continue;
-                    }
-
-                    Password = (string)response.Result;
+                    if (response.Success)
+                        Password = (string)response.Result;
 
                     await Task.Delay(50);
                 }
