@@ -18,7 +18,7 @@ end)
 Nexus.MessageReceived:Connect(print)
 ```
 
-## \<void\> Nexus:Connect()
+## \<void\> Nexus:Connect(\<string\> [optional] Host = 'localhost:5242')
 ### Attempts to connect to the websocket server, this is done automatically when the script is executed
 ### Example
 

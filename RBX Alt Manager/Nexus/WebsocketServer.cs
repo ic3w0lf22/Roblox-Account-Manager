@@ -21,7 +21,6 @@ namespace RBX_Alt_Manager.Nexus
         public WebsocketServer(string prefix) => _prefix = prefix;
 
         private string getName() => Context.QueryString["name"] ?? (_prefix + getNum());
-
         private int getNum() => Interlocked.Increment(ref _num);
 
         protected override void OnOpen()

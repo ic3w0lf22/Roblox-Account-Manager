@@ -301,6 +301,9 @@ namespace RBX_Alt_Manager
                 {
                     exists.SecurityToken = account.SecurityToken;
                     exists.Password = Password;
+                    exists.LastUse = DateTime.Now;
+
+                    Instance.RefreshView();
                 }
                 else
                 {
@@ -431,7 +434,9 @@ namespace RBX_Alt_Manager
             if (!IniSettings.KeyExists("Password", "WebServer")) IniSettings.Write("Password", "", "WebServer"); else WSPassword = IniSettings.Read("Password", "WebServer");
             if (!IniSettings.KeyExists("EveryRequestRequiresPassword", "WebServer")) IniSettings.Write("EveryRequestRequiresPassword", "false", "WebServer");
 
+            if (!IniSettings.KeyExists("AllowExternalConnections", "AccountControl")) IniSettings.Write("AllowExternalConnections", "false", "AccountControl");
             if (!IniSettings.KeyExists("RelaunchDelay", "AccountControl")) IniSettings.Write("RelaunchDelay", "60", "AccountControl");
+            if (!IniSettings.KeyExists("NexusPort", "AccountControl")) IniSettings.Write("NexusPort", "5242", "AccountControl");
 
             PlaceID.Text = IniSettings.KeyExists("SavedPlaceId", "General") ? IniSettings.Read("SavedPlaceId", "General") : "5315046213";
 

@@ -108,22 +108,22 @@ namespace RBX_Alt_Manager
 
         private void OnPageLoaded(object sender, FrameLoadEndEventArgs args)
         {
-            if (args != null && !string.IsNullOrEmpty(args.Url) && args.Url.Contains("/login") && AccountManager.IniSettings.Read("SavePasswords", "General") == "true")
+            Task.Factory.StartNew(async () =>
             {
-                Task.Factory.StartNew(async () =>
+                await Task.Delay(200);
+
+                while (Visible)
                 {
-                    await Task.Delay(200);
+                    JavascriptResponse response = await chromeBrowser.EvaluateScriptAsync("document.getElementById('login-password').value");
 
-                    while (chromeBrowser.Address.Contains("/login") && Visible)
-                    {
-                        JavascriptResponse response = await chromeBrowser.EvaluateScriptAsync("document.getElementById('login-password').value");
+                    if (!response.Success)
+                        response = await chromeBrowser.EvaluateScriptAsync("document.getElementById('signup-password').value");
 
-                        Password = (string)response.Result;
+                    Password = (string)response.Result;
 
-                        await Task.Delay(50);
-                    }
-                });
-            }
+                    await Task.Delay(50);
+                }
+            });
 
             chromeBrowser.ExecuteScriptAsyncWhenPageLoaded(@"document.body.classList.remove(""light-theme"");document.body.classList.add(""dark-theme"");");
 

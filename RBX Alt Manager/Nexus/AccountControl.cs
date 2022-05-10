@@ -93,7 +93,13 @@ namespace RBX_Alt_Manager.Forms
 
         private void OpenServer()
         {
-            Server = new WebSocketServer(IPAddress.Loopback, 5242, false);
+            if (!int.TryParse(AccountManager.IniSettings.Read("NexusPort", "AccountControl"), out int Port))
+                throw new Exception("Failed to start server, invalid Port setting");
+
+            if (Port < 1 || Port > 65535)
+                throw new Exception("Port can not be less than 1 or more than 65535");
+
+            Server = new WebSocketServer(AccountManager.IniSettings.Read("AllowExternalConnections", "AccountControl") == "true" ? IPAddress.Any : IPAddress.Loopback, Port, false);
 
 #if DEBUG
             Server.Log.Level = LogLevel.Debug;
@@ -285,6 +291,12 @@ namespace RBX_Alt_Manager.Forms
             Task Listener = new Task(new Action(OpenServer));
             Listener.Start();
 
+            try { Listener.Wait(50); }
+            catch (AggregateException x) {
+                MessageBox.Show(x.InnerException.Message, "Account Control", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Hide();
+            }
+
             SaveOutputToFileCheck.Checked = AccountManager.IniSettings.Read("SaveOutput", "AccountControl") == "true";
         }
 
@@ -415,7 +427,7 @@ namespace RBX_Alt_Manager.Forms
         {
             string path = Path.Combine(Environment.CurrentDirectory, "Nexus.lua");
 
-            File.WriteAllText(path, "pcall(function() loadstring(game:HttpGet'https://raw.githubusercontent.com/ic3w0lf22/Roblox-Account-Manager/master/RBX%20Alt%20Manager/Nexus/Nexus.lua')() end)");
+            File.WriteAllText(path, "pcall(function()\n\tNexus_Version = 101'\n\tloadstring(game:HttpGet'https://raw.githubusercontent.com/ic3w0lf22/Roblox-Account-Manager/master/RBX%20Alt%20Manager/Nexus/Nexus.lua')()\n\tNexus:Connect()\nend)");
 
             Process.Start("explorer.exe", "/select, " + path);
         }

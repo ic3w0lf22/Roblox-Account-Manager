@@ -163,7 +163,7 @@ do -- Nexus
         return Message:sub(#Header + 1)
     end
 
-    function Nexus:Connect()
+    function Nexus:Connect(Host)
         while true do
             for Index, Connection in pairs(self.Connections) do
                 Connection:Disconnect()
@@ -179,7 +179,11 @@ do -- Nexus
 
             if self.Terminated then break end
 
-            local Success, Socket = pcall(syn.websocket.connect, ('ws://localhost:5242/Nexus?name=%s&id=%s&jobId=%s'):format(LocalPlayer.Name, LocalPlayer.UserId, game.JobId))
+            if not Host then
+                Host = 'localhost:5242'
+            end
+
+            local Success, Socket = pcall(syn.websocket.connect, ('ws://%s/Nexus?name=%s&id=%s&jobId=%s'):format(Host, LocalPlayer.Name, LocalPlayer.UserId, game.JobId))
 
             if not Success then task.wait(12) continue end
 
@@ -347,8 +351,9 @@ do -- Connections
     end)
 end
 
-task.spawn(Nexus.Connect, Nexus)
-
-Nexus.Connected:Wait()
-
 getgenv().Nexus = Nexus
+
+if not Nexus_Version then
+    Nexus:Connect()
+    Nexus.Connected:Wait()
+end

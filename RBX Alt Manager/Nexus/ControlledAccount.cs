@@ -27,6 +27,7 @@ namespace RBX_Alt_Manager.Nexus
 
         public bool AutoRelaunch;
         public bool IsChecked;
+        public bool ClientCanReceive;
 
         [JsonIgnore] public WebSocketContext Context;
 
@@ -45,14 +46,15 @@ namespace RBX_Alt_Manager.Nexus
             this.Context = Context;
 
             AccountControl.Instance.ContextList.Add(Context, this);
-
             AccountControl.Instance.AccountsView.RefreshObject(this);
 
             new Task(() =>
             {
                 if (!string.IsNullOrEmpty(AutoExecute))
                 {
-                    Task.Delay(500);
+                    while (!ClientCanReceive)
+                        Task.Delay(50);
+
                     SendMessage("execute " + AutoExecute);
                 }
             }).Start();
@@ -61,9 +63,9 @@ namespace RBX_Alt_Manager.Nexus
         public void Disconnect()
         {
             Status = AccountStatus.Offline;
+            ClientCanReceive = false;
 
             AccountControl.Instance.ContextList.Remove(Context);
-
             AccountControl.Instance.AccountsView.RefreshObject(this);
         }
 
@@ -77,7 +79,10 @@ namespace RBX_Alt_Manager.Nexus
                     Console.WriteLine($"{command.Name}: {Message}");*/
 
                 if (command.Name == "ping")
+                {
                     LastPing = DateTime.Now;
+                    ClientCanReceive = true;
+                }
                 else if (command.Name == "Log")
                     AccountControl.Instance.InvokeIfRequired(() => { AccountControl.Instance.LogMessage(command.Payload["Content"]); });
                 else if (command.Name == "GetText")

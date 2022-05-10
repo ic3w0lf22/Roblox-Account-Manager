@@ -166,7 +166,7 @@ namespace RBX_Alt_Manager
 
                 while (publicInfo.nextPageCursor != null && Busy)
                 {
-                    RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?sortOrder=Dsc&limit=100" + (publicInfo.nextPageCursor == "_" ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
+                    RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?sortOrder=Asc&limit=100" + (publicInfo.nextPageCursor == "_" ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
                     response = await gamesclient.ExecuteAsync(request);
 
                     if (response.StatusCode == HttpStatusCode.OK && Busy)
@@ -192,7 +192,7 @@ namespace RBX_Alt_Manager
                 {
                     while (vipInfo.nextPageCursor != null)
                     {
-                        RestRequest request = new RestRequest("v1/games/" + PlaceId + " /servers/VIP?sortOrder=Dsc&limit=25" + (vipInfo.nextPageCursor == "_" ? "" : "&cursor=" + vipInfo.nextPageCursor), Method.GET);
+                        RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/VIP?sortOrder=Asc&limit=25" + (vipInfo.nextPageCursor == "_" ? "" : "&cursor=" + vipInfo.nextPageCursor), Method.GET);
                         request.AddCookie(".ROBLOSECURITY", AccountManager.SelectedAccount.SecurityToken);
                         request.AddHeader("Accept", "application/json");
                         response = gamesclient.Execute(request);
