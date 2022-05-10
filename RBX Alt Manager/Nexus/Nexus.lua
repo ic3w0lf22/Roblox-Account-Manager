@@ -1,6 +1,22 @@
 if Nexus then Nexus:Stop() end
 
-if not game:IsLoaded() then game.Loaded:Wait() end
+if not game:IsLoaded() then
+    task.delay(60, function()
+        if NoShutdown then return end
+
+        if not game:IsLoaded() then
+            return game:Shutdown()
+        end
+
+        local Code = game:GetService'GuiService':GetErrorCode().Value
+
+        if Code >= Enum.ConnectionError.DisconnectErrors.Value and Code <= Enum.ConnectionError.PlacelaunchOtherError.Value then
+            return game:Shutdown()
+        end
+    end)
+    
+    game.Loaded:Wait()
+end
 
 local Nexus = {}
 
@@ -343,9 +359,11 @@ end
 
 do -- Connections
     GuiService.ErrorMessageChanged:Connect(function()
+        if NoShutdown then return end
+
         local Code = GuiService:GetErrorCode().Value
 
-        if Code >= Enum.ConnectionError.DisconnectErrors.Value and Code <= Enum.ConnectionError.DisconnectModeratedGame.Value then
+        if Code >= Enum.ConnectionError.DisconnectErrors.Value and Code <= Enum.ConnectionError.PlacelaunchOtherError.Value then
             task.delay(Nexus.ShutdownTime, game.Shutdown, game)
         end
     end)

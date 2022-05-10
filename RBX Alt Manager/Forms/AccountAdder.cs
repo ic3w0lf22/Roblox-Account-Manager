@@ -112,12 +112,18 @@ namespace RBX_Alt_Manager
             {
                 await Task.Delay(200);
 
-                while (Visible)
+                while (Visible && args.Url == chromeBrowser.Address)
                 {
                     JavascriptResponse response = await chromeBrowser.EvaluateScriptAsync("document.getElementById('login-password').value");
 
                     if (!response.Success)
                         response = await chromeBrowser.EvaluateScriptAsync("document.getElementById('signup-password').value");
+
+                    if (!response.Success)
+                    {
+                        await Task.Delay(50);
+                        continue;
+                    }
 
                     Password = (string)response.Result;
 
