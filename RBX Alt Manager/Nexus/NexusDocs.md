@@ -43,7 +43,7 @@ Nexus:Log('asd', workspace)
 
 
 ## \<void\> Nexus:Echo(\<variant\> ...)
-### Print out ... in the account control panel
+### Send a message to be replicated to clients connected to the server
 ### Example
 ```lua
 Nexus:Echo('hello to all accounts!')
