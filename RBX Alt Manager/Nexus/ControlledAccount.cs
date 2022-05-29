@@ -90,7 +90,7 @@ namespace RBX_Alt_Manager.Nexus
                 else if (command.Name == "SetRelaunch" && double.TryParse(command.Payload["Seconds"], out double Delay))
                     RelaunchDelay = Delay;
                 else if (command.Name == "Echo")
-                    SendMessage(command.Payload["Content"]);
+                    SendMessage(command.Payload["Content"]); //needs to brocast to all clients
                 else if (Enum.TryParse(command.Name, out CommandCreateElement elementType))
                 {
                     if (elementType != CommandCreateElement.NewLine && !(command.Payload.ContainsKey("Name") && command.Payload.ContainsKey("Content")))
