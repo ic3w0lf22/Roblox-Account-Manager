@@ -41,6 +41,14 @@ Nexus:Log('asd', workspace)
 ```
 -\> asd workspace
 
+
+## \<void\> Nexus:Echo(\<variant\> ...)
+### Print out ... in the account control panel
+### Example
+```lua
+Nexus:Echo('hello to all accounts!')
+```
+
 ## \<void\> Nexus:Create\[Button, TextBox, Label\](\<string\> Name, \<string\> Content, [optional] \<table\> Size, [optional] \<table\> Margins, [optional] \<table\> ExtraPayload)
 ### Create an element of type into the control panel
 ### Name must be unique, you can not create an element that already exists with that name
