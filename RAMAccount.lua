@@ -24,7 +24,7 @@ local function GET(Method, Account, ...)
         Url = Url .. '&Password=' .. WebserverSettings.Password
     end
     
-    local Response = syn.request {
+    local Response = (request or http and http.request or http_request or syn and syn.request) {
         Method = 'GET',
         Url = Url
     }
@@ -46,7 +46,7 @@ local function POST(Method, Account, Body, ...)
         Url = Url .. '&Password=' .. WebserverSettings.Password
     end
     
-    local Response = syn.request {
+    local Response = (request or http and http.request or http_request or syn and syn.request) {
         Method = 'POST',
         Url = Url,
         Body = Body
