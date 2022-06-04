@@ -422,7 +422,7 @@ namespace RBX_Alt_Manager
 
             PlaceID_TextChanged(PlaceID, new EventArgs());
 
-            IniSettings = new IniFile("RAMSettings.ini");
+            IniSettings = File.Exists("RAMSettings.ini") ? new IniFile("RAMSettings.ini") : new IniFile();
 
             General = IniSettings.Section("General");
             Developer = IniSettings.Section("Developer");
@@ -452,7 +452,7 @@ namespace RBX_Alt_Manager
 
             PlaceID.Text = General.Exists("SavedPlaceId") ? General.Get("SavedPlaceId") : "5315046213";
 
-            if (Developer.Get<bool>("DevMode") && !File.Exists("dev.mode"))
+            if (!Developer.Get<bool>("DevMode"))
             {
                 AccountsStrip.Items.Remove(viewFieldsToolStripMenuItem);
                 AccountsStrip.Items.Remove(getAuthenticationTicketToolStripMenuItem);
