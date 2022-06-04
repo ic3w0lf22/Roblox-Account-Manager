@@ -621,7 +621,7 @@ namespace RBX_Alt_Manager
 
             if (Method == "GetAccounts")
             {
-                if (WebServer.Get<bool>("AllowGetAccounts")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowGetAccounts")) return "Method not allowed";
 
                 string Names = "";
 
@@ -641,14 +641,14 @@ namespace RBX_Alt_Manager
 
             if (Method == "GetCookie")
             {
-                if (WebServer.Get<bool>("AllowGetCookie")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowGetCookie")) return "Method not allowed";
 
                 return account.SecurityToken;
             }
 
             if (Method == "LaunchAccount")
             {
-                if (WebServer.Get<bool>("AllowLaunchAccount")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowLaunchAccount")) return "Method not allowed";
 
                 bool ValidPlaceId = long.TryParse(request.QueryString["PlaceId"], out long PlaceId); if (!ValidPlaceId) return "Invalid PlaceId";
 
@@ -700,7 +700,7 @@ namespace RBX_Alt_Manager
             if (Method == "GetField" && !string.IsNullOrEmpty(request.QueryString["Field"])) return account.GetField(request.QueryString["Field"]);
             if (Method == "SetField" && !string.IsNullOrEmpty(request.QueryString["Field"]) && !string.IsNullOrEmpty(request.QueryString["Value"]))
             {
-                if (WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
 
                 account.SetField(request.QueryString["Field"], request.QueryString["Value"]);
 
@@ -708,7 +708,7 @@ namespace RBX_Alt_Manager
             }
             if (Method == "RemoveField" && !string.IsNullOrEmpty(request.QueryString["Field"]))
             {
-                if (WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
 
                 account.RemoveField(request.QueryString["Field"]);
 
@@ -719,7 +719,7 @@ namespace RBX_Alt_Manager
 
             if (Method == "SetAlias" && !string.IsNullOrEmpty(Body))
             {
-                if (WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
 
                 account.Alias = Body;
                 UpdateAccountView(account);
@@ -728,7 +728,7 @@ namespace RBX_Alt_Manager
             }
             if (Method == "SetDescription" && !string.IsNullOrEmpty(Body))
             {
-                if (WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
 
                 account.Description = Body;
                 UpdateAccountView(account);
@@ -737,7 +737,7 @@ namespace RBX_Alt_Manager
             }
             if (Method == "AppendDescription" && !string.IsNullOrEmpty(Body))
             {
-                if (WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
 
                 account.Description += Body;
                 UpdateAccountView(account);
