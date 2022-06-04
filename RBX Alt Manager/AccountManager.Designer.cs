@@ -82,6 +82,7 @@
             this.DescriptionBox = new RBX_Alt_Manager.Classes.BorderedRichTextBox();
             this.PlaceID = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.LaunchNexus = new System.Windows.Forms.Button();
+            this.ConfigButton = new System.Windows.Forms.Button();
             this.AccountsStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).BeginInit();
             this.SuspendLayout();
@@ -597,12 +598,26 @@
             this.LaunchNexus.UseVisualStyleBackColor = true;
             this.LaunchNexus.Click += new System.EventHandler(this.LaunchNexus_Click);
             // 
+            // ConfigButton
+            // 
+            this.ConfigButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ConfigButton.FlatAppearance.BorderSize = 0;
+            this.ConfigButton.Image = global::RBX_Alt_Manager.Properties.Resources.configIcon;
+            this.ConfigButton.ImageAlign = System.Drawing.ContentAlignment.BottomRight;
+            this.ConfigButton.Location = new System.Drawing.Point(720, 6);
+            this.ConfigButton.Name = "ConfigButton";
+            this.ConfigButton.Size = new System.Drawing.Size(24, 24);
+            this.ConfigButton.TabIndex = 1002;
+            this.ConfigButton.UseVisualStyleBackColor = true;
+            this.ConfigButton.Click += new System.EventHandler(this.ConfigButton_Click);
+            // 
             // AccountManager
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 301);
+            this.Controls.Add(this.ConfigButton);
             this.Controls.Add(this.LaunchNexus);
             this.Controls.Add(this.DonateButton);
             this.Controls.Add(this.EditTheme);
@@ -700,5 +715,6 @@
         private System.Windows.Forms.Button DonateButton;
         private System.Windows.Forms.Button LaunchNexus;
         private System.Windows.Forms.ToolStripMenuItem copyPasswordToolStripMenuItem;
+        private System.Windows.Forms.Button ConfigButton;
     }
 }

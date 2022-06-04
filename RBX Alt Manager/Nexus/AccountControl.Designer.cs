@@ -65,6 +65,13 @@
             this.cJobId = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.ACStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.SettingsTab = new System.Windows.Forms.TabPage();
+            this.flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
+            this.AllowExternalConnectionsCB = new System.Windows.Forms.CheckBox();
+            this.RLLabel = new System.Windows.Forms.Label();
+            this.RelaunchDelayNumber = new System.Windows.Forms.NumericUpDown();
+            this.PortLabel = new System.Windows.Forms.Label();
+            this.PortNumber = new System.Windows.Forms.NumericUpDown();
             this.HelpPage = new System.Windows.Forms.TabPage();
             this.label7 = new System.Windows.Forms.Label();
             this.NexusDocsButton = new System.Windows.Forms.Button();
@@ -86,6 +93,10 @@
             this.CPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).BeginInit();
             this.ACStrip.SuspendLayout();
+            this.SettingsTab.SuspendLayout();
+            this.flowLayoutPanel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RelaunchDelayNumber)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PortNumber)).BeginInit();
             this.HelpPage.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -423,6 +434,7 @@
             // ACTabs
             // 
             this.ACTabs.Controls.Add(this.ControlPage);
+            this.ACTabs.Controls.Add(this.SettingsTab);
             this.ACTabs.Controls.Add(this.HelpPage);
             this.ACTabs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ACTabs.Location = new System.Drawing.Point(0, 0);
@@ -537,6 +549,115 @@
             this.removeToolStripMenuItem.Text = "Remove";
             this.removeToolStripMenuItem.Click += new System.EventHandler(this.removeToolStripMenuItem_Click);
             // 
+            // SettingsTab
+            // 
+            this.SettingsTab.Controls.Add(this.flowLayoutPanel2);
+            this.SettingsTab.Location = new System.Drawing.Point(4, 22);
+            this.SettingsTab.Name = "SettingsTab";
+            this.SettingsTab.Padding = new System.Windows.Forms.Padding(3);
+            this.SettingsTab.Size = new System.Drawing.Size(585, 368);
+            this.SettingsTab.TabIndex = 3;
+            this.SettingsTab.Text = "Settings";
+            this.SettingsTab.UseVisualStyleBackColor = true;
+            // 
+            // flowLayoutPanel2
+            // 
+            this.flowLayoutPanel2.Controls.Add(this.AllowExternalConnectionsCB);
+            this.flowLayoutPanel2.Controls.Add(this.RLLabel);
+            this.flowLayoutPanel2.Controls.Add(this.RelaunchDelayNumber);
+            this.flowLayoutPanel2.Controls.Add(this.PortLabel);
+            this.flowLayoutPanel2.Controls.Add(this.PortNumber);
+            this.flowLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.flowLayoutPanel2.Location = new System.Drawing.Point(3, 3);
+            this.flowLayoutPanel2.Name = "flowLayoutPanel2";
+            this.flowLayoutPanel2.Padding = new System.Windows.Forms.Padding(12);
+            this.flowLayoutPanel2.Size = new System.Drawing.Size(579, 362);
+            this.flowLayoutPanel2.TabIndex = 2;
+            // 
+            // AllowExternalConnectionsCB
+            // 
+            this.AllowExternalConnectionsCB.AutoSize = true;
+            this.flowLayoutPanel2.SetFlowBreak(this.AllowExternalConnectionsCB, true);
+            this.AllowExternalConnectionsCB.Location = new System.Drawing.Point(15, 15);
+            this.AllowExternalConnectionsCB.Name = "AllowExternalConnectionsCB";
+            this.AllowExternalConnectionsCB.Size = new System.Drawing.Size(154, 17);
+            this.AllowExternalConnectionsCB.TabIndex = 7;
+            this.AllowExternalConnectionsCB.Text = "Allow External Connections";
+            this.AllowExternalConnectionsCB.UseVisualStyleBackColor = true;
+            this.AllowExternalConnectionsCB.CheckedChanged += new System.EventHandler(this.AllowExternalConnectionsCB_CheckedChanged);
+            // 
+            // RLLabel
+            // 
+            this.RLLabel.AutoSize = true;
+            this.RLLabel.Location = new System.Drawing.Point(15, 39);
+            this.RLLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
+            this.RLLabel.Name = "RLLabel";
+            this.RLLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.RLLabel.Size = new System.Drawing.Size(83, 13);
+            this.RLLabel.TabIndex = 11;
+            this.RLLabel.Text = "Relaunch Delay";
+            // 
+            // RelaunchDelayNumber
+            // 
+            this.flowLayoutPanel2.SetFlowBreak(this.RelaunchDelayNumber, true);
+            this.RelaunchDelayNumber.Location = new System.Drawing.Point(104, 36);
+            this.RelaunchDelayNumber.Margin = new System.Windows.Forms.Padding(3, 1, 3, 0);
+            this.RelaunchDelayNumber.Maximum = new decimal(new int[] {
+            3600,
+            0,
+            0,
+            0});
+            this.RelaunchDelayNumber.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.RelaunchDelayNumber.Name = "RelaunchDelayNumber";
+            this.RelaunchDelayNumber.Size = new System.Drawing.Size(56, 20);
+            this.RelaunchDelayNumber.TabIndex = 10;
+            this.RelaunchDelayNumber.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.RelaunchDelayNumber.ValueChanged += new System.EventHandler(this.RelaunchDelayNumber_ValueChanged);
+            // 
+            // PortLabel
+            // 
+            this.PortLabel.AutoSize = true;
+            this.PortLabel.Location = new System.Drawing.Point(15, 60);
+            this.PortLabel.Margin = new System.Windows.Forms.Padding(3, 4, 60, 0);
+            this.PortLabel.Name = "PortLabel";
+            this.PortLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.PortLabel.Size = new System.Drawing.Size(26, 13);
+            this.PortLabel.TabIndex = 9;
+            this.PortLabel.Text = "Port";
+            // 
+            // PortNumber
+            // 
+            this.flowLayoutPanel2.SetFlowBreak(this.PortNumber, true);
+            this.PortNumber.Location = new System.Drawing.Point(104, 57);
+            this.PortNumber.Margin = new System.Windows.Forms.Padding(3, 1, 3, 0);
+            this.PortNumber.Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            this.PortNumber.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.PortNumber.Name = "PortNumber";
+            this.PortNumber.Size = new System.Drawing.Size(56, 20);
+            this.PortNumber.TabIndex = 8;
+            this.PortNumber.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.PortNumber.ValueChanged += new System.EventHandler(this.PortNumber_ValueChanged);
+            // 
             // HelpPage
             // 
             this.HelpPage.Controls.Add(this.label7);
@@ -646,6 +767,11 @@
             this.CPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).EndInit();
             this.ACStrip.ResumeLayout(false);
+            this.SettingsTab.ResumeLayout(false);
+            this.flowLayoutPanel2.ResumeLayout(false);
+            this.flowLayoutPanel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RelaunchDelayNumber)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PortNumber)).EndInit();
             this.HelpPage.ResumeLayout(false);
             this.HelpPage.PerformLayout();
             this.ResumeLayout(false);
@@ -697,5 +823,12 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.ContextMenuStrip ACStrip;
         private System.Windows.Forms.ToolStripMenuItem removeToolStripMenuItem;
+        private System.Windows.Forms.TabPage SettingsTab;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel2;
+        private System.Windows.Forms.Label RLLabel;
+        private System.Windows.Forms.NumericUpDown RelaunchDelayNumber;
+        private System.Windows.Forms.Label PortLabel;
+        private System.Windows.Forms.NumericUpDown PortNumber;
+        private System.Windows.Forms.CheckBox AllowExternalConnectionsCB;
     }
 }

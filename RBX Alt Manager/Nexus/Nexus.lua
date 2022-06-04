@@ -96,6 +96,12 @@ do -- Nexus
         self.Socket:Send(Message)
     end
 
+    function Nexus:Echo(Message)
+		local T = {}
+
+		self:Send('Echo', { Content = Message })
+	end
+
     function Nexus:Log(...)
         local T = {}
 
@@ -107,18 +113,6 @@ do -- Nexus
             Content = table.concat(T, ' ')
         })
     end
-    
-    function Nexus:Echo(...)
-		local T = {}
-
-		for Index, Value in pairs{ ... } do
-			table.insert(T, tostring(Value))
-		end
-
-		self:Send('Echo', {
-			Content = table.concat(T, ' ')
-		})
-	end
 
     function Nexus:CreateElement(ElementType, Name, Content, Size, Margins, Table)
         assert(typeof(Name) == 'string', 'string expected on argument #1, got ' .. typeof(Name))

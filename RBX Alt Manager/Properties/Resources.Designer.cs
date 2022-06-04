@@ -63,6 +63,16 @@ namespace RBX_Alt_Manager.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap configIcon {
+            get {
+                object obj = ResourceManager.GetObject("configIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap disc {
             get {
                 object obj = ResourceManager.GetObject("disc", resourceCulture);

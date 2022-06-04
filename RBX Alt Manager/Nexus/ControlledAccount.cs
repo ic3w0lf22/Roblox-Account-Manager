@@ -89,8 +89,8 @@ namespace RBX_Alt_Manager.Nexus
                     SendMessage($"ElementText:{AccountControl.Instance.GetTextFromElement(command.Payload["Name"])}");
                 else if (command.Name == "SetRelaunch" && double.TryParse(command.Payload["Seconds"], out double Delay))
                     RelaunchDelay = Delay;
-                else if (command.Name == "Echo")
-                    SendMessage(command.Payload["Content"]); //needs to brocast to all clients
+                else if (command.Name == "Echo" && !string.IsNullOrEmpty(command.Payload["Content"]))
+                    AccountControl.Instance.EmitMessage(command.Payload["Content"], true);
                 else if (Enum.TryParse(command.Name, out CommandCreateElement elementType))
                 {
                     if (elementType != CommandCreateElement.NewLine && !(command.Payload.ContainsKey("Name") && command.Payload.ContainsKey("Content")))
