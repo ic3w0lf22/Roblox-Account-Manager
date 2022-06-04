@@ -26,7 +26,7 @@ namespace RBX_Alt_Manager.Forms
             DisableAgingAlertCB.Checked = AccountManager.General.Get<bool>("DisableAgingAlert");
             HideMRobloxCB.Checked = AccountManager.General.Get<bool>("HideRbxAlert");
 
-            EnableDMCB.Checked = AccountManager.Developer.Get<bool>("HideRbxAlert");
+            EnableDMCB.Checked = AccountManager.Developer.Get<bool>("DevMode");
             EnableWSCB.Checked = AccountManager.Developer.Get<bool>("EnableWebServer");
             ERRPCB.Checked = AccountManager.WebServer.Get<bool>("EveryRequestRequiresPassword");
             AllowGCCB.Checked = AccountManager.WebServer.Get<bool>("AllowGetCookie");
