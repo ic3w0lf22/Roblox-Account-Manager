@@ -97,8 +97,6 @@ do -- Nexus
     end
 
     function Nexus:Echo(Message)
-		local T = {}
-
 		self:Send('Echo', { Content = Message })
 	end
 
