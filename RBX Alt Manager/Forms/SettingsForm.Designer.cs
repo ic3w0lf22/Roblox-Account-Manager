@@ -38,6 +38,8 @@ namespace RBX_Alt_Manager.Forms
             this.SavePasswordCB = new System.Windows.Forms.CheckBox();
             this.DisableAgingAlertCB = new System.Windows.Forms.CheckBox();
             this.HideMRobloxCB = new System.Windows.Forms.CheckBox();
+            this.RSLabel = new System.Windows.Forms.Label();
+            this.DecryptAC = new System.Windows.Forms.Button();
             this.Helper = new System.Windows.Forms.ToolTip(this.components);
             this.WSPWLabel = new System.Windows.Forms.Label();
             this.PasswordTextBox = new System.Windows.Forms.TextBox();
@@ -54,8 +56,6 @@ namespace RBX_Alt_Manager.Forms
             this.AllowGACB = new System.Windows.Forms.CheckBox();
             this.AllowLACB = new System.Windows.Forms.CheckBox();
             this.AllowAECB = new System.Windows.Forms.CheckBox();
-            this.RSLabel = new System.Windows.Forms.Label();
-            this.DecryptAC = new System.Windows.Forms.Button();
             this.SettingsLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.LaunchDelayNumber)).BeginInit();
             this.SettingsTC.SuspendLayout();
@@ -178,6 +178,27 @@ namespace RBX_Alt_Manager.Forms
             this.HideMRobloxCB.Text = "Hide Multi Roblox Alert";
             this.HideMRobloxCB.UseVisualStyleBackColor = true;
             this.HideMRobloxCB.CheckedChanged += new System.EventHandler(this.HideMRobloxCB_CheckedChanged);
+            // 
+            // RSLabel
+            // 
+            this.RSLabel.AutoSize = true;
+            this.RSLabel.Location = new System.Drawing.Point(15, 131);
+            this.RSLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
+            this.RSLabel.Name = "RSLabel";
+            this.RSLabel.Size = new System.Drawing.Size(263, 26);
+            this.RSLabel.TabIndex = 12;
+            this.RSLabel.Text = "Some settings may require the program to be restarted such as WebServer Port and " +
+    "Disable Aging Alert";
+            // 
+            // DecryptAC
+            // 
+            this.DecryptAC.Location = new System.Drawing.Point(15, 160);
+            this.DecryptAC.Name = "DecryptAC";
+            this.DecryptAC.Size = new System.Drawing.Size(164, 23);
+            this.DecryptAC.TabIndex = 13;
+            this.DecryptAC.Text = "Decrypt AccountData";
+            this.DecryptAC.UseVisualStyleBackColor = true;
+            this.DecryptAC.Click += new System.EventHandler(this.DecryptAC_Click);
             // 
             // WSPWLabel
             // 
@@ -373,27 +394,6 @@ namespace RBX_Alt_Manager.Forms
             this.AllowAECB.UseVisualStyleBackColor = true;
             this.AllowAECB.CheckedChanged += new System.EventHandler(this.AllowAECB_CheckedChanged);
             // 
-            // RSLabel
-            // 
-            this.RSLabel.AutoSize = true;
-            this.RSLabel.Location = new System.Drawing.Point(15, 131);
-            this.RSLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
-            this.RSLabel.Name = "RSLabel";
-            this.RSLabel.Size = new System.Drawing.Size(263, 26);
-            this.RSLabel.TabIndex = 12;
-            this.RSLabel.Text = "Some settings may require the program to be restarted such as WebServer Port and " +
-    "Disable Aging Alert";
-            // 
-            // DecryptAC
-            // 
-            this.DecryptAC.Location = new System.Drawing.Point(15, 160);
-            this.DecryptAC.Name = "DecryptAC";
-            this.DecryptAC.Size = new System.Drawing.Size(164, 23);
-            this.DecryptAC.TabIndex = 13;
-            this.DecryptAC.Text = "Decrypt AccountData";
-            this.DecryptAC.UseVisualStyleBackColor = true;
-            this.DecryptAC.Click += new System.EventHandler(this.DecryptAC_Click);
-            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -403,6 +403,7 @@ namespace RBX_Alt_Manager.Forms
             this.Name = "SettingsForm";
             this.ShowIcon = false;
             this.Text = "Settings";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SettingsForm_FormClosing);
             this.Load += new System.EventHandler(this.SettingsForm_Load);
             this.SettingsLayoutPanel.ResumeLayout(false);
             this.SettingsLayoutPanel.PerformLayout();

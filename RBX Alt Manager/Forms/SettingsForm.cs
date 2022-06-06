@@ -41,6 +41,12 @@ namespace RBX_Alt_Manager.Forms
             ApplyTheme();
         }
 
+        private void SettingsForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            e.Cancel = true;
+            Hide();
+        }
+
         #region General
 
         private void AutoUpdateCB_CheckedChanged(object sender, EventArgs e)
