@@ -1,4 +1,4 @@
-﻿using BrightIdeasSoftware;
+using BrightIdeasSoftware;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RBX_Alt_Manager.Classes;
@@ -659,6 +659,21 @@ namespace RBX_Alt_Manager
                 account.JoinServer(PlaceId, JobID, FollowUser == "true", JoinVIP == "true");
 
                 return $"Launched {Account} to {PlaceId}";
+            }
+
+            if (Method == "FollowUser")
+            {
+                if (!WebServer.Get<bool>("AllowLaunchAccount")) return "Method not allowed";
+
+                string FollowUser = request.QueryString["FollowUser"]; if (FollowUser == "") return "Failed to get FollowUser";
+
+                if (!GetUserID(FollowUser, out long UserId))
+                {
+                    return "Failed to get UserId";
+                }
+                account.JoinServer(UserId, "", true);
+
+                return $"{Account} is following {FollowUser}";
             }
 
             if (Method == "GetCSRFToken") return account.GetCSRFToken();
