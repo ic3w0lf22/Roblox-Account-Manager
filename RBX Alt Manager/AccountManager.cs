@@ -685,18 +685,18 @@ namespace RBX_Alt_Manager
             if (Method == "ImportCookie")
             {
                 Account New = AddAccount(request.QueryString["Cookie"]);
-                
+
                 if (New != null)
                     Context.Response.StatusCode = 200;
 
                 return New != null ? "true" : "false";
             }
 
-            if (string.IsNullOrEmpty(Account))                return "Empty Account";
+            if (string.IsNullOrEmpty(Account)) return "Empty Account";
 
             Account account = AccountsList.FirstOrDefault(x => x.Username == Account || x.UserID.ToString() == Account);
 
-            if (account == null || string.IsNullOrEmpty(account.GetCSRFToken()))                 return "Invalid Account";
+            if (account == null || string.IsNullOrEmpty(account.GetCSRFToken())) return "Invalid Account";
 
             Context.Response.StatusCode = 401;
 
@@ -711,7 +711,7 @@ namespace RBX_Alt_Manager
 
             if (Method == "LaunchAccount")
             {
-                if (!WebServer.Get<bool>("AllowLaunchAccount"))                    return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowLaunchAccount")) return "Method not allowed";
 
                 bool ValidPlaceId = long.TryParse(request.QueryString["PlaceId"], out long PlaceId); if (!ValidPlaceId) return "Invalid PlaceId";
 
@@ -797,7 +797,7 @@ namespace RBX_Alt_Manager
             }
 
             if (Method == "GetField" && !string.IsNullOrEmpty(request.QueryString["Field"])) return account.GetField(request.QueryString["Field"]);
-            
+
             Context.Response.StatusCode = 401;
 
             if (Method == "SetField" && !string.IsNullOrEmpty(request.QueryString["Field"]) && !string.IsNullOrEmpty(request.QueryString["Value"]))
