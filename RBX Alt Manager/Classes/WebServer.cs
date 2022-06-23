@@ -8,9 +8,9 @@ namespace RBX_Alt_Manager
     public class WebServer
     {
         private readonly HttpListener _listener = new HttpListener();
-        private readonly Func<HttpListenerRequest, string> _responderMethod;
+        private readonly Func<HttpListenerContext, string> _responderMethod;
 
-        public WebServer(string[] prefixes, Func<HttpListenerRequest, string> method) // scrapped from some old project, if it works, it works i guess
+        public WebServer(string[] prefixes, Func<HttpListenerContext, string> method) // scrapped from some old project, if it works, it works i guess
         {
             if (!HttpListener.IsSupported)
                 throw new NotSupportedException(
@@ -26,7 +26,7 @@ namespace RBX_Alt_Manager
             _listener.Start();
         }
 
-        public WebServer(Func<HttpListenerRequest, string> method, params string[] prefixes) : this(prefixes, method) { }
+        public WebServer(Func<HttpListenerContext, string> method, params string[] prefixes) : this(prefixes, method) { }
 
         public void Run()
         {
@@ -42,7 +42,7 @@ namespace RBX_Alt_Manager
 
                             try
                             {
-                                string rstr = _responderMethod(ctx.Request);
+                                string rstr = _responderMethod(ctx);
                                 byte[] buf = Encoding.UTF8.GetBytes(rstr);
 
                                 ctx.Response.ContentType = "text/plain";

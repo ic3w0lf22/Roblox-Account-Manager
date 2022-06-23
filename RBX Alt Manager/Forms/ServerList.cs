@@ -2,6 +2,7 @@
 
 using BrightIdeasSoftware;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RBX_Alt_Manager.Forms;
 using RestSharp;
 using System;
@@ -9,6 +10,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -80,6 +82,7 @@ namespace RBX_Alt_Manager
         public static RestClient rbxclient;
         public static RestClient thumbclient;
         public static RestClient gamesclient;
+        public static RestClient ipapiclient;
         private int Page = 0;
         private List<FavoriteGame> Favorites;
         private DateTime startTime;
@@ -89,6 +92,12 @@ namespace RBX_Alt_Manager
         public static long CurrentPlaceID = 0;
 
         private bool IsBusy;
+        private Dictionary<int, string> Errors = new Dictionary<int, string>
+        {
+            { 6, "Server Full" },
+            { 11, "Server no longer available" },
+            { 12, "No Access" }
+        };
 
         public bool Busy
         {
@@ -110,6 +119,9 @@ namespace RBX_Alt_Manager
 
             gamesclient = new RestClient("https://games.roblox.com/");
             gamesclient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
+
+            ipapiclient = new RestClient("http://ip-api.com/json/");
+            ipapiclient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
             startTime = DateTime.Now;
 
@@ -227,9 +239,9 @@ namespace RBX_Alt_Manager
 
             if (OtherPlaceId.Text.Length > 3)
             {
-                string res = AccountManager.SelectedAccount.SetServer(Convert.ToInt64(OtherPlaceId.Text), ServerListView.SelectedItem.Text);
+                string res = AccountManager.SelectedAccount.SetServer(Convert.ToInt64(OtherPlaceId.Text), ServerListView.SelectedItem.Text, out bool Success);
 
-                if (!res.Contains("Success"))
+                if (!Success)
                     MessageBox.Show(res);
                 else
                     Console.Beep();
@@ -521,6 +533,133 @@ namespace RBX_Alt_Manager
 
             if (game != null)
                 Clipboard.SetText(game.PlaceID.ToString());
+        }
+
+        private void loadRegionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Account acc = AccountManager.SelectedAccount;
+
+            if (acc == null) return;
+
+            string Token = acc.GetCSRFToken();
+
+            if (string.IsNullOrEmpty(Token))
+                return;
+
+            int Index = ServerListView.SelectedIndex;
+            List<ServerData> Servers = new List<ServerData>();
+
+            for (int i = Index; i < Index + 16; i++) // only attempt to load 16. during testing, i was being ratelimited (?)
+            {
+                ServerData server = (ServerData)ServerListView.GetItem(i)?.RowObject;
+
+                if (server == null) break;
+
+                Servers.Add(server);
+
+                if (server.regionLoaded) continue;
+
+                server.region = "Loading";
+            }
+
+            ServerListView.RefreshObjects(Servers);
+
+            Task.Run(async () =>
+            {
+                var pinger = new Ping();
+                int t = 0;
+
+                foreach (ServerData server in Servers)
+                {
+                pingServer:
+                    if (t > 4)
+                    {
+                        if (!server.regionLoaded)
+                        {
+                            server.region = "Failed";
+                            ServerListView.InvokeIfRequired(() => ServerListView.RefreshObject(server));
+                        }
+
+                        continue;
+                    }
+
+                    t++;
+
+                    if (server.regionLoaded && !string.IsNullOrEmpty(server.ip))
+                    {
+                        PingReply reply = await pinger.SendPingAsync(server.ip, 400);
+
+                        if (reply.Status == IPStatus.Success)
+                        {
+                            t = 0;
+
+                            server.ping = Convert.ToInt32(reply.RoundtripTime);
+                            ServerListView.InvokeIfRequired(() => ServerListView.RefreshObject(server));
+                        }
+                        else
+                            goto pingServer;
+
+                        continue;
+                    }
+
+                    RestRequest request = new RestRequest("v1/join-game-instance", Method.POST);
+                    request.AddCookie(".ROBLOSECURITY", acc.SecurityToken);
+                    request.AddHeader("Content-Type", "application/json");
+                    request.AddJsonBody(new { gameId = server.id, placeId = CurrentPlaceID });
+
+                    AccountManager.GameJoinClient.UserAgent = "Roblox/WinInet";
+
+                    IRestResponse response = await AccountManager.GameJoinClient.ExecuteAsync(request);
+
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        JObject JS = JObject.Parse(response.Content);
+                        string IP = JS?["joinScript"]?.Value<JObject>()?["MachineAddress"]?.Value<string>() ?? string.Empty;
+
+                        if (string.IsNullOrEmpty(IP))
+                        {
+                            if (!Errors.TryGetValue(JS?["status"]?.Value<int>() ?? 0, out string ErrorMessage))
+                                ErrorMessage = JS?["status"]?.Value<string>() ?? "?";
+
+                            server.region = $"{JS?["message"]?.Value<string>() ?? "Error:"} {ErrorMessage}";
+                            ServerListView.InvokeIfRequired(() => ServerListView.RefreshObject(server));
+
+                            continue;
+                        }
+
+                        request = new RestRequest(IP);
+                        response = await ipapiclient.ExecuteAsync(request);
+
+                        JObject IPJS = JObject.Parse(response.Content);
+                        string Format = AccountManager.General.Get<string>("ServerRegionFormat");
+
+                        IPJS.Add("address", IP);
+                        IPJS.Add("port", JS?["joinScript"]?.Value<JObject>()?["ServerPort"]?.Value<string>() ?? string.Empty);
+
+                        if (string.IsNullOrEmpty(Format)) Format = "<city>, <countryCode>";
+
+                        string Region = Format;
+
+                        foreach (Match m in Regex.Matches(Format, @"<(\w+)>"))
+                            Region = Region.Replace(m.Value, IPJS?[m.Groups[1].Value]?.Value<string>() ?? "?");
+
+                        server.ip = IP;
+                        server.region = Region;
+                        server.regionLoaded = true;
+
+                        goto pingServer;
+                    }
+                    else
+                    {
+                        server.region = $"{response.StatusCode}";
+                        ServerListView.InvokeIfRequired(() => ServerListView.RefreshObject(server));
+                    }
+
+                    t = 0;
+                }
+
+                pinger.Dispose();
+            });
         }
     }
 }

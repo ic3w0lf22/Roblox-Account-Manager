@@ -37,6 +37,7 @@
             this.ServerListStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.joinServerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyJobIdToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadRegionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.GamesStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.joinGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addToFavoritesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -66,6 +67,7 @@
             this.Playing = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.PingColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.ServerTypeColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.RegionColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.Username = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.RefreshServers = new System.Windows.Forms.Button();
             this.UsernameLabel = new System.Windows.Forms.Label();
@@ -109,23 +111,31 @@
             // 
             this.ServerListStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.joinServerToolStripMenuItem,
-            this.copyJobIdToolStripMenuItem});
+            this.copyJobIdToolStripMenuItem,
+            this.loadRegionToolStripMenuItem});
             this.ServerListStrip.Name = "ServerListStrip";
-            this.ServerListStrip.Size = new System.Drawing.Size(134, 48);
+            this.ServerListStrip.Size = new System.Drawing.Size(141, 70);
             // 
             // joinServerToolStripMenuItem
             // 
             this.joinServerToolStripMenuItem.Name = "joinServerToolStripMenuItem";
-            this.joinServerToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.joinServerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.joinServerToolStripMenuItem.Text = "Join Server";
             this.joinServerToolStripMenuItem.Click += new System.EventHandler(this.joinServerToolStripMenuItem_Click);
             // 
             // copyJobIdToolStripMenuItem
             // 
             this.copyJobIdToolStripMenuItem.Name = "copyJobIdToolStripMenuItem";
-            this.copyJobIdToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.copyJobIdToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.copyJobIdToolStripMenuItem.Text = "Copy JobId";
             this.copyJobIdToolStripMenuItem.Click += new System.EventHandler(this.copyJobIdToolStripMenuItem_Click);
+            // 
+            // loadRegionToolStripMenuItem
+            // 
+            this.loadRegionToolStripMenuItem.Name = "loadRegionToolStripMenuItem";
+            this.loadRegionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.loadRegionToolStripMenuItem.Text = "Load Region";
+            this.loadRegionToolStripMenuItem.Click += new System.EventHandler(this.loadRegionToolStripMenuItem_Click);
             // 
             // GamesStrip
             // 
@@ -385,6 +395,7 @@
             this.ServerListView.AllColumns.Add(this.Playing);
             this.ServerListView.AllColumns.Add(this.PingColumn);
             this.ServerListView.AllColumns.Add(this.ServerTypeColumn);
+            this.ServerListView.AllColumns.Add(this.RegionColumn);
             this.ServerListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -393,7 +404,7 @@
             this.JobId,
             this.Playing,
             this.PingColumn,
-            this.ServerTypeColumn});
+            this.RegionColumn});
             this.ServerListView.ContextMenuStrip = this.ServerListStrip;
             this.ServerListView.Cursor = System.Windows.Forms.Cursors.Default;
             this.ServerListView.GridLines = true;
@@ -418,17 +429,27 @@
             // 
             this.Playing.AspectName = "playing";
             this.Playing.Text = "Playing";
+            this.Playing.Width = 52;
             // 
             // PingColumn
             // 
             this.PingColumn.AspectName = "ping";
             this.PingColumn.Text = "Ping";
+            this.PingColumn.Width = 40;
             // 
             // ServerTypeColumn
             // 
             this.ServerTypeColumn.AspectName = "type";
+            this.ServerTypeColumn.DisplayIndex = 3;
+            this.ServerTypeColumn.IsVisible = false;
             this.ServerTypeColumn.Text = "Type";
             this.ServerTypeColumn.Width = 45;
+            // 
+            // RegionColumn
+            // 
+            this.RegionColumn.AspectName = "region";
+            this.RegionColumn.Text = "Region";
+            this.RegionColumn.Width = 113;
             // 
             // Username
             // 
@@ -559,5 +580,7 @@
         private Classes.BorderedTextBox OtherPlaceId;
         private System.Windows.Forms.ToolTip OPITip;
         private System.Windows.Forms.ToolStripMenuItem copyPlaceIDToolStripMenuItem;
+        private BrightIdeasSoftware.OLVColumn RegionColumn;
+        private System.Windows.Forms.ToolStripMenuItem loadRegionToolStripMenuItem;
     }
 }

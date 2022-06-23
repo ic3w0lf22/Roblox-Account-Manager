@@ -169,7 +169,7 @@ namespace RBX_Alt_Manager
         /// <param name="path">Path to the INI file.</param>
         public IniFile(string path) : this()
         {
-            Load(path);
+            Load(Path.Combine(Environment.CurrentDirectory, path));
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace RBX_Alt_Manager
 
         private void Load(string path)
         {
-            using (var file = new StreamReader(path))
+            using (var file = new StreamReader(Path.Combine(Environment.CurrentDirectory, path)))
                 Load(file);
         }
 
