@@ -25,6 +25,7 @@ namespace RBX_Alt_Manager.Forms
             SavePasswordCB.Checked = AccountManager.General.Get<bool>("SavePasswords");
             DisableAgingAlertCB.Checked = AccountManager.General.Get<bool>("DisableAgingAlert");
             HideMRobloxCB.Checked = AccountManager.General.Get<bool>("HideRbxAlert");
+            RegionFormatTB.Text = AccountManager.General.Get<string>("ServerRegionFormat");
 
             EnableDMCB.Checked = AccountManager.Developer.Get<bool>("DevMode");
             EnableWSCB.Checked = AccountManager.Developer.Get<bool>("EnableWebServer");
@@ -94,6 +95,14 @@ namespace RBX_Alt_Manager.Forms
             if (!SettingsLoaded) return;
 
             AccountManager.General.Set("HideRbxAlert", HideMRobloxCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void RegionFormatTB_TextChanged(object sender, EventArgs e)
+        {
+            if (!SettingsLoaded) return;
+
+            AccountManager.General.Set("ServerRegionFormat", RegionFormatTB.Text, "Visit http://ip-api.com/json/1.1.1.1 to see available format options");
             AccountManager.IniSettings.Save("RAMSettings.ini");
         }
 

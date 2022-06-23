@@ -15,6 +15,9 @@ namespace RBX_Alt_Manager
         public long vipServerId;
         public string accessCode;
         public string type;
+        public string region;
+        public string ip;
+        public bool regionLoaded;
 
         public ServerData()
         {

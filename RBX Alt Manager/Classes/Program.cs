@@ -42,16 +42,16 @@ namespace RBX_Alt_Manager
                     settings.LogSeverity = LogSeverity.Disable;
 #endif
 
-                    settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36"; // just your normal browser visiting your website @ roblox! dont hurt alt manager pls : )
+                    settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36"; // just your normal browser visiting your website @ roblox! dont hurt alt manager pls : )
 
                     Cef.EnableHighDPISupport();
                     Cef.Initialize(settings);
                 }
-                catch
+                catch (Exception x)
                 {
                     if (Directory.Exists(Path.Combine(Environment.CurrentDirectory, "x86")))
                     {
-                        if (MessageBox.Show("Failed to detect Visual Studio Redistributable, would you like to install it now?\n(Required in order to use the account manager)\nIn case this error persists, fully re-install the account manager.", "Roblox Account Manager", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                        if (MessageBox.Show("Failed to detect Visual Studio Redistributable, would you like to install it now?\n(Required in order to use the account manager)\nIn case this error persists, fully re-install the account manager.\n\n" + x, "Roblox Account Manager", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                         {
                             string TempPath = Path.GetTempFileName();
                             WebClient VCDL = new WebClient();

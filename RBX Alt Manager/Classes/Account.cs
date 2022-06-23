@@ -364,7 +364,6 @@ namespace RBX_Alt_Manager
         public bool BlockPlayer(string Username)
         {
             if (!CheckPin()) return false;
-
             if (!AccountManager.GetUserID(Username, out long BlockeeID)) return false;
 
             RestRequest request = new RestRequest($"userblock/getblockedusers?userId={UserID}&page=1", Method.GET);
@@ -418,8 +417,10 @@ namespace RBX_Alt_Manager
             return false;
         }
 
-        public string BlockUserId(string UserID, bool SkipPinCheck = false)
+        public string BlockUserId(string UserID, bool SkipPinCheck = false, HttpListenerContext Context = null)
         {
+            if (Context != null) Context.Response.StatusCode = 401;
+
             if (!SkipPinCheck && !CheckPin(true)) return "Pin Locked";
 
             RestRequest blockReq = new RestRequest("userblock/blockuser", Method.POST);
@@ -432,11 +433,16 @@ namespace RBX_Alt_Manager
 
             IRestResponse blockRes = AccountManager.MainClient.Execute(blockReq);
 
+            if (Context != null)
+                Context.Response.StatusCode = (int)blockRes.StatusCode;
+
             return blockRes.Content;
         }
 
-        public string UnblockUserId(string UserID, bool SkipPinCheck = false)
+        public string UnblockUserId(string UserID, bool SkipPinCheck = false, HttpListenerContext Context = null)
         {
+            if (Context != null) Context.Response.StatusCode = 401;
+
             if (!SkipPinCheck && !CheckPin(true)) return "Pin Locked";
 
             RestRequest blockReq = new RestRequest("userblock/unblockuser", Method.POST);
@@ -449,11 +455,15 @@ namespace RBX_Alt_Manager
 
             IRestResponse blockRes = AccountManager.MainClient.Execute(blockReq);
 
+            if (Context != null) Context.Response.StatusCode = (int)blockRes.StatusCode;
+
             return blockRes.Content;
         }
 
-        public string UnblockEveryone()
+        public string UnblockEveryone(HttpListenerContext Context = null)
         {
+            if (Context != null) Context.Response.StatusCode = 401;
+
             if (!CheckPin(true)) return "Pin is Locked";
 
             RestRequest request = new RestRequest($"userblock/getblockedusers?page=1", Method.GET);
@@ -464,6 +474,8 @@ namespace RBX_Alt_Manager
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
+                if (Context != null) Context.Response.StatusCode = 200;
+
                 Task.Run(async () =>
                 {
                     Match R = Regex.Match(response.Content, "\"userList\":\\[(.+)\\]");
@@ -490,18 +502,24 @@ namespace RBX_Alt_Manager
                 return "Unblocking Everyone";
             }
 
+            if (Context != null) Context.Response.StatusCode = 400;
+
             return "Failed to unblock everyone";
         }
 
-        public string GetBlockedList()
+        public string GetBlockedList(HttpListenerContext Context = null)
         {
-            if (!CheckPin()) return "Pin is Locked";
+            if (Context != null) Context.Response.StatusCode = 401;
+
+            if (!CheckPin(true)) return "Pin is Locked";
 
             RestRequest request = new RestRequest($"userblock/getblockedusers?page=1", Method.GET);
 
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
 
             IRestResponse response = AccountManager.APIClient.Execute(request);
+
+            if (Context != null) Context.Response.StatusCode = (int)response.StatusCode;
 
             return response.Content;
         }
@@ -640,8 +658,10 @@ namespace RBX_Alt_Manager
                 return "ERROR: Invalid Authentication Ticket";
         }
 
-        public string SetServer(long PlaceID, string JobID)
+        public string SetServer(long PlaceID, string JobID, out bool Successful)
         {
+            Successful = false;
+
             string Token = GetCSRFToken();
 
             if (string.IsNullOrEmpty(Token))
@@ -649,7 +669,6 @@ namespace RBX_Alt_Manager
 
             RestRequest request = new RestRequest("v1/join-game-instance", Method.POST);
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("User-Agent", "Roblox/WinInet");
             request.AddHeader("Content-Type", "application/json");
             request.AddJsonBody(new { gameId = JobID, placeId = PlaceID });
 
@@ -658,7 +677,10 @@ namespace RBX_Alt_Manager
             IRestResponse response = AccountManager.GameJoinClient.Execute(request);
 
             if (response.StatusCode == HttpStatusCode.OK)
+            {
+                Successful = true;
                 return Regex.IsMatch(response.Content, "\"joinScriptUrl\":null") ? response.Content : "Success";
+            }
             else
                 return $"Failed {response.StatusCode}: {response.Content} {response.ErrorMessage}";
         }

@@ -68,5 +68,16 @@ public static class Utilities
         return Color.FromArgb((int)a, (int)r, (int)g, (int)b);
     }
 
+    public static double ToRobloxTick(this DateTime Date)
+    {
+        TimeSpan TS = Date - Epoch;
+        double Ticks = TS.Ticks / TimeSpan.TicksPerSecond;
+        Ticks += (double)Date.Millisecond / 1000;
+
+        return Ticks;
+    }
+
     public static double MapValue(double Input, double IL, double IH, double OL, double OH) => (Input - IL) / (IH - IL) * (OH - OL) + OL;
+
+    private static DateTime Epoch = new DateTime(1970, 1, 1);
 }
