@@ -61,7 +61,7 @@ end
 function Account.new(Username, SkipValidation)
     local self = {} setmetatable(self, Account)
 
-    local IsValid = SkipValidation or GET('Test', Username)
+    local IsValid = SkipValidation or GET('GetCSRFToken', Username)
 
     if not IsValid or IsValid == 'Invalid Account' then return false end
 
