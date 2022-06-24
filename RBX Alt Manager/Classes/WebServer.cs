@@ -45,6 +45,9 @@ namespace RBX_Alt_Manager
                                 string rstr = _responderMethod(ctx);
                                 byte[] buf = Encoding.UTF8.GetBytes(rstr);
 
+                                if (ctx.Response.StatusCode > 299)
+                                    ctx.Response.Headers.Add("ws-error", rstr);
+
                                 ctx.Response.ContentType = "text/plain";
                                 ctx.Response.OutputStream.Write(buf, 0, buf.Length);
                             }
