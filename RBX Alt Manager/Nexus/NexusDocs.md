@@ -116,6 +116,18 @@ Nexus:OnButtonClick('SendButton', function() print('SendButton was pressed!') en
 
 # Default Commands
 
+## To call a command function in your autoexecute, use `Nexus.Commands.<whatever_function_you_want_to_call>()` without the <>
+### Example autoexecute script:
+```lua
+repeat task.wait() until game:IsLoaded() and Nexus
+
+if not Nexus.IsConnected then Nexus.Connected:Wait() end
+
+Nexus.Commands.performance()
+
+-- Anything else you want here
+```
+
 ## Execute \<Script\>
 ### Executes a script on the checked clients
 
