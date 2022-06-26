@@ -373,7 +373,9 @@ do -- Connections
     end)
 end
 
-getgenv().Nexus = Nexus
+local GEnv = getgenv()
+GEnv.Nexus = Nexus
+GEnv.performance = Nexus.Commands.performance -- fix the sirmeme error so that people stop being annoying saying "omg performance() doesnt work" (https://youtu.be/vVfg9ym2MNs?t=389)
 
 if not Nexus_Version then
     Nexus:Connect()
