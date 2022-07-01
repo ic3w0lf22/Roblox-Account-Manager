@@ -10,7 +10,7 @@ if not game:IsLoaded() then
 
         local Code = game:GetService'GuiService':GetErrorCode().Value
 
-        if Code >= Enum.ConnectionError.DisconnectErrors.Value and Code <= Enum.ConnectionError.PlacelaunchOtherError.Value then
+        if Code >= Enum.ConnectionError.DisconnectErrors.Value then
             return game:Shutdown()
         end
     end)
