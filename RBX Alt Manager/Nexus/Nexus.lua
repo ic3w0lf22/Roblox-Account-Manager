@@ -78,6 +78,7 @@ do -- Nexus
     Nexus.Connections = {}
 
     Nexus.ShutdownTime = 45
+    Nexus.ShutdownOnTeleportError = true
 
     function Nexus:Send(Command, Payload)
         assert(self.Socket ~= nil, 'websocket is nil')
@@ -97,8 +98,8 @@ do -- Nexus
     end
 
     function Nexus:Echo(Message)
-		self:Send('Echo', { Content = Message })
-	end
+        self:Send('Echo', { Content = Message })
+    end
 
     function Nexus:Log(...)
         local T = {}
@@ -367,7 +368,11 @@ do -- Connections
 
         local Code = GuiService:GetErrorCode().Value
 
-        if Code >= Enum.ConnectionError.DisconnectErrors.Value and Code <= Enum.ConnectionError.PlacelaunchOtherError.Value then
+        if Code >= Enum.ConnectionError.DisconnectErrors.Value then
+            if not Nexus.ShutdownOnTeleportError and Code > Enum.ConnectionError.PlacelaunchOtherError.Value then
+                return
+            end
+            
             task.delay(Nexus.ShutdownTime, game.Shutdown, game)
         end
     end)
