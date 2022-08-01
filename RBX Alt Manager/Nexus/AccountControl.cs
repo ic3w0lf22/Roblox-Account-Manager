@@ -35,6 +35,8 @@ namespace RBX_Alt_Manager.Forms
         private Control LastControl;
         private StreamWriter OutputWriter;
 
+        private bool SettingsLoaded;
+
         [DllImport("user32", EntryPoint = "SendMessageA", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
         private static extern int SendMessage(int hwnd, int wMsg, int wParam, int lParam);
 
@@ -93,13 +95,13 @@ namespace RBX_Alt_Manager.Forms
 
         private void OpenServer()
         {
-            if (!int.TryParse(AccountManager.IniSettings.Read("NexusPort", "AccountControl"), out int Port))
+            if (!int.TryParse(AccountManager.AccountControl.Get("NexusPort"), out int Port))
                 throw new Exception("Failed to start server, invalid Port setting");
 
             if (Port < 1 || Port > 65535)
                 throw new Exception("Port can not be less than 1 or more than 65535");
 
-            Server = new WebSocketServer(AccountManager.IniSettings.Read("AllowExternalConnections", "AccountControl") == "true" ? IPAddress.Any : IPAddress.Loopback, Port, false);
+            Server = new WebSocketServer(AccountManager.AccountControl.Get<bool>("AllowExternalConnections") ? IPAddress.Any : IPAddress.Loopback, Port, false);
 
 #if DEBUG
             Server.Log.Level = LogLevel.Debug;
@@ -112,9 +114,9 @@ namespace RBX_Alt_Manager.Forms
             Process.GetCurrentProcess().WaitForExit();
         }
 
-        private void EmitMessage(string Message)
+        public void EmitMessage(string Message, bool ToAll = false)
         {
-            foreach (ControlledAccount account in AccountsView.CheckedObjects)
+            foreach (ControlledAccount account in ToAll ? AccountsView.Objects : AccountsView.CheckedObjects)
                 account.SendMessage(Message);
         }
 
@@ -292,12 +294,18 @@ namespace RBX_Alt_Manager.Forms
             Listener.Start();
 
             try { Listener.Wait(50); }
-            catch (AggregateException x) {
+            catch (AggregateException x)
+            {
                 MessageBox.Show(x.InnerException.Message, "Account Control", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Hide();
             }
 
-            SaveOutputToFileCheck.Checked = AccountManager.IniSettings.Read("SaveOutput", "AccountControl") == "true";
+            SaveOutputToFileCheck.Checked = AccountManager.AccountControl.Get<bool>("SaveOutput");
+            AllowExternalConnectionsCB.Checked = AccountManager.AccountControl.Get<bool>("AllowExternalConnections");
+            PortNumber.Value = AccountManager.AccountControl.Get<decimal>("NexusPort");
+            RelaunchDelayNumber.Value = AccountManager.AccountControl.Get<decimal>("RelaunchDelay");
+
+            SettingsLoaded = true;
         }
 
         private void AccountsView_DragOver(object sender, DragEventArgs e)
@@ -377,7 +385,11 @@ namespace RBX_Alt_Manager.Forms
 
         private void ClearOutputButton_Click(object sender, EventArgs e) => OutputPanel.Controls.Clear();
 
-        private void SaveOutputToFileCheck_CheckedChanged(object sender, EventArgs e) => AccountManager.IniSettings.Write("SaveOutput", SaveOutputToFileCheck.Checked ? "true" : "false", "AccountControl");
+        private void SaveOutputToFileCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            AccountManager.AccountControl.Set("SaveOutput", SaveOutputToFileCheck.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
 
         private void ClearAutoExecScript_Click(object sender, EventArgs e) => AutoExecuteScriptBox.Clear();
 
@@ -436,7 +448,7 @@ namespace RBX_Alt_Manager.Forms
 
         private void AutoRelaunchTimer_Tick(object sender, EventArgs e)
         {
-            if (!double.TryParse(AccountManager.IniSettings.Read("RelaunchDelay", "AccountControl"), out double RelaunchDelay)) return;
+            if (!double.TryParse(AccountManager.AccountControl.Get("RelaunchDelay"), out double RelaunchDelay)) return;
 
             foreach (ControlledAccount account in Accounts)
             {
@@ -470,6 +482,30 @@ namespace RBX_Alt_Manager.Forms
                 AccountsView.SetObjects(Accounts);
                 SaveAccounts();
             }
+        }
+
+        private void AllowExternalConnectionsCB_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!SettingsLoaded) return;
+
+            AccountManager.AccountControl.Set("AllowExternalConnections", AllowExternalConnectionsCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void RelaunchDelayNumber_ValueChanged(object sender, EventArgs e)
+        {
+            if (!SettingsLoaded) return;
+
+            AccountManager.AccountControl.Set("RelaunchDelay", RelaunchDelayNumber.Value.ToString());
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void PortNumber_ValueChanged(object sender, EventArgs e)
+        {
+            if (!SettingsLoaded) return;
+
+            AccountManager.AccountControl.Set("NexusPort", PortNumber.Value.ToString());
+            AccountManager.IniSettings.Save("RAMSettings.ini");
         }
 
         #endregion

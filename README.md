@@ -90,6 +90,9 @@ Make sure you click "Open Details" before screenshotting. Please make sure your 
 
 **A:** No, you cannot get banned for using this as this does not break Roblox T.O.S although some games may disallow you from having alt accounts so please do your research if you are unsure.
 
+# Preview (Version 3.1)
+![github-large](Images/Image3.png)
+
 # Preview (Version 2.6)
 ![github-large](Images/image2.png)
 

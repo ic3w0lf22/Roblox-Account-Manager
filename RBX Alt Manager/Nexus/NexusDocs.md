@@ -43,7 +43,7 @@ Nexus:Log('asd', workspace)
 
 
 ## \<void\> Nexus:Echo(\<variant\> ...)
-### Send a message to be replicated to clients connected to the server
+### Send a message every client connected to the server
 ### Example
 ```lua
 Nexus:Echo('hello to all accounts!')
@@ -115,6 +115,18 @@ Nexus:OnButtonClick('SendButton', function() print('SendButton was pressed!') en
 ### The amount of time Nexus waits when disconnected before shutting down the game
 
 # Default Commands
+
+## To call a command function in your autoexecute, use `Nexus.Commands.<whatever_function_you_want_to_call>()` without the <>
+### Example autoexecute script:
+```lua
+repeat task.wait() until game:IsLoaded() and Nexus
+
+if not Nexus.IsConnected then Nexus.Connected:Wait() end
+
+Nexus.Commands.performance()
+
+-- Anything else you want here
+```
 
 ## Execute \<Script\>
 ### Executes a script on the checked clients

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace RBX_Alt_Manager.Forms
@@ -25,7 +27,8 @@ namespace RBX_Alt_Manager.Forms
 
         public static string ToHexString(Color c) => $"#{c.R:X2}{c.G:X2}{c.B:X2}";
 
-        private static IniFile Theme;
+        private static IniFile ThemeIni;
+        private static IniSection Theme;
 
         public ThemeEditor()
         {
@@ -80,46 +83,49 @@ namespace RBX_Alt_Manager.Forms
 
         public static void LoadTheme()
         {
-            if (Theme == null) Theme = new IniFile("RAMTheme.ini");
+            if (ThemeIni == null) ThemeIni = File.Exists("RAMTheme.ini") ? new IniFile("RAMTheme.ini") : new IniFile();
 
-            if (Theme.KeyExists("AccountsBG")) AccountBackground = ColorTranslator.FromHtml(Theme.Read("AccountsBG"));
-            if (Theme.KeyExists("AccountsFG")) AccountForeground = ColorTranslator.FromHtml(Theme.Read("AccountsFG"));
+            Theme = ThemeIni.Section(Assembly.GetExecutingAssembly().GetName().Name);
 
-            if (Theme.KeyExists("ButtonsBG")) ButtonsBackground = ColorTranslator.FromHtml(Theme.Read("ButtonsBG"));
-            if (Theme.KeyExists("ButtonsFG")) ButtonsForeground = ColorTranslator.FromHtml(Theme.Read("ButtonsFG"));
-            if (Theme.KeyExists("ButtonsBC")) ButtonsBorder = ColorTranslator.FromHtml(Theme.Read("ButtonsBC"));
-            if (Theme.KeyExists("ButtonStyle") && Enum.TryParse(Theme.Read("ButtonStyle"), out FlatStyle BS)) ButtonStyle = BS;
+            if (Theme.Exists("AccountsBG")) AccountBackground = ColorTranslator.FromHtml(Theme.Get("AccountsBG"));
+            if (Theme.Exists("AccountsFG")) AccountForeground = ColorTranslator.FromHtml(Theme.Get("AccountsFG"));
 
-            if (Theme.KeyExists("FormsBG")) FormsBackground = ColorTranslator.FromHtml(Theme.Read("FormsBG"));
-            if (Theme.KeyExists("FormsFG")) FormsForeground = ColorTranslator.FromHtml(Theme.Read("FormsFG"));
-            if (Theme.KeyExists("DarkTopBar") && bool.TryParse(Theme.Read("DarkTopBar"), out bool DarkTopBar)) UseDarkTopBar = DarkTopBar;
-            if (Theme.KeyExists("ShowHeaders") && bool.TryParse(Theme.Read("ShowHeaders"), out bool bShowHeaders)) ShowHeaders = bShowHeaders;
+            if (Theme.Exists("ButtonsBG")) ButtonsBackground = ColorTranslator.FromHtml(Theme.Get("ButtonsBG"));
+            if (Theme.Exists("ButtonsFG")) ButtonsForeground = ColorTranslator.FromHtml(Theme.Get("ButtonsFG"));
+            if (Theme.Exists("ButtonsBC")) ButtonsBorder = ColorTranslator.FromHtml(Theme.Get("ButtonsBC"));
+            if (Theme.Exists("ButtonStyle") && Enum.TryParse(Theme.Get("ButtonStyle"), out FlatStyle BS)) ButtonStyle = BS;
 
-            if (Theme.KeyExists("TextBoxesBG")) TextBoxesBackground = ColorTranslator.FromHtml(Theme.Read("TextBoxesBG"));
-            if (Theme.KeyExists("TextBoxesFG")) TextBoxesForeground = ColorTranslator.FromHtml(Theme.Read("TextBoxesFG"));
-            if (Theme.KeyExists("TextBoxesBC")) TextBoxesBorder = ColorTranslator.FromHtml(Theme.Read("TextBoxesBC"));
+            if (Theme.Exists("FormsBG")) FormsBackground = ColorTranslator.FromHtml(Theme.Get("FormsBG"));
+            if (Theme.Exists("FormsFG")) FormsForeground = ColorTranslator.FromHtml(Theme.Get("FormsFG"));
+            if (Theme.Exists("DarkTopBar") && bool.TryParse(Theme.Get("DarkTopBar"), out bool DarkTopBar)) UseDarkTopBar = DarkTopBar;
+            if (Theme.Exists("ShowHeaders") && bool.TryParse(Theme.Get("ShowHeaders"), out bool bShowHeaders)) ShowHeaders = bShowHeaders;
+
+            if (Theme.Exists("TextBoxesBG")) TextBoxesBackground = ColorTranslator.FromHtml(Theme.Get("TextBoxesBG"));
+            if (Theme.Exists("TextBoxesFG")) TextBoxesForeground = ColorTranslator.FromHtml(Theme.Get("TextBoxesFG"));
+            if (Theme.Exists("TextBoxesBC")) TextBoxesBorder = ColorTranslator.FromHtml(Theme.Get("TextBoxesBC"));
         }
 
         public static void SaveTheme()
         {
-            if (Theme == null) Theme = new IniFile("RAMTheme.ini");
+            if (ThemeIni == null) ThemeIni = File.Exists("RAMTheme.ini") ? new IniFile("RAMTheme.ini") : new IniFile();
+            if (Theme == null) Theme = ThemeIni.Section(Assembly.GetExecutingAssembly().GetName().Name);
 
-            Theme.Write("AccountsBG", ToHexString(AccountBackground));
-            Theme.Write("AccountsFG", ToHexString(AccountForeground));
+            Theme.Set("AccountsBG", ToHexString(AccountBackground));
+            Theme.Set("AccountsFG", ToHexString(AccountForeground));
 
-            Theme.Write("ButtonsBG", ToHexString(ButtonsBackground));
-            Theme.Write("ButtonsFG", ToHexString(ButtonsForeground));
-            Theme.Write("ButtonsBC", ToHexString(ButtonsBorder));
-            Theme.Write("ButtonStyle", ButtonStyle.ToString());
+            Theme.Set("ButtonsBG", ToHexString(ButtonsBackground));
+            Theme.Set("ButtonsFG", ToHexString(ButtonsForeground));
+            Theme.Set("ButtonsBC", ToHexString(ButtonsBorder));
+            Theme.Set("ButtonStyle", ButtonStyle.ToString());
 
-            Theme.Write("FormsBG", ToHexString(FormsBackground));
-            Theme.Write("FormsFG", ToHexString(FormsForeground));
-            Theme.Write("DarkTopBar", UseDarkTopBar.ToString());
-            Theme.Write("ShowHeaders", ShowHeaders.ToString());
+            Theme.Set("FormsBG", ToHexString(FormsBackground));
+            Theme.Set("FormsFG", ToHexString(FormsForeground));
+            Theme.Set("DarkTopBar", UseDarkTopBar.ToString());
+            Theme.Set("ShowHeaders", ShowHeaders.ToString());
 
-            Theme.Write("TextBoxesBG", ToHexString(TextBoxesBackground));
-            Theme.Write("TextBoxesFG", ToHexString(TextBoxesForeground));
-            Theme.Write("TextBoxesBC", ToHexString(TextBoxesBorder));
+            Theme.Set("TextBoxesBG", ToHexString(TextBoxesBackground));
+            Theme.Set("TextBoxesFG", ToHexString(TextBoxesForeground));
+            Theme.Set("TextBoxesBC", ToHexString(TextBoxesBorder));
         }
 
         private void SetBG_Click(object sender, EventArgs e)
@@ -277,7 +283,7 @@ namespace RBX_Alt_Manager.Forms
         {
             UseDarkTopBar = !UseDarkTopBar;
             SaveTheme();
-            MessageBox.Show("This option requires RAM to be restarted.\nThis way not work on older versions of windows.\nEnabled: " + (UseDarkTopBar ? "True" : "False"), "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("This option requires RAM to be restarted.\nThis way not work on older versions of windows.\nEnabled: " + (UseDarkTopBar ? "True" : "false"), "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

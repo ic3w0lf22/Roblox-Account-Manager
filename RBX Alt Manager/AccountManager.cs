@@ -42,6 +42,7 @@ namespace RBX_Alt_Manager
         public static RestClient Web13Client;
         public static string CurrentPlaceId;
         public static string CurrentJobId;
+        public static string Token;
         private AccountAdder aaform;
         private ArgumentsForm afform;
         private ServerList ServerListForm;
@@ -50,16 +51,22 @@ namespace RBX_Alt_Manager
         private AccountFields FieldsForm;
         private ThemeEditor ThemeForm;
         private AccountControl ControlForm;
+        private SettingsForm SettingsForm;
         private readonly static DateTime startTime = DateTime.Now;
         public static bool IsTeleport = false;
         public static bool UseOldJoin = false;
         public static string CurrentVersion;
         public OLVListItem SelectedAccountItem;
         private WebServer AltManagerWS;
-        public static IniFile IniSettings;
         private string WSPassword = "";
         private static DateTime LastAccountSave = DateTime.Now;
         private static System.Timers.Timer SaveAccountsTimer;
+
+        public static IniFile IniSettings;
+        public static IniSection General;
+        public static IniSection Developer;
+        public static IniSection WebServer;
+        public static IniSection AccountControl;
 
         private static Mutex rbxMultiMutex;
         private readonly static object saveLock = new object();
@@ -287,7 +294,7 @@ namespace RBX_Alt_Manager
                 AccountsView.UpdateObject(account);
         }
 
-        public static void AddAccount(string SecurityToken, string Password = "")
+        public static Account AddAccount(string SecurityToken, string Password = "")
         {
             Account account = new Account(SecurityToken);
 
@@ -315,7 +322,11 @@ namespace RBX_Alt_Manager
                 SaveAccounts();
 
                 Utilities.InvokeIfRequired(Instance.AccountsView, () => Instance.AccountsView.EnsureModelVisible(account));
+
+                return account;
             }
+
+            return null;
         }
 
         public static string ShowDialog(string text, string caption) // tbh pasted from stackoverflow
@@ -416,31 +427,38 @@ namespace RBX_Alt_Manager
 
             PlaceID_TextChanged(PlaceID, new EventArgs());
 
-            IniSettings = new IniFile("RAMSettings.ini");
+            IniSettings = File.Exists("RAMSettings.ini") ? new IniFile("RAMSettings.ini") : new IniFile();
 
-            if (!IniSettings.KeyExists("DisableAutoUpdate", "General")) IniSettings.Write("DisableAutoUpdate", "false", "General");
-            if (!IniSettings.KeyExists("AccountJoinDelay", "General")) IniSettings.Write("AccountJoinDelay", "8", "General");
-            if (!IniSettings.KeyExists("AsyncJoin", "General")) IniSettings.Write("AsyncJoin", "true", "General");
-            if (!IniSettings.KeyExists("DisableAgingAlert", "General")) IniSettings.Write("DisableAgingAlert", "false", "General");
-            if (!IniSettings.KeyExists("SavePasswords", "General")) IniSettings.Write("SavePasswords", "true", "General");
+            General = IniSettings.Section("General");
+            Developer = IniSettings.Section("Developer");
+            WebServer = IniSettings.Section("WebServer");
+            AccountControl = IniSettings.Section("AccountControl");
 
-            if (!IniSettings.KeyExists("DevMode", "Developer")) IniSettings.Write("DevMode", "false", "Developer");
-            if (!IniSettings.KeyExists("EnableWebServer", "Developer")) IniSettings.Write("EnableWebServer", "false", "Developer");
-            if (!IniSettings.KeyExists("WebServerPort", "WebServer")) IniSettings.Write("WebServerPort", "7963", "WebServer");
-            if (!IniSettings.KeyExists("AllowGetCookie", "WebServer")) IniSettings.Write("AllowGetCookie", "false", "WebServer");
-            if (!IniSettings.KeyExists("AllowGetAccounts", "WebServer")) IniSettings.Write("AllowGetAccounts", "false", "WebServer");
-            if (!IniSettings.KeyExists("AllowLaunchAccount", "WebServer")) IniSettings.Write("AllowLaunchAccount", "false", "WebServer");
-            if (!IniSettings.KeyExists("AllowAccountEditing", "WebServer")) IniSettings.Write("AllowAccountEditing", "false", "WebServer");
-            if (!IniSettings.KeyExists("Password", "WebServer")) IniSettings.Write("Password", "", "WebServer"); else WSPassword = IniSettings.Read("Password", "WebServer");
-            if (!IniSettings.KeyExists("EveryRequestRequiresPassword", "WebServer")) IniSettings.Write("EveryRequestRequiresPassword", "false", "WebServer");
+            if (!General.Exists("CheckForUpdates")) General.Set("CheckForUpdates", "true");
+            if (!General.Exists("AccountJoinDelay")) General.Set("AccountJoinDelay", "8");
+            if (!General.Exists("AsyncJoin")) General.Set("AsyncJoin", "false");
+            if (!General.Exists("DisableAgingAlert")) General.Set("DisableAgingAlert", "false");
+            if (!General.Exists("SavePasswords")) General.Set("SavePasswords", "true");
+            if (!General.Exists("ServerRegionFormat")) General.Set("ServerRegionFormat", "<city>, <countryCode>", "Visit http://ip-api.com/json/1.1.1.1 to see available format options");
 
-            if (!IniSettings.KeyExists("AllowExternalConnections", "AccountControl")) IniSettings.Write("AllowExternalConnections", "false", "AccountControl");
-            if (!IniSettings.KeyExists("RelaunchDelay", "AccountControl")) IniSettings.Write("RelaunchDelay", "60", "AccountControl");
-            if (!IniSettings.KeyExists("NexusPort", "AccountControl")) IniSettings.Write("NexusPort", "5242", "AccountControl");
+            if (!Developer.Exists("DevMode")) Developer.Set("DevMode", "false");
+            if (!Developer.Exists("EnableWebServer")) Developer.Set("EnableWebServer", "false");
 
-            PlaceID.Text = IniSettings.KeyExists("SavedPlaceId", "General") ? IniSettings.Read("SavedPlaceId", "General") : "5315046213";
+            if (!WebServer.Exists("WebServerPort")) WebServer.Set("WebServerPort", "7963");
+            if (!WebServer.Exists("AllowGetCookie")) WebServer.Set("AllowGetCookie", "false");
+            if (!WebServer.Exists("AllowGetAccounts")) WebServer.Set("AllowGetAccounts", "false");
+            if (!WebServer.Exists("AllowLaunchAccount")) WebServer.Set("AllowLaunchAccount", "false");
+            if (!WebServer.Exists("AllowAccountEditing")) WebServer.Set("AllowAccountEditing", "false");
+            if (!WebServer.Exists("Password")) WebServer.Set("Password", ""); else WSPassword = WebServer.Get("Password");
+            if (!WebServer.Exists("EveryRequestRequiresPassword")) WebServer.Set("EveryRequestRequiresPassword", "false");
 
-            if (IniSettings.Read("DevMode", "Developer") != "true" && !File.Exists("dev.mode"))
+            if (!AccountControl.Exists("AllowExternalConnections")) AccountControl.Set("AllowExternalConnections", "false");
+            if (!AccountControl.Exists("RelaunchDelay")) AccountControl.Set("RelaunchDelay", "60");
+            if (!AccountControl.Exists("NexusPort")) AccountControl.Set("NexusPort", "5242");
+
+            PlaceID.Text = General.Exists("SavedPlaceId") ? General.Get("SavedPlaceId") : "5315046213";
+
+            if (!Developer.Get<bool>("DevMode"))
             {
                 AccountsStrip.Items.Remove(viewFieldsToolStripMenuItem);
                 AccountsStrip.Items.Remove(getAuthenticationTicketToolStripMenuItem);
@@ -456,7 +474,7 @@ namespace RBX_Alt_Manager
                 ArgumentsB.Visible = true;
             }
 
-            if (IniSettings.Read("DisableAutoUpdate", "General") != "true")
+            if (General.Get<bool>("CheckForUpdates"))
             {
                 Task.Run(() =>
                 {
@@ -478,7 +496,7 @@ namespace RBX_Alt_Manager
 
                             if (match.Groups[1].Value != version)
                             {
-                                DialogResult result = MessageBox.Show("An update is available, click yes to run the auto updater or no to be redirected to the download page.", "Roblox Account Manager", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+                                DialogResult result = MessageBox.Show("An update is available, would you like to update now?", "Roblox Account Manager", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
 
                                 if (result == DialogResult.Yes)
                                 {
@@ -495,8 +513,6 @@ namespace RBX_Alt_Manager
                                         Process.Start("https://github.com/ic3w0lf22/Roblox-Account-Manager/releases");
                                     }
                                 }
-                                else if (result == DialogResult.No)
-                                    Process.Start("https://github.com/ic3w0lf22/Roblox-Account-Manager/releases");
                             }
                         }
                     }
@@ -504,20 +520,20 @@ namespace RBX_Alt_Manager
                 });
             }
 
-            if (IniSettings.Read("DisableAgingAlert", "General") != "true")
+            if (!General.Get<bool>("DisableAgingAlert"))
                 Username.Renderer = new AccountRenderer();
 
             try
             {
-                if (IniSettings.Read("EnableWebServer", "Developer") == "true")
+                if (Developer.Get<bool>("EnableWebServer"))
                 {
-                    string Port = IniSettings.KeyExists("WebServerPort", "WebServer") ? IniSettings.Read("WebServerPort", "WebServer") : "7963";
+                    string Port = WebServer.Exists("WebServerPort") ? WebServer.Get("WebServerPort") : "7963";
 
                     AltManagerWS = new WebServer(SendResponse, $"http://localhost:{Port}/");
                     AltManagerWS.Run();
                 }
             }
-            catch (Exception x) { MessageBox.Show("Failed to start webserver! " + x, "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+            catch (Exception x) { MessageBox.Show("Failed to start webserver!\n\n" + x, "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error); }
 
             try
             {
@@ -529,6 +545,8 @@ namespace RBX_Alt_Manager
                     CurrentVersion = token.Value<string>();
             }
             catch { }
+
+            IniSettings.Save("RAMSettings.ini");
         }
 
         public void ApplyTheme()
@@ -587,14 +605,17 @@ namespace RBX_Alt_Manager
             FieldsForm.ApplyTheme();
             ThemeForm.ApplyTheme();
 
-            if (ControlForm != null)
-                ControlForm.ApplyTheme();
+            if (ControlForm != null) ControlForm.ApplyTheme();
+            if (SettingsForm != null) SettingsForm.ApplyTheme();
         }
 
         private List<ServerData> AttemptedJoins = new List<ServerData>();
 
-        private string SendResponse(HttpListenerRequest request)
+
+        private string SendResponse(HttpListenerContext Context)
         {
+            HttpListenerRequest request = Context.Request;
+
             if (!request.IsLocal || request.Url.AbsolutePath == "/favicon.ico") return "";
 
             if (request.Url.AbsolutePath == "/Running") return "true";
@@ -603,23 +624,73 @@ namespace RBX_Alt_Manager
             string Account = request.QueryString["Account"];
             string Password = request.QueryString["Password"];
 
-            if (IniSettings.Read("EveryRequestRequiresPassword", "WebServer") == "true" && (WSPassword.Length < 6 || Password != WSPassword)) return "Invalid Password";
+            Context.Response.StatusCode = 401;
+
+            if (WebServer.Get<bool>("EveryRequestRequiresPassword") && (WSPassword.Length < 6 || Password != WSPassword)) return "Invalid Password";
 
             if ((Method == "GetCookie" || Method == "GetAccounts" || Method == "LaunchAccount") && (WSPassword.Length < 6 || Password != WSPassword)) return "Invalid Password";
 
             if (Method == "GetAccounts")
             {
-                if (IniSettings.Read("AllowGetAccounts", "WebServer") != "true") return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowGetAccounts")) return "Method not allowed";
 
                 string Names = "";
+                string GroupFilter = request.QueryString["Group"];
 
                 foreach (Account acc in AccountsList)
+                {
+                    if (!string.IsNullOrEmpty(GroupFilter) && acc.Group != GroupFilter) continue;
+
                     Names += acc.Username + ",";
+                }
 
                 return Names.Remove(Names.Length - 1);
             }
 
-            if (Method == "ImportCookie") AddAccount(request.QueryString["Token"]);
+            if (Method == "GetAccountsJson")
+            {
+                if (!WebServer.Get<bool>("AllowGetAccounts")) return "Method not allowed";
+
+                string GroupFilter = request.QueryString["Group"];
+                bool ShowCookies = request.QueryString["IncludeCookies"] == "true" && WebServer.Get<bool>("AllowGetCookie");
+
+                List<object> Objects = new List<object>();
+
+                foreach (Account acc in AccountsList)
+                {
+                    if (!string.IsNullOrEmpty(GroupFilter) && acc.Group != GroupFilter) continue;
+
+                    object AccountObject = new
+                    {
+                        Username = acc.Username,
+                        UserId = acc.UserID,
+                        Alias = acc.Alias,
+                        Description = acc.Description,
+                        Group = acc.Group,
+                        CurrentCSRFToken = acc.CSRFToken,
+                        LastUsed = acc.LastUse.ToRobloxTick(),
+                        Cookie = ShowCookies ? acc.SecurityToken : null,
+                        Fields = acc.Fields,
+                    };
+
+
+                    Objects.Add(AccountObject);
+                }
+
+                return JsonConvert.SerializeObject(Objects);
+            }
+
+            Context.Response.StatusCode = 400;
+
+            if (Method == "ImportCookie")
+            {
+                Account New = AddAccount(request.QueryString["Cookie"]);
+
+                if (New != null)
+                    Context.Response.StatusCode = 200;
+
+                return New != null ? "true" : "false";
+            }
 
             if (string.IsNullOrEmpty(Account)) return "Empty Account";
 
@@ -627,16 +698,20 @@ namespace RBX_Alt_Manager
 
             if (account == null || string.IsNullOrEmpty(account.GetCSRFToken())) return "Invalid Account";
 
+            Context.Response.StatusCode = 401;
+
             if (Method == "GetCookie")
             {
-                if (IniSettings.Read("AllowGetCookie", "WebServer") != "true") return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowGetCookie")) return "Method not allowed";
+
+                Context.Response.StatusCode = 200;
 
                 return account.SecurityToken;
             }
 
             if (Method == "LaunchAccount")
             {
-                if (IniSettings.Read("AllowLaunchAccount", "WebServer") != "true") return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowLaunchAccount")) return "Method not allowed";
 
                 bool ValidPlaceId = long.TryParse(request.QueryString["PlaceId"], out long PlaceId); if (!ValidPlaceId) return "Invalid PlaceId";
 
@@ -646,19 +721,48 @@ namespace RBX_Alt_Manager
 
                 account.JoinServer(PlaceId, JobID, FollowUser == "true", JoinVIP == "true");
 
+                Context.Response.StatusCode = 200;
+
                 return $"Launched {Account} to {PlaceId}";
             }
+
+            if (Method == "FollowUser") // https://github.com/ic3w0lf22/Roblox-Account-Manager/pull/52
+            {
+                if (!WebServer.Get<bool>("AllowLaunchAccount")) return "Method not allowed";
+
+                string User = request.QueryString["Username"]; if (string.IsNullOrEmpty(User)) { Context.Response.StatusCode = 400; return "Invalid Username Parameter"; }
+
+                if (!GetUserID(User, out long UserId))
+                    return "Failed to get UserId";
+
+                account.JoinServer(UserId, "", true);
+
+                Context.Response.StatusCode = 200;
+
+                return $"Joining {User}'s game on {Account}";
+            }
+
+            Context.Response.StatusCode = 200;
 
             if (Method == "GetCSRFToken") return account.GetCSRFToken();
             if (Method == "GetAlias") return account.Alias;
             if (Method == "GetDescription") return account.Description;
 
-            if (Method == "BlockUser" && !string.IsNullOrEmpty(request.QueryString["UserId"])) return account.BlockUserId(request.QueryString["UserId"]);
-            if (Method == "UnblockUser" && !string.IsNullOrEmpty(request.QueryString["UserId"])) return account.UnblockUserId(request.QueryString["UserId"]);
-            if (Method == "UnblockEveryone") return account.UnblockEveryone();
-            if (Method == "GetBlockedList") return account.GetBlockedList();
+            if (Method == "BlockUser" && !string.IsNullOrEmpty(request.QueryString["UserId"])) return account.BlockUserId(request.QueryString["UserId"], Context: Context);
+            if (Method == "UnblockUser" && !string.IsNullOrEmpty(request.QueryString["UserId"])) return account.UnblockUserId(request.QueryString["UserId"], Context: Context);
+            if (Method == "UnblockEveryone") return account.UnblockEveryone(Context);
+            if (Method == "GetBlockedList") return account.GetBlockedList(Context);
 
-            if (Method == "SetServer" && !string.IsNullOrEmpty(request.QueryString["PlaceId"]) && !string.IsNullOrEmpty(request.QueryString["JobId"])) return account.SetServer(Convert.ToInt64(request.QueryString["PlaceId"]), request.QueryString["JobId"]);
+            if (Method == "SetServer" && !string.IsNullOrEmpty(request.QueryString["PlaceId"]) && !string.IsNullOrEmpty(request.QueryString["JobId"]))
+            {
+                string RSP = account.SetServer(Convert.ToInt64(request.QueryString["PlaceId"]), request.QueryString["JobId"], out bool Success);
+
+                if (!Success)
+                    Context.Response.StatusCode = 400;
+
+                return RSP;
+            }
+
             if (Method == "SetRecommendedServer")
             {
                 int attempts = 0;
@@ -666,7 +770,12 @@ namespace RBX_Alt_Manager
 
                 for (int i = RBX_Alt_Manager.ServerList.servers.Count - 1; i > 0; i--)
                 {
-                    if (attempts > 10) return "Too many failed attempts";
+                    if (attempts > 10)
+                    {
+                        Context.Response.StatusCode = 400;
+
+                        return "Too many failed attempts";
+                    }
 
                     ServerData server = RBX_Alt_Manager.ServerList.servers[i];
 
@@ -676,83 +785,95 @@ namespace RBX_Alt_Manager
 
                     attempts++;
 
-                    res = account.SetServer(RBX_Alt_Manager.ServerList.CurrentPlaceID, server.id);
+                    res = account.SetServer(RBX_Alt_Manager.ServerList.CurrentPlaceID, server.id, out bool Success);
 
-                    if (res == "Success")
+                    if (Success)
                         return res;
                 }
+
+                if (string.IsNullOrEmpty(res)) Context.Response.StatusCode = 400;
 
                 return string.IsNullOrEmpty(res) ? "Failed" : res;
             }
 
             if (Method == "GetField" && !string.IsNullOrEmpty(request.QueryString["Field"])) return account.GetField(request.QueryString["Field"]);
+
+            Context.Response.StatusCode = 401;
+
             if (Method == "SetField" && !string.IsNullOrEmpty(request.QueryString["Field"]) && !string.IsNullOrEmpty(request.QueryString["Value"]))
             {
-                if (IniSettings.Read("AllowAccountEditing", "WebServer") != "true") return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
 
                 account.SetField(request.QueryString["Field"], request.QueryString["Value"]);
 
-                return $"Set Field {request.QueryString["Field"]} to {request.QueryString["Value"]}";
+                Context.Response.StatusCode = 200;
+
+                return $"Set Field {request.QueryString["Field"]} to {request.QueryString["Value"]} for {account.Username}";
             }
             if (Method == "RemoveField" && !string.IsNullOrEmpty(request.QueryString["Field"]))
             {
-                if (IniSettings.Read("AllowAccountEditing", "WebServer") != "true") return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
 
                 account.RemoveField(request.QueryString["Field"]);
 
-                return $"Removed Field {request.QueryString["Field"]}";
+                Context.Response.StatusCode = 200;
+
+                return $"Removed Field {request.QueryString["Field"]} from {account.Username}";
             }
 
             string Body = new StreamReader(request.InputStream).ReadToEnd();
 
             if (Method == "SetAlias" && !string.IsNullOrEmpty(Body))
             {
-                if (IniSettings.Read("AllowAccountEditing", "WebServer") != "true") return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
 
                 account.Alias = Body;
                 UpdateAccountView(account);
+
+                Context.Response.StatusCode = 200;
 
                 return $"Set Alias of {account.Username} to {Body}";
             }
             if (Method == "SetDescription" && !string.IsNullOrEmpty(Body))
             {
-                if (IniSettings.Read("AllowAccountEditing", "WebServer") != "true") return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
 
                 account.Description = Body;
                 UpdateAccountView(account);
+
+                Context.Response.StatusCode = 200;
 
                 return $"Set Description of {account.Username} to {Body}";
             }
             if (Method == "AppendDescription" && !string.IsNullOrEmpty(Body))
             {
-                if (IniSettings.Read("AllowAccountEditing", "WebServer") != "true") return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
 
                 account.Description += Body;
                 UpdateAccountView(account);
 
+                Context.Response.StatusCode = 200;
+
                 return $"Appended Description of {account.Username} with {Body}";
             }
 
-            return $"";
+            Context.Response.StatusCode = 404;
+
+            return "";
         }
 
         private void AccountManager_Shown(object sender, EventArgs e)
         {
             LoadAccounts();
 
-            if (IniSettings.Read("DisableMultiRbx", "General") != "true")
+            if (!General.Get<bool>("DisableMultiRbx"))
             {
                 try
                 {
                     rbxMultiMutex = new Mutex(true, "ROBLOX_singletonMutex");
 
-                    if (!rbxMultiMutex.WaitOne(TimeSpan.Zero, true) && IniSettings.Read("HideRbxAlert", "General") != "true")
-                    {
-                        DialogResult MsgResult = MessageBox.Show("WARNING: Roblox is currently running, multi roblox will not work until you restart the account manager with roblox closed.\nTo hide this warning permanently, press Cancel.", "Roblox Account Manager", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
-
-                        if (MsgResult == DialogResult.Cancel)
-                            IniSettings.Write("HideRbxAlert", "true", "General");
-                    }
+                    if (!rbxMultiMutex.WaitOne(TimeSpan.Zero, true) && !General.Get<bool>("HideRbxAlert"))
+                        MessageBox.Show("WARNING: Roblox is currently running, multi roblox will not work until you restart the account manager with roblox closed.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
                 finally { }
             }
@@ -968,7 +1089,8 @@ namespace RBX_Alt_Manager
 
             if (PlaceID == null || string.IsNullOrEmpty(PlaceID.Text)) return;
 
-            IniSettings.Write("SavedPlaceId", PlaceID.Text, "General");
+            General.Set("SavedPlaceId", PlaceID.Text);
+            IniSettings.Save("RAMSettings.ini");
         }
 
         private void BrowserButton_Click(object sender, EventArgs e)
@@ -1256,10 +1378,9 @@ namespace RBX_Alt_Manager
 
         private async void LaunchAccounts(List<Account> Accounts, long PlaceId, string JobID, bool FollowUser = false, bool VIPServer = false)
         {
-            int Delay = 8;
-            int.TryParse(IniSettings.Read("AccountJoinDelay", "General"), out Delay);
+            int Delay = General.Exists("AccountJoinDelay") ? General.Get<int>("AccountJoinDelay") : 8;
 
-            bool AsyncJoin = IniSettings.Read("AsyncJoin", "General") == "true";
+            bool AsyncJoin = General.Get<bool>("AsyncJoin");
             CancellationTokenSource Token = LauncherToken;
 
             foreach (Account account in Accounts)
@@ -1303,5 +1424,23 @@ namespace RBX_Alt_Manager
 
         private void DonateButton_Click(object sender, EventArgs e) =>
             Process.Start("https://ic3w0lf22.github.io/donate.html");
+
+        private void ConfigButton_Click(object sender, EventArgs e)
+        {
+            if (SettingsForm == null)
+                SettingsForm = new SettingsForm();
+
+            if (SettingsForm.Visible)
+            {
+                SettingsForm.WindowState = FormWindowState.Normal;
+                SettingsForm.BringToFront();
+            }
+            else
+                SettingsForm.Show();
+
+            SettingsForm.StartPosition = FormStartPosition.Manual;
+            SettingsForm.Top = Top;
+            SettingsForm.Left = Right;
+        }
     }
 }

@@ -10,7 +10,7 @@ if not game:IsLoaded() then
 
         local Code = game:GetService'GuiService':GetErrorCode().Value
 
-        if Code >= Enum.ConnectionError.DisconnectErrors.Value and Code <= Enum.ConnectionError.PlacelaunchOtherError.Value then
+        if Code >= Enum.ConnectionError.DisconnectErrors.Value then
             return game:Shutdown()
         end
     end)
@@ -78,6 +78,7 @@ do -- Nexus
     Nexus.Connections = {}
 
     Nexus.ShutdownTime = 45
+    Nexus.ShutdownOnTeleportError = true
 
     function Nexus:Send(Command, Payload)
         assert(self.Socket ~= nil, 'websocket is nil')
@@ -96,6 +97,10 @@ do -- Nexus
         self.Socket:Send(Message)
     end
 
+    function Nexus:Echo(Message)
+        self:Send('Echo', { Content = Message })
+    end
+
     function Nexus:Log(...)
         local T = {}
 
@@ -107,18 +112,6 @@ do -- Nexus
             Content = table.concat(T, ' ')
         })
     end
-    
-    function Nexus:Echo(...)
-		local T = {}
-
-		for Index, Value in pairs{ ... } do
-			table.insert(T, tostring(Value))
-		end
-
-		self:Send('Echo', {
-			Content = table.concat(T, ' ')
-		})
-	end
 
     function Nexus:CreateElement(ElementType, Name, Content, Size, Margins, Table)
         assert(typeof(Name) == 'string', 'string expected on argument #1, got ' .. typeof(Name))
@@ -211,7 +204,8 @@ do -- Nexus
                 Host = 'localhost:5242'
             end
 
-            local Success, Socket = pcall(syn.websocket.connect, ('ws://%s/Nexus?name=%s&id=%s&jobId=%s'):format(Host, LocalPlayer.Name, LocalPlayer.UserId, game.JobId))
+            local websocket = syn and syn.websocket or WebSocket
+            local Success, Socket = pcall(websocket.connect, ('ws://%s/Nexus?name=%s&id=%s&jobId=%s'):format(Host, LocalPlayer.Name, LocalPlayer.UserId, game.JobId))
 
             if not Success then task.wait(12) continue end
 
@@ -375,13 +369,19 @@ do -- Connections
 
         local Code = GuiService:GetErrorCode().Value
 
-        if Code >= Enum.ConnectionError.DisconnectErrors.Value and Code <= Enum.ConnectionError.PlacelaunchOtherError.Value then
+        if Code >= Enum.ConnectionError.DisconnectErrors.Value then
+            if not Nexus.ShutdownOnTeleportError and Code > Enum.ConnectionError.PlacelaunchOtherError.Value then
+                return
+            end
+            
             task.delay(Nexus.ShutdownTime, game.Shutdown, game)
         end
     end)
 end
 
-getgenv().Nexus = Nexus
+local GEnv = getgenv()
+GEnv.Nexus = Nexus
+GEnv.performance = Nexus.Commands.performance -- fix the sirmeme error so that people stop being annoying saying "omg performance() doesnt work" (https://youtu.be/vVfg9ym2MNs?t=389)
 
 if not Nexus_Version then
     Nexus:Connect()

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using System.Windows.Forms;
 
 namespace RBX_Alt_Manager
@@ -276,6 +277,8 @@ namespace RBX_Alt_Manager
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
+                Password = New;
+
                 RestResponseCookie SToken = response.Cookies.FirstOrDefault(x => x.Name == ".ROBLOSECURITY");
 
                 if (SToken != null)
@@ -361,7 +364,6 @@ namespace RBX_Alt_Manager
         public bool BlockPlayer(string Username)
         {
             if (!CheckPin()) return false;
-
             if (!AccountManager.GetUserID(Username, out long BlockeeID)) return false;
 
             RestRequest request = new RestRequest($"userblock/getblockedusers?userId={UserID}&page=1", Method.GET);
@@ -415,8 +417,10 @@ namespace RBX_Alt_Manager
             return false;
         }
 
-        public string BlockUserId(string UserID, bool SkipPinCheck = false)
+        public string BlockUserId(string UserID, bool SkipPinCheck = false, HttpListenerContext Context = null)
         {
+            if (Context != null) Context.Response.StatusCode = 401;
+
             if (!SkipPinCheck && !CheckPin(true)) return "Pin Locked";
 
             RestRequest blockReq = new RestRequest("userblock/blockuser", Method.POST);
@@ -429,11 +433,16 @@ namespace RBX_Alt_Manager
 
             IRestResponse blockRes = AccountManager.MainClient.Execute(blockReq);
 
+            if (Context != null)
+                Context.Response.StatusCode = (int)blockRes.StatusCode;
+
             return blockRes.Content;
         }
 
-        public string UnblockUserId(string UserID, bool SkipPinCheck = false)
+        public string UnblockUserId(string UserID, bool SkipPinCheck = false, HttpListenerContext Context = null)
         {
+            if (Context != null) Context.Response.StatusCode = 401;
+
             if (!SkipPinCheck && !CheckPin(true)) return "Pin Locked";
 
             RestRequest blockReq = new RestRequest("userblock/unblockuser", Method.POST);
@@ -446,11 +455,15 @@ namespace RBX_Alt_Manager
 
             IRestResponse blockRes = AccountManager.MainClient.Execute(blockReq);
 
+            if (Context != null) Context.Response.StatusCode = (int)blockRes.StatusCode;
+
             return blockRes.Content;
         }
 
-        public string UnblockEveryone()
+        public string UnblockEveryone(HttpListenerContext Context = null)
         {
+            if (Context != null) Context.Response.StatusCode = 401;
+
             if (!CheckPin(true)) return "Pin is Locked";
 
             RestRequest request = new RestRequest($"userblock/getblockedusers?page=1", Method.GET);
@@ -461,6 +474,8 @@ namespace RBX_Alt_Manager
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
+                if (Context != null) Context.Response.StatusCode = 200;
+
                 Task.Run(async () =>
                 {
                     Match R = Regex.Match(response.Content, "\"userList\":\\[(.+)\\]");
@@ -487,18 +502,24 @@ namespace RBX_Alt_Manager
                 return "Unblocking Everyone";
             }
 
+            if (Context != null) Context.Response.StatusCode = 400;
+
             return "Failed to unblock everyone";
         }
 
-        public string GetBlockedList()
+        public string GetBlockedList(HttpListenerContext Context = null)
         {
-            if (!CheckPin()) return "Pin is Locked";
+            if (Context != null) Context.Response.StatusCode = 401;
+
+            if (!CheckPin(true)) return "Pin is Locked";
 
             RestRequest request = new RestRequest($"userblock/getblockedusers?page=1", Method.GET);
 
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
 
             IRestResponse response = AccountManager.APIClient.Execute(request);
+
+            if (Context != null) Context.Response.StatusCode = (int)response.StatusCode;
 
             return response.Content;
         }
@@ -614,12 +635,12 @@ namespace RBX_Alt_Manager
                         try
                         {
                             if (JoinVIP)
-                                Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{4}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode={3}+browsertrackerid:{5}+robloxLocale:en_us+gameLocale:en_us", Ticket, PlaceID, AccessCode, LinkCode, LaunchTime, BrowserTrackerID)).WaitForExit();
+                                Process.Start($"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode($"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={PlaceID}&accessCode={AccessCode}&linkCode={LinkCode}")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:").WaitForExit();
                             else if (FollowUser)
-                                Process.Start(string.Format("roblox-player:1+launchmode:play+gameinfo:{0}+launchtime:{2}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}+browsertrackerid:{3}+robloxLocale:en_us+gameLocale:en_us", Ticket, PlaceID, LaunchTime, BrowserTrackerID)).WaitForExit();
+                                Process.Start($"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode($"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={PlaceID}")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:").WaitForExit();
                             else
-                                Process.Start($"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{ (string.IsNullOrEmpty(JobID) ? "" : "Job") }&browserTrackerId={BrowserTrackerID}&placeId={PlaceID}{(string.IsNullOrEmpty(JobID) ? "" : ("&gameId=" + JobID))}&isPlayTogetherGame=false{(AccountManager.IsTeleport ? "&isTeleport=true" : "")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us").WaitForExit();
-                            
+                                Process.Start($"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode($"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{ (string.IsNullOrEmpty(JobID) ? "" : "Job") }&browserTrackerId={BrowserTrackerID}&placeId={PlaceID}{(string.IsNullOrEmpty(JobID) ? "" : ("&gameId=" + JobID))}&isPlayTogetherGame=false{(AccountManager.IsTeleport ? "&isTeleport=true" : "")}")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:").WaitForExit();
+
                             AccountManager.Instance.NextAccount();
                         }
                         catch
@@ -637,8 +658,10 @@ namespace RBX_Alt_Manager
                 return "ERROR: Invalid Authentication Ticket";
         }
 
-        public string SetServer(long PlaceID, string JobID)
+        public string SetServer(long PlaceID, string JobID, out bool Successful)
         {
+            Successful = false;
+
             string Token = GetCSRFToken();
 
             if (string.IsNullOrEmpty(Token))
@@ -646,7 +669,6 @@ namespace RBX_Alt_Manager
 
             RestRequest request = new RestRequest("v1/join-game-instance", Method.POST);
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("User-Agent", "Roblox/WinInet");
             request.AddHeader("Content-Type", "application/json");
             request.AddJsonBody(new { gameId = JobID, placeId = PlaceID });
 
@@ -655,7 +677,10 @@ namespace RBX_Alt_Manager
             IRestResponse response = AccountManager.GameJoinClient.Execute(request);
 
             if (response.StatusCode == HttpStatusCode.OK)
+            {
+                Successful = true;
                 return Regex.IsMatch(response.Content, "\"joinScriptUrl\":null") ? response.Content : "Success";
+            }
             else
                 return $"Failed {response.StatusCode}: {response.Content} {response.ErrorMessage}";
         }
