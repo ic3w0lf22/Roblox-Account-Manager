@@ -83,7 +83,7 @@ namespace RBX_Alt_Manager.Forms
 
         public static void LoadTheme()
         {
-            if (ThemeIni == null) ThemeIni = File.Exists("RAMTheme.ini") ? new IniFile("RAMTheme.ini") : new IniFile();
+            if (ThemeIni == null) ThemeIni = File.Exists(Path.Combine(Environment.CurrentDirectory, "RAMTheme.ini")) ? new IniFile("RAMTheme.ini") : new IniFile();
 
             Theme = ThemeIni.Section(Assembly.GetExecutingAssembly().GetName().Name);
 
@@ -107,7 +107,7 @@ namespace RBX_Alt_Manager.Forms
 
         public static void SaveTheme()
         {
-            if (ThemeIni == null) ThemeIni = File.Exists("RAMTheme.ini") ? new IniFile("RAMTheme.ini") : new IniFile();
+            if (ThemeIni == null) ThemeIni = File.Exists(Path.Combine(Environment.CurrentDirectory, "RAMTheme.ini")) ? new IniFile("RAMTheme.ini") : new IniFile();
             if (Theme == null) Theme = ThemeIni.Section(Assembly.GetExecutingAssembly().GetName().Name);
 
             Theme.Set("AccountsBG", ToHexString(AccountBackground));
@@ -126,6 +126,8 @@ namespace RBX_Alt_Manager.Forms
             Theme.Set("TextBoxesBG", ToHexString(TextBoxesBackground));
             Theme.Set("TextBoxesFG", ToHexString(TextBoxesForeground));
             Theme.Set("TextBoxesBC", ToHexString(TextBoxesBorder));
+
+            ThemeIni.Save("RAMTheme.ini");
         }
 
         private void SetBG_Click(object sender, EventArgs e)

@@ -10,7 +10,7 @@ if not game:IsLoaded() then
 
         local Code = game:GetService'GuiService':GetErrorCode().Value
 
-        if Code >= Enum.ConnectionError.DisconnectErrors.Value and Code <= Enum.ConnectionError.PlacelaunchOtherError.Value then
+        if Code >= Enum.ConnectionError.DisconnectErrors.Value then
             return game:Shutdown()
         end
     end)
@@ -19,6 +19,9 @@ if not game:IsLoaded() then
 end
 
 local Nexus = {}
+local WSConnect = syn and syn.websocket.connect or Krnl and Krnl.WebSocket.connect or WebSocket and WebSocket.connect
+
+if not WSConnect then return end
 
 local TeleportService = game:GetService'TeleportService'
 local InputService = game:GetService'UserInputService'
@@ -78,6 +81,7 @@ do -- Nexus
     Nexus.Connections = {}
 
     Nexus.ShutdownTime = 45
+    Nexus.ShutdownOnTeleportError = true
 
     function Nexus:Send(Command, Payload)
         assert(self.Socket ~= nil, 'websocket is nil')
@@ -96,9 +100,21 @@ do -- Nexus
         self.Socket:Send(Message)
     end
 
+    function Nexus:SetAutoRelaunch(Enabled)
+        self:Send('SetAutoRelaunch', { Content = Enabled and 'true' or 'false' })
+    end
+    
+    function Nexus:SetPlaceId(PlaceId)
+        self:Send('SetPlaceId', { Content = PlaceId })
+    end
+    
+    function Nexus:SetJobId(JobId)
+        self:Send('SetJobId', { Content = JobId })
+    end
+
     function Nexus:Echo(Message)
-		self:Send('Echo', { Content = Message })
-	end
+        self:Send('Echo', { Content = Message })
+    end
 
     function Nexus:Log(...)
         local T = {}
@@ -203,7 +219,7 @@ do -- Nexus
                 Host = 'localhost:5242'
             end
 
-            local Success, Socket = pcall(syn.websocket.connect, ('ws://%s/Nexus?name=%s&id=%s&jobId=%s'):format(Host, LocalPlayer.Name, LocalPlayer.UserId, game.JobId))
+            local Success, Socket = pcall(WSConnect, ('ws://%s/Nexus?name=%s&id=%s&jobId=%s'):format(Host, LocalPlayer.Name, LocalPlayer.UserId, game.JobId))
 
             if not Success then task.wait(12) continue end
 
@@ -333,10 +349,15 @@ do -- Default Commands
         UGS.MasterVolume = OldVolume
     end)
 
-    Nexus:AddCommand('performance', function()
+    Nexus:AddCommand('performance', function(Message)
         if _PERF then return end
         
         _PERF = true
+        _TARGETFPS = 8
+
+        if Message and tonumber(Message) then
+            _TARGETFPS = tonumber(Message)
+        end
 
         local OldLevel = settings().Rendering.QualityLevel
 
@@ -352,12 +373,12 @@ do -- Default Commands
         InputService.WindowFocusReleased:Connect(function()
             OldLevel = settings().Rendering.QualityLevel
 
-            settings().Rendering.QualityLevel = 1
             RunService:Set3dRenderingEnabled(false)
-            setfpscap(6)
+            settings().Rendering.QualityLevel = 1
+            setfpscap(_TARGETFPS)
         end)
 
-        setfpscap(6)
+        setfpscap(_TARGETFPS)
     end)
 end
 
@@ -367,7 +388,11 @@ do -- Connections
 
         local Code = GuiService:GetErrorCode().Value
 
-        if Code >= Enum.ConnectionError.DisconnectErrors.Value and Code <= Enum.ConnectionError.PlacelaunchOtherError.Value then
+        if Code >= Enum.ConnectionError.DisconnectErrors.Value then
+            if not Nexus.ShutdownOnTeleportError and Code > Enum.ConnectionError.PlacelaunchOtherError.Value then
+                return
+            end
+            
             task.delay(Nexus.ShutdownTime, game.Shutdown, game)
         end
     end)

@@ -65,8 +65,19 @@ namespace RBX_Alt_Manager
 
         private void ImportButton_Click(object sender, EventArgs e)
         {
-            foreach (string Token in Accounts.Text.Split('\n'))
-                AccountManager.AddAccount(Token);
+            string[] List = Accounts.Text.Split('\n');
+
+            Accounts.Text = string.Empty;
+
+            foreach (string Token in List)
+            {
+                Account NewAccount = AccountManager.AddAccount(Token);
+
+                if (NewAccount != null)
+                    Accounts.Text += $"Added {NewAccount.Username}";
+                else
+                    Accounts.Text += $"Failed to add {Token}";
+            }
         }
     }
 }

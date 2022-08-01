@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace RBX_Alt_Manager
 {
@@ -20,22 +21,7 @@ namespace RBX_Alt_Manager
         public int? price { get; set; }
         public object analyticsIdentifier { get; set; }
         public object gameDescription { get; set; }
-    }
-
-    public class ListGame
-    {
-        public string name;
-        public int playerCount;
-        public int likeRatio;
-        public long placeId;
-
-        public ListGame(string Name, int PC, int LR, long placeID)
-        {
-            name = Name;
-            playerCount = PC;
-            likeRatio = LR;
-            placeId = placeID;
-        }
+        public int? likeRatio;
     }
 
     public class FavoriteGame
@@ -51,19 +37,32 @@ namespace RBX_Alt_Manager
             PrivateServer = "";
         }
 
-        public FavoriteGame(string Name, long PlaceID)
+        public FavoriteGame(string Name, long PlaceID) : this()
         {
             this.Name = Name;
             this.PlaceID = PlaceID;
-            PrivateServer = "";
         }
 
-        public FavoriteGame(string Name, long PlaceID, string PrivateServer)
-        {
-            this.Name = Name;
-            this.PlaceID = PlaceID;
+        public FavoriteGame(string Name, long PlaceID, string PrivateServer) : this(Name, PlaceID) =>
             this.PrivateServer = PrivateServer;
+    }
+
+    public class RecentGame
+    {
+        private string _Name = "";
+
+        public string Name
+        {
+            get => _Name;
+            set
+            {
+                value = Regex.Replace(value, @"[\s]?\[[^]]*\][\s]?", "");
+                value = Regex.Replace(value, "[^a-zA-Z0-9% ._]", string.Empty);
+                _Name = value;
+            }
         }
+
+        public long PlaceId;
     }
 
     public class GameList

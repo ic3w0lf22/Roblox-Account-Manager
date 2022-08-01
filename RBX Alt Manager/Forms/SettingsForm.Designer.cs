@@ -38,6 +38,8 @@ namespace RBX_Alt_Manager.Forms
             this.SavePasswordCB = new System.Windows.Forms.CheckBox();
             this.DisableAgingAlertCB = new System.Windows.Forms.CheckBox();
             this.HideMRobloxCB = new System.Windows.Forms.CheckBox();
+            this.RegionFormatLabel = new System.Windows.Forms.Label();
+            this.RegionFormatTB = new System.Windows.Forms.TextBox();
             this.RSLabel = new System.Windows.Forms.Label();
             this.DecryptAC = new System.Windows.Forms.Button();
             this.Helper = new System.Windows.Forms.ToolTip(this.components);
@@ -56,8 +58,8 @@ namespace RBX_Alt_Manager.Forms
             this.AllowGACB = new System.Windows.Forms.CheckBox();
             this.AllowLACB = new System.Windows.Forms.CheckBox();
             this.AllowAECB = new System.Windows.Forms.CheckBox();
-            this.RegionFormatLabel = new System.Windows.Forms.Label();
-            this.RegionFormatTB = new System.Windows.Forms.TextBox();
+            this.MRGLabel = new System.Windows.Forms.Label();
+            this.MaxRecentGamesNumber = new System.Windows.Forms.NumericUpDown();
             this.SettingsLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.LaunchDelayNumber)).BeginInit();
             this.SettingsTC.SuspendLayout();
@@ -65,6 +67,7 @@ namespace RBX_Alt_Manager.Forms
             this.DeveloperTab.SuspendLayout();
             this.DevSettingsLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PortNumber)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxRecentGamesNumber)).BeginInit();
             this.SuspendLayout();
             // 
             // SettingsLayoutPanel
@@ -78,13 +81,15 @@ namespace RBX_Alt_Manager.Forms
             this.SettingsLayoutPanel.Controls.Add(this.HideMRobloxCB);
             this.SettingsLayoutPanel.Controls.Add(this.RegionFormatLabel);
             this.SettingsLayoutPanel.Controls.Add(this.RegionFormatTB);
+            this.SettingsLayoutPanel.Controls.Add(this.MRGLabel);
+            this.SettingsLayoutPanel.Controls.Add(this.MaxRecentGamesNumber);
             this.SettingsLayoutPanel.Controls.Add(this.RSLabel);
             this.SettingsLayoutPanel.Controls.Add(this.DecryptAC);
             this.SettingsLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.SettingsLayoutPanel.Location = new System.Drawing.Point(3, 3);
             this.SettingsLayoutPanel.Name = "SettingsLayoutPanel";
             this.SettingsLayoutPanel.Padding = new System.Windows.Forms.Padding(12);
-            this.SettingsLayoutPanel.Size = new System.Drawing.Size(302, 218);
+            this.SettingsLayoutPanel.Size = new System.Drawing.Size(302, 239);
             this.SettingsLayoutPanel.TabIndex = 0;
             // 
             // AutoUpdateCB
@@ -183,10 +188,31 @@ namespace RBX_Alt_Manager.Forms
             this.HideMRobloxCB.UseVisualStyleBackColor = true;
             this.HideMRobloxCB.CheckedChanged += new System.EventHandler(this.HideMRobloxCB_CheckedChanged);
             // 
+            // RegionFormatLabel
+            // 
+            this.RegionFormatLabel.AutoSize = true;
+            this.RegionFormatLabel.Location = new System.Drawing.Point(15, 131);
+            this.RegionFormatLabel.Margin = new System.Windows.Forms.Padding(3, 4, 35, 0);
+            this.RegionFormatLabel.Name = "RegionFormatLabel";
+            this.RegionFormatLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.RegionFormatLabel.Size = new System.Drawing.Size(76, 13);
+            this.RegionFormatLabel.TabIndex = 17;
+            this.RegionFormatLabel.Text = "Region Format";
+            this.Helper.SetToolTip(this.RegionFormatLabel, "Requires 6 or more characters, not recommended to use your main password\r\n\r\n");
+            // 
+            // RegionFormatTB
+            // 
+            this.RegionFormatTB.Location = new System.Drawing.Point(129, 130);
+            this.RegionFormatTB.Name = "RegionFormatTB";
+            this.RegionFormatTB.Size = new System.Drawing.Size(152, 20);
+            this.RegionFormatTB.TabIndex = 18;
+            this.Helper.SetToolTip(this.RegionFormatTB, "Requires 6 or more characters, not recommended to use your main password");
+            this.RegionFormatTB.TextChanged += new System.EventHandler(this.RegionFormatTB_TextChanged);
+            // 
             // RSLabel
             // 
             this.RSLabel.AutoSize = true;
-            this.RSLabel.Location = new System.Drawing.Point(15, 157);
+            this.RSLabel.Location = new System.Drawing.Point(15, 178);
             this.RSLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
             this.RSLabel.Name = "RSLabel";
             this.RSLabel.Size = new System.Drawing.Size(263, 26);
@@ -197,7 +223,7 @@ namespace RBX_Alt_Manager.Forms
             // DecryptAC
             // 
             this.SettingsLayoutPanel.SetFlowBreak(this.DecryptAC, true);
-            this.DecryptAC.Location = new System.Drawing.Point(15, 186);
+            this.DecryptAC.Location = new System.Drawing.Point(15, 207);
             this.DecryptAC.Name = "DecryptAC";
             this.DecryptAC.Size = new System.Drawing.Size(164, 23);
             this.DecryptAC.TabIndex = 13;
@@ -234,7 +260,7 @@ namespace RBX_Alt_Manager.Forms
             this.SettingsTC.Location = new System.Drawing.Point(0, 0);
             this.SettingsTC.Name = "SettingsTC";
             this.SettingsTC.SelectedIndex = 0;
-            this.SettingsTC.Size = new System.Drawing.Size(316, 250);
+            this.SettingsTC.Size = new System.Drawing.Size(316, 271);
             this.SettingsTC.TabIndex = 18;
             // 
             // GeneralTab
@@ -243,7 +269,7 @@ namespace RBX_Alt_Manager.Forms
             this.GeneralTab.Location = new System.Drawing.Point(4, 22);
             this.GeneralTab.Name = "GeneralTab";
             this.GeneralTab.Padding = new System.Windows.Forms.Padding(3);
-            this.GeneralTab.Size = new System.Drawing.Size(308, 224);
+            this.GeneralTab.Size = new System.Drawing.Size(308, 245);
             this.GeneralTab.TabIndex = 0;
             this.GeneralTab.Text = "General";
             this.GeneralTab.UseVisualStyleBackColor = true;
@@ -254,7 +280,7 @@ namespace RBX_Alt_Manager.Forms
             this.DeveloperTab.Location = new System.Drawing.Point(4, 22);
             this.DeveloperTab.Name = "DeveloperTab";
             this.DeveloperTab.Padding = new System.Windows.Forms.Padding(3);
-            this.DeveloperTab.Size = new System.Drawing.Size(308, 213);
+            this.DeveloperTab.Size = new System.Drawing.Size(308, 224);
             this.DeveloperTab.TabIndex = 1;
             this.DeveloperTab.Text = "Developer";
             this.DeveloperTab.UseVisualStyleBackColor = true;
@@ -276,7 +302,7 @@ namespace RBX_Alt_Manager.Forms
             this.DevSettingsLayoutPanel.Location = new System.Drawing.Point(3, 3);
             this.DevSettingsLayoutPanel.Name = "DevSettingsLayoutPanel";
             this.DevSettingsLayoutPanel.Padding = new System.Windows.Forms.Padding(12);
-            this.DevSettingsLayoutPanel.Size = new System.Drawing.Size(302, 207);
+            this.DevSettingsLayoutPanel.Size = new System.Drawing.Size(302, 218);
             this.DevSettingsLayoutPanel.TabIndex = 2;
             // 
             // EnableDMCB
@@ -399,32 +425,47 @@ namespace RBX_Alt_Manager.Forms
             this.AllowAECB.UseVisualStyleBackColor = true;
             this.AllowAECB.CheckedChanged += new System.EventHandler(this.AllowAECB_CheckedChanged);
             // 
-            // RegionFormatLabel
+            // MRGLabel
             // 
-            this.RegionFormatLabel.AutoSize = true;
-            this.RegionFormatLabel.Location = new System.Drawing.Point(15, 131);
-            this.RegionFormatLabel.Margin = new System.Windows.Forms.Padding(3, 4, 35, 0);
-            this.RegionFormatLabel.Name = "RegionFormatLabel";
-            this.RegionFormatLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.RegionFormatLabel.Size = new System.Drawing.Size(76, 13);
-            this.RegionFormatLabel.TabIndex = 17;
-            this.RegionFormatLabel.Text = "Region Format";
-            this.Helper.SetToolTip(this.RegionFormatLabel, "Requires 6 or more characters, not recommended to use your main password\r\n\r\n");
+            this.MRGLabel.AutoSize = true;
+            this.MRGLabel.Location = new System.Drawing.Point(15, 157);
+            this.MRGLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
+            this.MRGLabel.Name = "MRGLabel";
+            this.MRGLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.MRGLabel.Size = new System.Drawing.Size(101, 13);
+            this.MRGLabel.TabIndex = 20;
+            this.MRGLabel.Text = "Max Recent Games";
             // 
-            // RegionFormatTB
+            // MaxRecentGamesNumber
             // 
-            this.RegionFormatTB.Location = new System.Drawing.Point(129, 130);
-            this.RegionFormatTB.Name = "RegionFormatTB";
-            this.RegionFormatTB.Size = new System.Drawing.Size(152, 20);
-            this.RegionFormatTB.TabIndex = 18;
-            this.Helper.SetToolTip(this.RegionFormatTB, "Requires 6 or more characters, not recommended to use your main password");
-            this.RegionFormatTB.TextChanged += new System.EventHandler(this.RegionFormatTB_TextChanged);
+            this.SettingsLayoutPanel.SetFlowBreak(this.MaxRecentGamesNumber, true);
+            this.MaxRecentGamesNumber.Location = new System.Drawing.Point(129, 154);
+            this.MaxRecentGamesNumber.Margin = new System.Windows.Forms.Padding(10, 1, 3, 0);
+            this.MaxRecentGamesNumber.Maximum = new decimal(new int[] {
+            30,
+            0,
+            0,
+            0});
+            this.MaxRecentGamesNumber.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.MaxRecentGamesNumber.Name = "MaxRecentGamesNumber";
+            this.MaxRecentGamesNumber.Size = new System.Drawing.Size(56, 20);
+            this.MaxRecentGamesNumber.TabIndex = 19;
+            this.MaxRecentGamesNumber.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.MaxRecentGamesNumber.ValueChanged += new System.EventHandler(this.MaxRecentGamesNumber_ValueChanged);
             // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(316, 250);
+            this.ClientSize = new System.Drawing.Size(316, 271);
             this.Controls.Add(this.SettingsTC);
             this.Name = "SettingsForm";
             this.ShowIcon = false;
@@ -440,6 +481,7 @@ namespace RBX_Alt_Manager.Forms
             this.DevSettingsLayoutPanel.ResumeLayout(false);
             this.DevSettingsLayoutPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PortNumber)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxRecentGamesNumber)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -474,5 +516,7 @@ namespace RBX_Alt_Manager.Forms
         private System.Windows.Forms.Button DecryptAC;
         private System.Windows.Forms.Label RegionFormatLabel;
         private System.Windows.Forms.TextBox RegionFormatTB;
+        private System.Windows.Forms.Label MRGLabel;
+        private System.Windows.Forms.NumericUpDown MaxRecentGamesNumber;
     }
 }

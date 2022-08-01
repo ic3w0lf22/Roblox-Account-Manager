@@ -261,7 +261,7 @@ namespace RBX_Alt_Manager
         {
             lock (SaveObject)
             {
-                using (var file = new StreamWriter(path))
+                using (var file = new StreamWriter(Path.Combine(Environment.CurrentDirectory, path)))
                     Save(file);
             }
         }

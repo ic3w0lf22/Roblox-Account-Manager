@@ -64,6 +64,7 @@
             this.cUsername = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.cJobId = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.ACStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.copyJobIdToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SettingsTab = new System.Windows.Forms.TabPage();
             this.flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
@@ -80,6 +81,8 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.AutoRelaunchTimer = new System.Windows.Forms.Timer(this.components);
+            this.MinimizeRoblox = new System.Windows.Forms.Button();
+            this.CloseRoblox = new System.Windows.Forms.Button();
             this.ControlsPanel.SuspendLayout();
             this.ScriptLayoutPanel.SuspendLayout();
             this.ScriptTabs.SuspendLayout();
@@ -538,14 +541,22 @@
             // ACStrip
             // 
             this.ACStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.copyJobIdToolStripMenuItem,
             this.removeToolStripMenuItem});
             this.ACStrip.Name = "ACStrip";
-            this.ACStrip.Size = new System.Drawing.Size(118, 26);
+            this.ACStrip.Size = new System.Drawing.Size(134, 48);
+            // 
+            // copyJobIdToolStripMenuItem
+            // 
+            this.copyJobIdToolStripMenuItem.Name = "copyJobIdToolStripMenuItem";
+            this.copyJobIdToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.copyJobIdToolStripMenuItem.Text = "Copy JobId";
+            this.copyJobIdToolStripMenuItem.Click += new System.EventHandler(this.copyJobIdToolStripMenuItem_Click);
             // 
             // removeToolStripMenuItem
             // 
             this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            this.removeToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+            this.removeToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.removeToolStripMenuItem.Text = "Remove";
             this.removeToolStripMenuItem.Click += new System.EventHandler(this.removeToolStripMenuItem_Click);
             // 
@@ -567,6 +578,8 @@
             this.flowLayoutPanel2.Controls.Add(this.RelaunchDelayNumber);
             this.flowLayoutPanel2.Controls.Add(this.PortLabel);
             this.flowLayoutPanel2.Controls.Add(this.PortNumber);
+            this.flowLayoutPanel2.Controls.Add(this.MinimizeRoblox);
+            this.flowLayoutPanel2.Controls.Add(this.CloseRoblox);
             this.flowLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel2.Location = new System.Drawing.Point(3, 3);
             this.flowLayoutPanel2.Name = "flowLayoutPanel2";
@@ -739,6 +752,27 @@
             this.AutoRelaunchTimer.Interval = 9000;
             this.AutoRelaunchTimer.Tick += new System.EventHandler(this.AutoRelaunchTimer_Tick);
             // 
+            // MinimizeRoblox
+            // 
+            this.flowLayoutPanel2.SetFlowBreak(this.MinimizeRoblox, true);
+            this.MinimizeRoblox.Location = new System.Drawing.Point(15, 80);
+            this.MinimizeRoblox.Name = "MinimizeRoblox";
+            this.MinimizeRoblox.Size = new System.Drawing.Size(145, 23);
+            this.MinimizeRoblox.TabIndex = 12;
+            this.MinimizeRoblox.Text = "Minimize Roblox";
+            this.MinimizeRoblox.UseVisualStyleBackColor = true;
+            this.MinimizeRoblox.Click += new System.EventHandler(this.MinimizeRoblox_Click);
+            // 
+            // CloseRoblox
+            // 
+            this.CloseRoblox.Location = new System.Drawing.Point(15, 109);
+            this.CloseRoblox.Name = "CloseRoblox";
+            this.CloseRoblox.Size = new System.Drawing.Size(145, 23);
+            this.CloseRoblox.TabIndex = 13;
+            this.CloseRoblox.Text = "Close Roblox";
+            this.CloseRoblox.UseVisualStyleBackColor = true;
+            this.CloseRoblox.Click += new System.EventHandler(this.CloseRoblox_Click);
+            // 
             // AccountControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -830,5 +864,8 @@
         private System.Windows.Forms.Label PortLabel;
         private System.Windows.Forms.NumericUpDown PortNumber;
         private System.Windows.Forms.CheckBox AllowExternalConnectionsCB;
+        private System.Windows.Forms.ToolStripMenuItem copyJobIdToolStripMenuItem;
+        private System.Windows.Forms.Button MinimizeRoblox;
+        private System.Windows.Forms.Button CloseRoblox;
     }
 }

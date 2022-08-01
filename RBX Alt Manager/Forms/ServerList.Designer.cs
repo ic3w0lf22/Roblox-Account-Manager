@@ -41,6 +41,7 @@
             this.GamesStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.joinGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addToFavoritesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyPlaceIdToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.ID = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.FavoritesStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -56,6 +57,8 @@
             this.name = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.playerCount = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.likeRatio = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.placeIdCol = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.universeIdCol = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.FavoritesPage = new System.Windows.Forms.TabPage();
             this.Favorite = new System.Windows.Forms.Button();
             this.FavoritesListView = new BrightIdeasSoftware.ObjectListView();
@@ -119,21 +122,21 @@
             // joinServerToolStripMenuItem
             // 
             this.joinServerToolStripMenuItem.Name = "joinServerToolStripMenuItem";
-            this.joinServerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.joinServerToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.joinServerToolStripMenuItem.Text = "Join Server";
             this.joinServerToolStripMenuItem.Click += new System.EventHandler(this.joinServerToolStripMenuItem_Click);
             // 
             // copyJobIdToolStripMenuItem
             // 
             this.copyJobIdToolStripMenuItem.Name = "copyJobIdToolStripMenuItem";
-            this.copyJobIdToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.copyJobIdToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.copyJobIdToolStripMenuItem.Text = "Copy JobId";
             this.copyJobIdToolStripMenuItem.Click += new System.EventHandler(this.copyJobIdToolStripMenuItem_Click);
             // 
             // loadRegionToolStripMenuItem
             // 
             this.loadRegionToolStripMenuItem.Name = "loadRegionToolStripMenuItem";
-            this.loadRegionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.loadRegionToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.loadRegionToolStripMenuItem.Text = "Load Region";
             this.loadRegionToolStripMenuItem.Click += new System.EventHandler(this.loadRegionToolStripMenuItem_Click);
             // 
@@ -141,23 +144,31 @@
             // 
             this.GamesStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.joinGameToolStripMenuItem,
-            this.addToFavoritesToolStripMenuItem});
+            this.addToFavoritesToolStripMenuItem,
+            this.copyPlaceIdToolStripMenuItem1});
             this.GamesStrip.Name = "GamesStrip";
-            this.GamesStrip.Size = new System.Drawing.Size(130, 48);
+            this.GamesStrip.Size = new System.Drawing.Size(144, 70);
             // 
             // joinGameToolStripMenuItem
             // 
             this.joinGameToolStripMenuItem.Name = "joinGameToolStripMenuItem";
-            this.joinGameToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
+            this.joinGameToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.joinGameToolStripMenuItem.Text = "Join Game";
             this.joinGameToolStripMenuItem.Click += new System.EventHandler(this.joinGameToolStripMenuItem_Click);
             // 
             // addToFavoritesToolStripMenuItem
             // 
             this.addToFavoritesToolStripMenuItem.Name = "addToFavoritesToolStripMenuItem";
-            this.addToFavoritesToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
+            this.addToFavoritesToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.addToFavoritesToolStripMenuItem.Text = "Favorite";
             this.addToFavoritesToolStripMenuItem.Click += new System.EventHandler(this.addToFavoritesToolStripMenuItem_Click);
+            // 
+            // copyPlaceIdToolStripMenuItem1
+            // 
+            this.copyPlaceIdToolStripMenuItem1.Name = "copyPlaceIdToolStripMenuItem1";
+            this.copyPlaceIdToolStripMenuItem1.Size = new System.Drawing.Size(143, 22);
+            this.copyPlaceIdToolStripMenuItem1.Text = "Copy PlaceId";
+            this.copyPlaceIdToolStripMenuItem1.Click += new System.EventHandler(this.copyPlaceIdToolStripMenuItem1_Click);
             // 
             // ID
             // 
@@ -268,6 +279,8 @@
             this.GamesListView.AllColumns.Add(this.name);
             this.GamesListView.AllColumns.Add(this.playerCount);
             this.GamesListView.AllColumns.Add(this.likeRatio);
+            this.GamesListView.AllColumns.Add(this.placeIdCol);
+            this.GamesListView.AllColumns.Add(this.universeIdCol);
             this.GamesListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -282,9 +295,7 @@
             this.GamesListView.GridLines = true;
             this.GamesListView.HideSelection = false;
             this.GamesListView.Location = new System.Drawing.Point(3, 31);
-            this.GamesListView.MultiSelect = false;
             this.GamesListView.Name = "GamesListView";
-            this.GamesListView.SelectAllOnControlA = false;
             this.GamesListView.ShowGroups = false;
             this.GamesListView.Size = new System.Drawing.Size(470, 247);
             this.GamesListView.TabIndex = 6;
@@ -307,6 +318,21 @@
             // 
             this.likeRatio.AspectName = "likeRatio";
             this.likeRatio.Text = "Like %";
+            // 
+            // placeIdCol
+            // 
+            this.placeIdCol.AspectName = "placeId";
+            this.placeIdCol.DisplayIndex = 3;
+            this.placeIdCol.IsVisible = false;
+            this.placeIdCol.Text = "Place Id";
+            this.placeIdCol.Width = 78;
+            // 
+            // universeIdCol
+            // 
+            this.universeIdCol.AspectName = "universeId";
+            this.universeIdCol.IsVisible = false;
+            this.universeIdCol.Text = "Universe Id";
+            this.universeIdCol.Width = 90;
             // 
             // FavoritesPage
             // 
@@ -582,5 +608,8 @@
         private System.Windows.Forms.ToolStripMenuItem copyPlaceIDToolStripMenuItem;
         private BrightIdeasSoftware.OLVColumn RegionColumn;
         private System.Windows.Forms.ToolStripMenuItem loadRegionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem copyPlaceIdToolStripMenuItem1;
+        private BrightIdeasSoftware.OLVColumn placeIdCol;
+        private BrightIdeasSoftware.OLVColumn universeIdCol;
     }
 }

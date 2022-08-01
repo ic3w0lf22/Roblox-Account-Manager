@@ -295,6 +295,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Classes\Utilities.cs" />
+    <Compile Include="Classes\WM.cs" />
     <Compile Include="Forms\SettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
