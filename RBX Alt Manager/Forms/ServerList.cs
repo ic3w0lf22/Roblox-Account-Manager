@@ -1,16 +1,17 @@
-﻿using BrightIdeasSoftware;
+﻿#pragma warning disable CS4014
+
+using BrightIdeasSoftware;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using RBX_Alt_Manager.Forms;
 using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
-using System.Text;
+using System.Net.NetworkInformation;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -20,38 +21,107 @@ namespace RBX_Alt_Manager
     {
         public ServerList()
         {
+            AccountManager.SetDarkBar(Handle);
+
             InitializeComponent();
+
+            if (ThemeEditor.UseDarkTopBar) Icon = Properties.Resources.server_icon_white;
+        }
+
+        public void ApplyTheme()
+        {
+            BackColor = ThemeEditor.FormsBackground;
+            ForeColor = ThemeEditor.FormsForeground;
+
+            foreach (TabPage tab in Tabs.TabPages)
+            {
+                tab.BackColor = ThemeEditor.FormsBackground;
+                tab.ForeColor = ThemeEditor.FormsForeground;
+
+                foreach (Control control in tab.Controls)
+                {
+                    if (control is Button || control is CheckBox)
+                    {
+                        if (control is Button)
+                        {
+                            Button b = control as Button;
+                            b.FlatStyle = ThemeEditor.ButtonStyle;
+                            b.FlatAppearance.BorderColor = ThemeEditor.ButtonsBorder;
+                        }
+
+                        if (!(control is CheckBox)) control.BackColor = ThemeEditor.ButtonsBackground;
+                        control.ForeColor = ThemeEditor.ButtonsForeground;
+                    }
+                    else if (control is TextBox || control is RichTextBox || control is Label)
+                    {
+                        if (control is Classes.BorderedTextBox)
+                        {
+                            Classes.BorderedTextBox b = control as Classes.BorderedTextBox;
+                            b.BorderColor = ThemeEditor.TextBoxesBorder;
+                        }
+
+                        if (control is Classes.BorderedRichTextBox)
+                        {
+                            Classes.BorderedRichTextBox b = control as Classes.BorderedRichTextBox;
+                            b.BorderColor = ThemeEditor.TextBoxesBorder;
+                        }
+
+                        control.BackColor = ThemeEditor.TextBoxesBackground;
+                        control.ForeColor = ThemeEditor.TextBoxesForeground;
+                    }
+                    else if (control is ListBox || control is ObjectListView)
+                    {
+                        if (control is ObjectListView) ((ObjectListView)control).HeaderStyle = ThemeEditor.ShowHeaders ? ColumnHeaderStyle.Clickable : ColumnHeaderStyle.None;
+                        control.BackColor = ThemeEditor.ButtonsBackground;
+                        control.ForeColor = ThemeEditor.ButtonsForeground;
+                    }
+                }
+            }
         }
 
         public static RestClient rbxclient;
+        public static RestClient thumbclient;
         public static RestClient gamesclient;
-        private long PlaceId;
-        private bool Busy;
+        public static RestClient ipapiclient;
         private int Page = 0;
         private List<FavoriteGame> Favorites;
         private DateTime startTime;
         private string FavGamesFN = Path.Combine(Environment.CurrentDirectory, "FavoriteGames.json");
         private delegate void SafeCallDelegateFavorite(FavoriteGame game);
+        public static List<ServerData> servers = new List<ServerData>();
+        public static long CurrentPlaceID = 0;
 
-        [DllImport("user32.dll", SetLastError = true)]
-        static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-
-        [DllImport("user32.dll", EntryPoint = "FindWindow", SetLastError = true)]
-        static extern IntPtr FindWindowByCaption(IntPtr ZeroOnly, string lpWindowName);
-        public static IntPtr FindWindow(string windowName)
+        private bool IsBusy;
+        private Dictionary<int, string> Errors = new Dictionary<int, string>
         {
-            var hWnd = FindWindow(windowName, null);
-            return hWnd;
-        }
+            { 6, "Server Full" },
+            { 11, "Server no longer available" },
+            { 12, "No Access" }
+        };
 
+        public bool Busy
+        {
+            get => IsBusy;
+            set
+            {
+                IsBusy = value;
+                Utilities.InvokeIfRequired(RefreshServers, () => { RefreshServers.Text = value ? "Cancel" : "Refresh"; });
+            }
+        }
 
         private void ServerList_Load(object sender, EventArgs e)
         {
             rbxclient = new RestClient("https://roblox.com/");
             rbxclient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
+            thumbclient = new RestClient("https://thumbnails.roblox.com/");
+            rbxclient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
+
             gamesclient = new RestClient("https://games.roblox.com/");
             gamesclient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
+
+            ipapiclient = new RestClient("http://ip-api.com/json/");
+            ipapiclient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
             startTime = DateTime.Now;
 
@@ -80,43 +150,61 @@ namespace RBX_Alt_Manager
 
         private void RefreshServers_Click(object sender, EventArgs e)
         {
-            if (Busy || !Int64.TryParse(Program.MainForm.PlaceID.Text, out PlaceId)) return;
+            if (!Int64.TryParse(AccountManager.Instance.PlaceID.Text, out long PlaceId))
+                return;
 
+            if (Busy)
+            {
+                Busy = false;
+
+                return;
+            }
+
+            if (OtherPlaceId.Text.Length > 3 && Int64.TryParse(OtherPlaceId.Text, out long OPI))
+                PlaceId = OPI;
+
+            CurrentPlaceID = PlaceId;
+
+            servers.Clear();
             ServerListView.Items.Clear();
             IRestResponse response;
 
             ServersInfo publicInfo = new ServersInfo();
             ServersInfo vipInfo = new ServersInfo();
-            publicInfo.nextPageCursor = "";
-            vipInfo.nextPageCursor = "";
-            List<ServerData> servers = new List<ServerData>();
 
-            Task.Factory.StartNew(() =>
+            Task.Factory.StartNew(async () =>
             {
-                while (publicInfo.nextPageCursor != null)
-                {
-                    RestRequest request = new RestRequest("v1/games/" + Program.MainForm.PlaceID.Text + "/servers/public?sortOrder=Asc&limit=50." + (string.IsNullOrEmpty(publicInfo.nextPageCursor) ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
-                    response = gamesclient.Execute(request);
+                Busy = true;
 
-                    if (response.StatusCode == HttpStatusCode.OK)
+                while (publicInfo.nextPageCursor != null && Busy)
+                {
+                    RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?sortOrder=Asc&limit=100" + (publicInfo.nextPageCursor == "_" ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
+                    response = await gamesclient.ExecuteAsync(request);
+
+                    if (response.StatusCode == HttpStatusCode.OK && Busy)
                     {
                         publicInfo = JsonConvert.DeserializeObject<ServersInfo>(response.Content);
+
+                        List<ServerData> sservers = new List<ServerData>();
 
                         foreach (ServerData data in publicInfo.data)
                         {
                             data.type = "Public";
                             servers.Add(data);
-                            ServerListView.AddObject(data);
+                            sservers.Add(data);
                         }
-                        // ServerListView.SetObjects(servers);
+
+                        ServerListView.AddObjects(sservers);
                     }
                 }
+
+                Busy = false;
 
                 if (AccountManager.SelectedAccount != null)
                 {
                     while (vipInfo.nextPageCursor != null)
                     {
-                        RestRequest request = new RestRequest("v1/games/" + Program.MainForm.PlaceID.Text + " /servers/VIP?sortOrder=Asc&limit=25" + (string.IsNullOrEmpty(vipInfo.nextPageCursor) ? "" : "&cursor=" + vipInfo.nextPageCursor), Method.GET);
+                        RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/VIP?sortOrder=Asc&limit=25" + (vipInfo.nextPageCursor == "_" ? "" : "&cursor=" + vipInfo.nextPageCursor), Method.GET);
                         request.AddCookie(".ROBLOSECURITY", AccountManager.SelectedAccount.SecurityToken);
                         request.AddHeader("Accept", "application/json");
                         response = gamesclient.Execute(request);
@@ -134,10 +222,6 @@ namespace RBX_Alt_Manager
                         }
                     }
                 }
-
-                // ServerListView.SetObjects(servers);
-
-                Busy = false;
             });
         }
 
@@ -146,19 +230,29 @@ namespace RBX_Alt_Manager
             ServerData server = ServerListView.SelectedObject as ServerData;
 
             if (server != null)
-                Program.MainForm.JobID.Text = server.type == "VIP" ? "VIP:" + server.accessCode : server.id;
+                AccountManager.Instance.JobID.Text = server.type == "VIP" ? "VIP:" + server.accessCode : server.id;
         }
 
         private void joinServerToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ListView AccountsView = Program.MainForm.AccountsView;
+            if (AccountManager.SelectedAccount == null) return;
 
-            if (AccountsView.SelectedItems.Count != 1 || AccountManager.SelectedAccount == null) return;
+            if (OtherPlaceId.Text.Length > 3)
+            {
+                string res = AccountManager.SelectedAccount.SetServer(Convert.ToInt64(OtherPlaceId.Text), ServerListView.SelectedItem.Text, out bool Success);
 
-            string res = AccountManager.SelectedAccount.JoinServer(Convert.ToInt64(Program.MainForm.PlaceID.Text), ServerListView.SelectedItem.Text, false, false);
+                if (!Success)
+                    MessageBox.Show(res);
+                else
+                    Console.Beep();
+            }
+            else
+            {
+                string res = AccountManager.SelectedAccount.JoinServer(Convert.ToInt64(AccountManager.Instance.PlaceID.Text), ServerListView.SelectedItem.Text, false, false);
 
-            if (!res.Contains("Success"))
-                MessageBox.Show(res);
+                if (!res.Contains("Success"))
+                    MessageBox.Show(res);
+            }
         }
 
         private void SearchPlayer_Click(object sender, EventArgs e)
@@ -168,123 +262,77 @@ namespace RBX_Alt_Manager
                 MessageBox.Show("Server List is currently busy", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (AccountManager.SelectedAccount == null)
+
+            if (!AccountManager.GetUserID(Username.Text, out long UserID))
             {
-                MessageBox.Show("Select an account on the main form", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Failed to get UserID of {Username.Text}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            long UserID = AccountManager.GetUserID(Username.Text);
+            RestRequest avrequest = new RestRequest($"v1/users/avatar-headshot?size=48x48&format=png&userIds={UserID}", Method.GET);
 
-            if (UserID < 0)
+            IRestResponse avresponse = thumbclient.Execute(avrequest);
+
+            if (avresponse.StatusCode != HttpStatusCode.OK)
             {
-                MessageBox.Show("Failed to get UserID of " + Username.Text, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Failed to get AvatarUrl of {Username.Text}\n\n{avresponse.StatusCode}: {avresponse.Content}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            string token = AccountManager.SelectedAccount.SecurityToken;
-            RestRequest request = new RestRequest("headshot-thumbnail/json?userId=" + UserID.ToString() + "&width=48&height=48", Method.GET);
-            request.AddCookie(".ROBLOSECURITY", token);
-            request.AddHeader("Accept", "application/json");
-            request.AddHeader("Host", "www.roblox.com");
-            IRestResponse response = rbxclient.Execute(request);
+            if (Busy || !Int64.TryParse(AccountManager.Instance.PlaceID.Text, out long PlaceId)) return;
 
-            if (response.StatusCode != HttpStatusCode.OK)
+            if (OtherPlaceId.Text.Length > 3 && Int64.TryParse(OtherPlaceId.Text, out long OPI))
+                PlaceId = OPI;
+
+            AvatarRoot avatarData = JsonConvert.DeserializeObject<AvatarRoot>(avresponse.Content);
+
+            if (avatarData == null || avatarData.data.Count == 0) return;
+
+            Avatar avatar = avatarData.data[0];
+
+            ServersInfo publicInfo = new ServersInfo();
+            ServersInfo vipInfo = new ServersInfo();
+
+            Task.Factory.StartNew(async () =>
             {
-                MessageBox.Show("Failed to get AvatarUrl of " + Username.Text, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                Busy = true;
 
-            Avatar avatar = JsonConvert.DeserializeObject<Avatar>(response.Content);
-            int index = 0;
-
-            request = new RestRequest("games/getgameinstancesjson?placeId=" + Program.MainForm.PlaceID.Text + "&startIndex=" + index.ToString());
-            request.AddCookie(".ROBLOSECURITY", token);
-            request.AddHeader("Host", "www.roblox.com");
-            response = rbxclient.Execute(request);
-
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                MessageBox.Show("Failed to get game instances, try selecting a different account", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            GameInstancesCollection instances = JsonConvert.DeserializeObject<GameInstancesCollection>(response.Content);
-            string UserFound = "";
-            ServerData serverData = new ServerData();
-
-            foreach (GameInstance t in instances.Collection)
-            {
-                foreach (GamePlayer p in t.CurrentPlayers)
+                while (!string.IsNullOrEmpty(publicInfo.nextPageCursor) && Busy)
                 {
-                    if (p.Thumbnail.Url == avatar.Url)
-                        UserFound = t.Guid;
-                }
-            }
+                    RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?limit=100" + (publicInfo.nextPageCursor == "_" ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
 
-            request = new RestRequest("games/getgameinstancesjson?placeId=" + Program.MainForm.PlaceID.Text + "&startIndex=0");
-            request.AddCookie(".ROBLOSECURITY", token);
-            request.AddHeader("Host", "www.roblox.com");
-            response = rbxclient.Execute(request);
+                    IRestResponse response = await gamesclient.ExecuteAsync(request);
 
-            if (response.StatusCode != HttpStatusCode.OK) return;
-
-            instances = JsonConvert.DeserializeObject<GameInstancesCollection>(response.Content);
-
-            if (instances == null) return;
-
-            for (int i = 0; i < instances.TotalCollectionSize; i += 50)
-            {
-                // shitty coding here ignore this
-                int startIndex = i;
-                int tindex = startIndex;
-                bool FirstTime = true;
-                GameInstancesCollection tinstances = new GameInstancesCollection();
-
-                Task.Run(() =>
-                {
-                    while ((tinstances.Collection != null && tinstances.Collection.Count != 0) || FirstTime)
+                    if (response.StatusCode == HttpStatusCode.OK && Busy)
                     {
-                        if (!string.IsNullOrEmpty(UserFound) || tindex >= startIndex + 50) break;
+                        publicInfo = JsonConvert.DeserializeObject<ServersInfo>(response.Content);
 
-                        request = new RestRequest("games/getgameinstancesjson?placeId=" + Program.MainForm.PlaceID.Text + "&startIndex=" + tindex.ToString());
-                        request.AddCookie(".ROBLOSECURITY", token);
-                        request.AddHeader("Host", "www.roblox.com");
-                        response = rbxclient.Execute(request);
-                        tinstances = JsonConvert.DeserializeObject<GameInstancesCollection>(response.Content);
-
-                        FirstTime = false;
-
-                        tindex += 10;
-
-                        if (tinstances == null) break;
-
-                        foreach (GameInstance t in tinstances.Collection)
+                        foreach (ServerData server in publicInfo.data)
                         {
-                            foreach (GamePlayer p in t.CurrentPlayers)
+                            if (!Busy) break;
+
+                            RestRequest batchRequest = new RestRequest("v1/batch", Method.POST);
+
+                            batchRequest.AddJsonBody(server.playerTokens.ConvertAll(s => new TokenRequest(s)));
+
+                            IRestResponse batchResponse = await thumbclient.ExecuteAsync(batchRequest);
+
+                            TokenAvatarRoot avatars = JsonConvert.DeserializeObject<TokenAvatarRoot>(batchResponse.Content);
+
+                            if (avatars.data.Exists(x => x.imageUrl == avatar.imageUrl))
                             {
-                                if (p.Thumbnail.Url == avatar.Url)
-                                {
-                                    UserFound = t.Guid;
-                                    serverData.id = t.Guid;
-                                    serverData.playing = t.CurrentPlayers.Count;
-                                    serverData.ping = t.Ping;
-                                    serverData.fps = t.Fps;
-                                }
+                                Busy = false;
+                                ServerListView.ClearObjects();
+                                ServerListView.SetObjects(new List<ServerData> { server });
                             }
                         }
-                    }
 
-                    if (!string.IsNullOrEmpty(UserFound))
-                    {
-                        ServerListView.ClearObjects();
-                        ServerListView.SetObjects(new List<ServerData> { serverData });
+                        await Task.Delay(750);
                     }
-                    // else MessageBox.Show("User not found!", "Search", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                }
 
-                    Busy = false;
-                });
-            }
+                Busy = false;
+            });
         }
 
         private void copyJobIdToolStripMenuItem_Click(object sender, EventArgs e)
@@ -295,7 +343,6 @@ namespace RBX_Alt_Manager
 
         private void Search_Click(object sender, EventArgs e)
         {
-            // i forgot how to C# for a sec
             if (Busy || !Int32.TryParse(PageNum.Text, out Page)) return;
 
             IRestResponse response;
@@ -303,7 +350,7 @@ namespace RBX_Alt_Manager
 
             Task.Factory.StartNew(() =>
             {
-                RestRequest request = new RestRequest($"https://games.roblox.com/v1/games/list?model.keyword={Term.Text}&model.startRows={Page * 50}&model.maxRows=50", Method.GET);
+                RestRequest request = new RestRequest($"v1/games/list?model.keyword={Term.Text}&model.startRows={Page * 50}&model.maxRows=50", Method.GET);
 
                 response = gamesclient.Execute(request);
 
@@ -334,7 +381,7 @@ namespace RBX_Alt_Manager
             ListGame game = GamesListView.SelectedObject as ListGame;
 
             if (game != null)
-                Program.MainForm.PlaceID.Text = game.placeId.ToString();
+                AccountManager.Instance.PlaceID.Text = game.placeId.ToString();
         }
 
         private void FavoritesListView_MouseClick(object sender, MouseEventArgs e)
@@ -342,7 +389,10 @@ namespace RBX_Alt_Manager
             FavoriteGame game = FavoritesListView.SelectedObject as FavoriteGame;
 
             if (game != null)
-                Program.MainForm.PlaceID.Text = game.PlaceID.ToString();
+            {
+                AccountManager.Instance.PlaceID.Text = game.PlaceID.ToString();
+                AccountManager.Instance.JobID.Text = !string.IsNullOrEmpty(game.PrivateServer) ? game.PrivateServer.ToString() : "";
+            }
         }
 
         private void SaveFavorites()
@@ -363,11 +413,25 @@ namespace RBX_Alt_Manager
             }
             else
             {
-                if (Favorites.Find(x => x.PlaceID == game.PlaceID) != null)
-                    return;
+                if (string.IsNullOrEmpty(game.PrivateServer) && Favorites.Find(x => x.PlaceID == game.PlaceID) != null) return;
 
                 Favorites.Add(game);
                 FavoritesListView.AddObject(game);
+            }
+        }
+
+        private void joinGameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ListGame game = GamesListView.SelectedObject as ListGame;
+
+            if (game != null)
+            {
+                if (AccountManager.SelectedAccount == null) return;
+
+                string res = AccountManager.SelectedAccount.JoinServer(game.placeId);
+
+                if (!res.Contains("Success"))
+                    MessageBox.Show(res);
             }
         }
 
@@ -382,36 +446,22 @@ namespace RBX_Alt_Manager
             }
         }
 
-        private void joinGameToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ListGame game = GamesListView.SelectedObject as ListGame;
-
-            if (game != null)
-            {
-                ListView AccountsView = Program.MainForm.AccountsView;
-
-                if (AccountsView.SelectedItems.Count != 1 || AccountManager.SelectedAccount == null) return;
-
-                string res = AccountManager.SelectedAccount.JoinServer(game.placeId);
-
-                if (!res.Contains("Success"))
-                    MessageBox.Show(res);
-            }
-        }
-
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
             FavoriteGame game = FavoritesListView.SelectedObject as FavoriteGame;
 
             if (game != null)
             {
-                ListView AccountsView = Program.MainForm.AccountsView;
+                if (AccountManager.SelectedAccount == null) return;
 
-                if (AccountsView.SelectedItems.Count != 1 || AccountManager.SelectedAccount == null) return;
+                string res;
 
-                string res = AccountManager.SelectedAccount.JoinServer(game.PlaceID);
+                if (string.IsNullOrEmpty(game.PrivateServer))
+                    res = AccountManager.SelectedAccount.JoinServer(game.PlaceID);
+                else
+                    res = AccountManager.SelectedAccount.JoinServer(game.PlaceID, game.PrivateServer);
 
-                if (!res.Contains("Success"))
+                if (res != "Success")
                     MessageBox.Show(res);
             }
         }
@@ -452,17 +502,164 @@ namespace RBX_Alt_Manager
 
         private void Favorite_Click(object sender, EventArgs e)
         {
-            RestRequest request = new RestRequest("Marketplace/ProductInfo?assetId=" + AccountManager.CurrentPlaceId, Method.GET);
+            string PlaceId = AccountManager.CurrentPlaceId;
+
+            if (!string.IsNullOrEmpty(AccountManager.CurrentJobId) && AccountManager.CurrentJobId.Contains("privateServerLinkCode") && Regex.IsMatch(AccountManager.CurrentJobId, @"\/games\/(\d+)\/"))
+                PlaceId = Regex.Match(AccountManager.CurrentJobId, @"\/games\/(\d+)\/").Groups[1].Value;
+
+            RestRequest request = new RestRequest("Marketplace/ProductInfo?assetId=" + PlaceId, Method.GET);
             request.AddHeader("Accept", "application/json");
-            IRestResponse response = response = AccountManager.apiclient.Execute(request);
+            IRestResponse response = AccountManager.APIClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
                 ProductInfo placeInfo = JsonConvert.DeserializeObject<ProductInfo>(response.Content);
 
-                AddFavoriteToList(new FavoriteGame(placeInfo.Name, Convert.ToInt64(AccountManager.CurrentPlaceId)));
+                if (!string.IsNullOrEmpty(AccountManager.CurrentJobId) && AccountManager.CurrentJobId.Contains("privateServerLinkCode"))
+                    AddFavoriteToList(new FavoriteGame(placeInfo.Name + " (VIP)", Convert.ToInt64(AccountManager.CurrentPlaceId), AccountManager.CurrentJobId));
+                else
+                    AddFavoriteToList(new FavoriteGame(placeInfo.Name, Convert.ToInt64(AccountManager.CurrentPlaceId)));
+
                 SaveFavorites();
             }
+        }
+
+        private void ServerList_HelpButtonClicked(object sender, CancelEventArgs e) =>
+            MessageBox.Show("Some elements may have tooltips, hover over them for about 2 seconds to see instructions.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+        private void copyPlaceIDToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FavoriteGame game = FavoritesListView.SelectedObject as FavoriteGame;
+
+            if (game != null)
+                Clipboard.SetText(game.PlaceID.ToString());
+        }
+
+        private void loadRegionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Account acc = AccountManager.SelectedAccount;
+
+            if (acc == null) return;
+
+            string Token = acc.GetCSRFToken();
+
+            if (string.IsNullOrEmpty(Token))
+                return;
+
+            int Index = ServerListView.SelectedIndex;
+            List<ServerData> Servers = new List<ServerData>();
+
+            for (int i = Index; i < Index + 16; i++) // only attempt to load 16. during testing, i was being ratelimited (?)
+            {
+                ServerData server = (ServerData)ServerListView.GetItem(i)?.RowObject;
+
+                if (server == null) break;
+
+                Servers.Add(server);
+
+                if (server.regionLoaded) continue;
+
+                server.region = "Loading";
+            }
+
+            ServerListView.RefreshObjects(Servers);
+
+            Task.Run(async () =>
+            {
+                var pinger = new Ping();
+                int t = 0;
+
+                foreach (ServerData server in Servers)
+                {
+                pingServer:
+                    if (t > 4)
+                    {
+                        if (!server.regionLoaded)
+                        {
+                            server.region = "Failed";
+                            ServerListView.InvokeIfRequired(() => ServerListView.RefreshObject(server));
+                        }
+
+                        continue;
+                    }
+
+                    t++;
+
+                    if (server.regionLoaded && !string.IsNullOrEmpty(server.ip))
+                    {
+                        PingReply reply = await pinger.SendPingAsync(server.ip, 400);
+
+                        if (reply.Status == IPStatus.Success)
+                        {
+                            t = 0;
+
+                            server.ping = Convert.ToInt32(reply.RoundtripTime);
+                            ServerListView.InvokeIfRequired(() => ServerListView.RefreshObject(server));
+                        }
+                        else
+                            goto pingServer;
+
+                        continue;
+                    }
+
+                    RestRequest request = new RestRequest("v1/join-game-instance", Method.POST);
+                    request.AddCookie(".ROBLOSECURITY", acc.SecurityToken);
+                    request.AddHeader("Content-Type", "application/json");
+                    request.AddJsonBody(new { gameId = server.id, placeId = CurrentPlaceID });
+
+                    AccountManager.GameJoinClient.UserAgent = "Roblox/WinInet";
+
+                    IRestResponse response = await AccountManager.GameJoinClient.ExecuteAsync(request);
+
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        JObject JS = JObject.Parse(response.Content);
+                        string IP = JS?["joinScript"]?.Value<JObject>()?["MachineAddress"]?.Value<string>() ?? string.Empty;
+
+                        if (string.IsNullOrEmpty(IP))
+                        {
+                            if (!Errors.TryGetValue(JS?["status"]?.Value<int>() ?? 0, out string ErrorMessage))
+                                ErrorMessage = JS?["status"]?.Value<string>() ?? "?";
+
+                            server.region = $"{JS?["message"]?.Value<string>() ?? "Error:"} {ErrorMessage}";
+                            ServerListView.InvokeIfRequired(() => ServerListView.RefreshObject(server));
+
+                            continue;
+                        }
+
+                        request = new RestRequest(IP);
+                        response = await ipapiclient.ExecuteAsync(request);
+
+                        JObject IPJS = JObject.Parse(response.Content);
+                        string Format = AccountManager.General.Get<string>("ServerRegionFormat");
+
+                        IPJS.Add("address", IP);
+                        IPJS.Add("port", JS?["joinScript"]?.Value<JObject>()?["ServerPort"]?.Value<string>() ?? string.Empty);
+
+                        if (string.IsNullOrEmpty(Format)) Format = "<city>, <countryCode>";
+
+                        string Region = Format;
+
+                        foreach (Match m in Regex.Matches(Format, @"<(\w+)>"))
+                            Region = Region.Replace(m.Value, IPJS?[m.Groups[1].Value]?.Value<string>() ?? "?");
+
+                        server.ip = IP;
+                        server.region = Region;
+                        server.regionLoaded = true;
+
+                        goto pingServer;
+                    }
+                    else
+                    {
+                        server.region = $"{response.StatusCode}";
+                        ServerListView.InvokeIfRequired(() => ServerListView.RefreshObject(server));
+                    }
+
+                    t = 0;
+                }
+
+                pinger.Dispose();
+            });
         }
     }
 }

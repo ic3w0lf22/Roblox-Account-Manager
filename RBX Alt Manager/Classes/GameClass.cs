@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace RBX_Alt_Manager
 {
@@ -46,11 +42,27 @@ namespace RBX_Alt_Manager
     {
         public string Name;
         public long PlaceID;
+        public string PrivateServer;
+
+        public FavoriteGame()
+        {
+            Name = "???";
+            PlaceID = 1818;
+            PrivateServer = "";
+        }
 
         public FavoriteGame(string Name, long PlaceID)
         {
             this.Name = Name;
             this.PlaceID = PlaceID;
+            PrivateServer = "";
+        }
+
+        public FavoriteGame(string Name, long PlaceID, string PrivateServer)
+        {
+            this.Name = Name;
+            this.PlaceID = PlaceID;
+            this.PrivateServer = PrivateServer;
         }
     }
 

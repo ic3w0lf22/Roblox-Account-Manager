@@ -30,7 +30,7 @@ namespace RBX_Alt_Manager.Classes
 
         private void Delete_Click(object sender, EventArgs e)
         {
-            int idx = Parent.Controls.GetChildIndex(this); Console.WriteLine(idx);
+            int idx = Parent.Controls.GetChildIndex(this);
 
             for (int i = idx; i < Parent.Controls.Count; i++)
             {

@@ -1,13 +1,10 @@
-﻿using System;
+﻿using RBX_Alt_Manager.Classes;
+using RBX_Alt_Manager.Forms;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using RBX_Alt_Manager.Classes;
 
 namespace RBX_Alt_Manager
 {
@@ -19,9 +16,55 @@ namespace RBX_Alt_Manager
 
         public AccountFields()
         {
+            AccountManager.SetDarkBar(Handle);
+
             InitializeComponent();
 
             StartingControlCount = Controls.Count - 1;
+        }
+
+        public void ApplyTheme()
+        {
+            BackColor = ThemeEditor.FormsBackground;
+            ForeColor = ThemeEditor.FormsForeground;
+
+            foreach (Control control in this.Controls)
+            {
+                if (control is Button || control is CheckBox)
+                {
+                    if (control is Button)
+                    {
+                        Button b = control as Button;
+                        b.FlatStyle = ThemeEditor.ButtonStyle;
+                        b.FlatAppearance.BorderColor = ThemeEditor.ButtonsBorder;
+                    }
+
+                    if (!(control is CheckBox)) control.BackColor = ThemeEditor.ButtonsBackground;
+                    control.ForeColor = ThemeEditor.ButtonsForeground;
+                }
+                else if (control is TextBox || control is RichTextBox || control is Label)
+                {
+                    if (control is Classes.BorderedTextBox)
+                    {
+                        Classes.BorderedTextBox b = control as Classes.BorderedTextBox;
+                        b.BorderColor = ThemeEditor.TextBoxesBorder;
+                    }
+
+                    if (control is Classes.BorderedRichTextBox)
+                    {
+                        Classes.BorderedRichTextBox b = control as Classes.BorderedRichTextBox;
+                        b.BorderColor = ThemeEditor.TextBoxesBorder;
+                    }
+
+                    control.BackColor = ThemeEditor.TextBoxesBackground;
+                    control.ForeColor = ThemeEditor.TextBoxesForeground;
+                }
+                else if (control is ListBox)
+                {
+                    control.BackColor = ThemeEditor.ButtonsBackground;
+                    control.ForeColor = ThemeEditor.ButtonsForeground;
+                }
+            }
         }
 
         private void AccountFields_FormClosing(object sender, FormClosingEventArgs e)
@@ -39,35 +82,6 @@ namespace RBX_Alt_Manager
 
         private void AddField(string Field, string Value)
         {
-            /*TextBox FieldBox = new TextBox
-            {
-                Text = Field,
-                Location = new Point(20, 45 + (25 * FieldCount)),
-                Size = new Size(125, 25),
-                Parent = this
-            };
-
-            TextBox ValueBox = new TextBox
-            {
-                Text = Value,
-                Location = new Point(20 + 125 + 5, 45 + (25 * FieldCount)),
-                Size = new Size(125, 25),
-                Parent = this
-            };
-
-            Button XButton = new Button
-            {
-                Text = "X",
-                Location = new Point(20 + 125 + 10 + 125, 45 + (25 * FieldCount) - 1),
-                Size = new Size(22, 22),
-                Font = new Font("Verdana", 9, FontStyle.Bold),
-                ForeColor = Color.Red,
-                Parent = this
-            };
-
-            ValueBox.KeyPress += Value_KeyPress;
-            XButton.MouseClick += XButton_MouseClick;*/
-
             Field f = new Field(Viewing, Field, Value);
             f.Parent = this;
             f.Location = new Point(10, 45 + (25 * FieldCount));
