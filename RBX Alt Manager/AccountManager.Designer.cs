@@ -43,6 +43,7 @@
             this.addAccountsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeAccountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyUsernameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyPasswordToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyProfileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sortAlphabeticallyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveGroupUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -68,18 +69,20 @@
             this.SaveToAccount = new System.Windows.Forms.Button();
             this.SaveTooltip = new System.Windows.Forms.ToolTip(this.components);
             this.JobID = new RBX_Alt_Manager.Classes.BorderedTextBox();
+            this.DonateButton = new System.Windows.Forms.Button();
             this.SaveTimer = new System.Windows.Forms.Timer(this.components);
             this.AccountsView = new BrightIdeasSoftware.ObjectListView();
             this.Username = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.AccountAlias = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.Description = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.Group = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
-            this.activityRenderer = new BrightIdeasSoftware.MultiImageRenderer();
             this.EditTheme = new System.Windows.Forms.Button();
             this.UserID = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.Alias = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.DescriptionBox = new RBX_Alt_Manager.Classes.BorderedRichTextBox();
             this.PlaceID = new RBX_Alt_Manager.Classes.BorderedTextBox();
+            this.LaunchNexus = new System.Windows.Forms.Button();
+            this.ConfigButton = new System.Windows.Forms.Button();
             this.AccountsStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).BeginInit();
             this.SuspendLayout();
@@ -131,7 +134,7 @@
             // SetDescription
             // 
             this.SetDescription.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.SetDescription.Location = new System.Drawing.Point(504, 266);
+            this.SetDescription.Location = new System.Drawing.Point(503, 236);
             this.SetDescription.Name = "SetDescription";
             this.SetDescription.Size = new System.Drawing.Size(133, 23);
             this.SetDescription.TabIndex = 12;
@@ -190,6 +193,7 @@
             this.addAccountsToolStripMenuItem,
             this.removeAccountToolStripMenuItem,
             this.copyUsernameToolStripMenuItem,
+            this.copyPasswordToolStripMenuItem,
             this.copyProfileToolStripMenuItem,
             this.sortAlphabeticallyToolStripMenuItem,
             this.moveGroupUpToolStripMenuItem,
@@ -200,7 +204,7 @@
             this.copyRbxplayerLinkToolStripMenuItem,
             this.copyAppLinkToolStripMenuItem});
             this.AccountsStrip.Name = "contextMenuStrip1";
-            this.AccountsStrip.Size = new System.Drawing.Size(209, 268);
+            this.AccountsStrip.Size = new System.Drawing.Size(209, 290);
             // 
             // addAccountsToolStripMenuItem
             // 
@@ -222,6 +226,13 @@
             this.copyUsernameToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.copyUsernameToolStripMenuItem.Text = "Copy Username";
             this.copyUsernameToolStripMenuItem.Click += new System.EventHandler(this.copyUsernameToolStripMenuItem_Click);
+            // 
+            // copyPasswordToolStripMenuItem
+            // 
+            this.copyPasswordToolStripMenuItem.Name = "copyPasswordToolStripMenuItem";
+            this.copyPasswordToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.copyPasswordToolStripMenuItem.Text = "Copy Password";
+            this.copyPasswordToolStripMenuItem.Click += new System.EventHandler(this.copyPasswordToolStripMenuItem_Click);
             // 
             // copyProfileToolStripMenuItem
             // 
@@ -333,7 +344,7 @@
             // BrowserButton
             // 
             this.BrowserButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BrowserButton.Location = new System.Drawing.Point(639, 266);
+            this.BrowserButton.Location = new System.Drawing.Point(639, 236);
             this.BrowserButton.Name = "BrowserButton";
             this.BrowserButton.Size = new System.Drawing.Size(133, 23);
             this.BrowserButton.TabIndex = 13;
@@ -443,6 +454,19 @@
         "e Server link in this box to join it.");
             this.JobID.TextChanged += new System.EventHandler(this.JobID_TextChanged);
             // 
+            // DonateButton
+            // 
+            this.DonateButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.DonateButton.FlatAppearance.BorderSize = 0;
+            this.DonateButton.Image = global::RBX_Alt_Manager.Properties.Resources.donation;
+            this.DonateButton.ImageAlign = System.Drawing.ContentAlignment.BottomRight;
+            this.DonateButton.Location = new System.Drawing.Point(750, 6);
+            this.DonateButton.Name = "DonateButton";
+            this.DonateButton.Size = new System.Drawing.Size(24, 24);
+            this.DonateButton.TabIndex = 1001;
+            this.DonateButton.UseVisualStyleBackColor = true;
+            this.DonateButton.Click += new System.EventHandler(this.DonateButton_Click);
+            // 
             // SaveTimer
             // 
             this.SaveTimer.Interval = 2500;
@@ -454,6 +478,7 @@
             this.AccountsView.AllColumns.Add(this.AccountAlias);
             this.AccountsView.AllColumns.Add(this.Description);
             this.AccountsView.AllColumns.Add(this.Group);
+            this.AccountsView.AllowDrop = true;
             this.AccountsView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -510,18 +535,13 @@
             this.Group.Text = "";
             this.Group.Width = 0;
             // 
-            // activityRenderer
-            // 
-            this.activityRenderer.ImageName = "activity";
-            this.activityRenderer.MaxNumberImages = 5;
-            // 
             // EditTheme
             // 
             this.EditTheme.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.EditTheme.Location = new System.Drawing.Point(504, 236);
+            this.EditTheme.Location = new System.Drawing.Point(503, 266);
             this.EditTheme.Name = "EditTheme";
-            this.EditTheme.Size = new System.Drawing.Size(268, 23);
-            this.EditTheme.TabIndex = 12;
+            this.EditTheme.Size = new System.Drawing.Size(133, 23);
+            this.EditTheme.TabIndex = 13;
             this.EditTheme.Text = "Edit Theme";
             this.EditTheme.UseVisualStyleBackColor = true;
             this.EditTheme.Click += new System.EventHandler(this.EditTheme_Click);
@@ -549,7 +569,7 @@
             // DescriptionBox
             // 
             this.DescriptionBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.DescriptionBox.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(255)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
+            this.DescriptionBox.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
             this.DescriptionBox.Location = new System.Drawing.Point(504, 150);
             this.DescriptionBox.Name = "DescriptionBox";
             this.DescriptionBox.Size = new System.Drawing.Size(268, 80);
@@ -567,11 +587,39 @@
             this.PlaceID.Text = "5315046213";
             this.PlaceID.TextChanged += new System.EventHandler(this.PlaceID_TextChanged);
             // 
+            // LaunchNexus
+            // 
+            this.LaunchNexus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.LaunchNexus.Location = new System.Drawing.Point(639, 266);
+            this.LaunchNexus.Name = "LaunchNexus";
+            this.LaunchNexus.Size = new System.Drawing.Size(133, 23);
+            this.LaunchNexus.TabIndex = 14;
+            this.LaunchNexus.Text = "Account Control";
+            this.LaunchNexus.UseVisualStyleBackColor = true;
+            this.LaunchNexus.Click += new System.EventHandler(this.LaunchNexus_Click);
+            // 
+            // ConfigButton
+            // 
+            this.ConfigButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ConfigButton.FlatAppearance.BorderSize = 0;
+            this.ConfigButton.Image = global::RBX_Alt_Manager.Properties.Resources.configIcon;
+            this.ConfigButton.ImageAlign = System.Drawing.ContentAlignment.BottomRight;
+            this.ConfigButton.Location = new System.Drawing.Point(720, 6);
+            this.ConfigButton.Name = "ConfigButton";
+            this.ConfigButton.Size = new System.Drawing.Size(24, 24);
+            this.ConfigButton.TabIndex = 1002;
+            this.ConfigButton.UseVisualStyleBackColor = true;
+            this.ConfigButton.Click += new System.EventHandler(this.ConfigButton_Click);
+            // 
             // AccountManager
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 301);
+            this.Controls.Add(this.ConfigButton);
+            this.Controls.Add(this.LaunchNexus);
+            this.Controls.Add(this.DonateButton);
             this.Controls.Add(this.EditTheme);
             this.Controls.Add(this.SaveToAccount);
             this.Controls.Add(this.ImportByCookie);
@@ -654,7 +702,7 @@
         private System.Windows.Forms.Button SaveToAccount;
         private System.Windows.Forms.ToolTip SaveTooltip;
         private System.Windows.Forms.Timer SaveTimer;
-        private BrightIdeasSoftware.ObjectListView AccountsView;
+        public BrightIdeasSoftware.ObjectListView AccountsView;
         private BrightIdeasSoftware.OLVColumn Group;
         private BrightIdeasSoftware.OLVColumn Username;
         private BrightIdeasSoftware.OLVColumn AccountAlias;
@@ -664,6 +712,9 @@
         private System.Windows.Forms.Button EditTheme;
         private System.Windows.Forms.ToolStripMenuItem groupsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem infoToolStripMenuItem1;
-        private BrightIdeasSoftware.MultiImageRenderer activityRenderer;
+        private System.Windows.Forms.Button DonateButton;
+        private System.Windows.Forms.Button LaunchNexus;
+        private System.Windows.Forms.ToolStripMenuItem copyPasswordToolStripMenuItem;
+        private System.Windows.Forms.Button ConfigButton;
     }
 }

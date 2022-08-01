@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using CefSharp;
+﻿using CefSharp;
 using CefSharp.WinForms;
 using RBX_Alt_Manager.Forms;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using Cookie = CefSharp.Cookie;
 
 namespace RBX_Alt_Manager
@@ -17,6 +13,7 @@ namespace RBX_Alt_Manager
     {
         private delegate void SafeCallDelegate();
         private string SecurityToken;
+        private string Password;
         public bool BrowserMode = false;
         public string SetUsername = "";
 
@@ -26,46 +23,11 @@ namespace RBX_Alt_Manager
 
             InitializeComponent();
 
-            try
-            {
-                CefSettings settings = new CefSettings();
+            chromeBrowser = new ChromiumWebBrowser("https://roblox.com/login");
+            chromeBrowser.AddressChanged += OnNavigated;
+            chromeBrowser.FrameLoadEnd += OnPageLoaded;
 
-                settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36"; // just your normal browser visiting your website @ roblox! dont hurt alt manager pls : )
-                                                                                                                                                           // Initialize cef with the provided settings
-                Cef.EnableHighDPISupport();
-                Cef.Initialize(settings);
-                // Create a browser component
-                chromeBrowser = new ChromiumWebBrowser("https://roblox.com/login");
-                chromeBrowser.AddressChanged += OnNavigated;
-                chromeBrowser.FrameLoadEnd += OnPageLoaded;
-                // Add it to the form and fill it to the form window.
-                Controls.Add(chromeBrowser);
-            }
-            catch
-            {
-                if (Directory.Exists(Path.Combine(Environment.CurrentDirectory, "x86")))
-                {
-                    string TempPath = Path.GetTempFileName();
-                    WebClient VCDL = new WebClient();
-
-                    VCDL.DownloadFile("https://aka.ms/vs/17/release/vc_redist.x86.exe", TempPath);
-
-                    ProcessStartInfo VC = new ProcessStartInfo(TempPath);
-                    VC.UseShellExecute = false;
-
-                    Process.Start(VC).WaitForExit();
-                }
-                else
-                {
-                    string AFN = Path.Combine(Directory.GetCurrentDirectory(), "Auto Update.exe");
-
-                    if (File.Exists(AFN))
-                    {
-                        Process.Start(AFN, "skip");
-                        Environment.Exit(1);
-                    }
-                }
-            }
+            Controls.Add(chromeBrowser);
         }
 
         public void ApplyTheme()
@@ -112,10 +74,7 @@ namespace RBX_Alt_Manager
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            chromeBrowser.Dock = DockStyle.Fill;
-        }
+        private void Form1_Load(object sender, EventArgs e) => chromeBrowser.Dock = DockStyle.Fill;
 
         private void CloseForm()
         {
@@ -143,28 +102,36 @@ namespace RBX_Alt_Manager
             }
         }
 
-        public void ShowForm() =>
-            Show();
+        public void ShowForm() => Show();
 
-        public void ClearData() =>
-            Cef.GetGlobalCookieManager().DeleteCookies();
+        public void ClearData() => Cef.GetGlobalCookieManager().DeleteCookies();
 
-        private async void OnPageLoaded(object sender, FrameLoadEndEventArgs args)
+        private void OnPageLoaded(object sender, FrameLoadEndEventArgs args)
         {
+            Task.Factory.StartNew(async () =>
+            {
+                await Task.Delay(200);
+
+                while (Visible && args.Url == chromeBrowser.Address)
+                {
+                    JavascriptResponse response = await chromeBrowser.EvaluateScriptAsync("document.getElementById('login-password').value");
+
+                    if (!response.Success)
+                        response = await chromeBrowser.EvaluateScriptAsync("document.getElementById('signup-password').value");
+
+                    if (response.Success)
+                        Password = (string)response.Result;
+
+                    await Task.Delay(50);
+                }
+            });
+
             chromeBrowser.ExecuteScriptAsyncWhenPageLoaded(@"document.body.classList.remove(""light-theme"");document.body.classList.add(""dark-theme"");");
 
             if (!string.IsNullOrEmpty(SetUsername))
             {
                 chromeBrowser.ExecuteScriptAsyncWhenPageLoaded($"document.getElementById('login-username').value='{SetUsername}'");
                 SetUsername = "";
-            }
-
-            if (!string.IsNullOrEmpty(args.Url) && args.Url.Contains("my/account/json"))
-            {
-                string src = await args.Frame.GetSourceAsync();
-                Program.MainForm.GetType().GetMethod("AddAccount", BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static).Invoke(null, new object[] { SecurityToken, src });
-                HideForm();
-                chromeBrowser.Load("https://roblox.com/login");
             }
         }
 
@@ -187,8 +154,12 @@ namespace RBX_Alt_Manager
                         if (RSec != null)
                         {
                             SecurityToken = RSec.Value;
-                            chromeBrowser.Load("https://www.roblox.com/my/account/json");
+                            AccountManager.AddAccount(SecurityToken, Password);
+                            HideForm();
+                            chromeBrowser.Load("https://roblox.com/login");
                         }
+
+                        Password = string.Empty;
                     }
                 });
             }

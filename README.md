@@ -30,6 +30,10 @@ Change the webserver port if you are planning on using any dangerous functions!
 Be careful executing random scripts when having dangerous settings enabled.
 
 # Frequently Asked Questions
+**Q: Why is this program detected as a virus?**
+
+**A:** Open source programs such as this program are commonly detected as viruses because actual malware may be using the same libaries as this one. For example, account manager may be detected as a RAT because of the Account Control feature, this feature uses [websockets](https://github.com/ic3w0lf22/Roblox-Account-Manager/blob/master/RBX%20Alt%20Manager/Nexus/WebsocketServer.cs) to connect to clients which is the same way actual malware may use to connect maliciously to someone elses computer. If you'd like, you can download [visual studio](https://visualstudio.microsoft.com/downloads/) yourself (it's free) and compile this program on your own, you may even get the same virus detections as the public release.
+
 **Q: Why am I getting CefSharp.Core.Runtime.dll error, how do I fix it?**
 
 **A:** Download the x86 version from https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0
@@ -85,6 +89,9 @@ Make sure you click "Open Details" before screenshotting. Please make sure your 
 **Q: Can you get banned for using this?**
 
 **A:** No, you cannot get banned for using this as this does not break Roblox T.O.S although some games may disallow you from having alt accounts so please do your research if you are unsure.
+
+# Preview (Version 3.1)
+![github-large](Images/Image3.png)
 
 # Preview (Version 2.6)
 ![github-large](Images/image2.png)

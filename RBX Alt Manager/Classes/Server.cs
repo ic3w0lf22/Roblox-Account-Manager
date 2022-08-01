@@ -4,15 +4,20 @@ namespace RBX_Alt_Manager
 {
     public class ServerData
     {
-        public string id;
+        public string id { get; set; }
+        public int maxPlayers { get; set; }
+        public int playing { get; set; }
+        public List<string> playerTokens { get; set; }
+        public List<object> players { get; set; }
+        public string fps { get; set; }
+        public int ping { get; set; }
         public string name;
-        public int maxPlayers;
-        public int playing;
-        public string fps;
-        public int ping;
         public long vipServerId;
         public string accessCode;
         public string type;
+        public string region;
+        public string ip;
+        public bool regionLoaded;
 
         public ServerData()
         {
@@ -32,5 +37,12 @@ namespace RBX_Alt_Manager
         public string previousPageCursor;
         public string nextPageCursor;
         public List<ServerData> data;
+
+        public ServersInfo()
+        {
+            previousPageCursor = "_";
+            nextPageCursor = "_";
+            data = new List<ServerData>();
+        }
     }
 }

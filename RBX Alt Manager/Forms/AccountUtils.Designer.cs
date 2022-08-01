@@ -31,21 +31,22 @@
             this.components = new System.ComponentModel.Container();
             this.WhoFollow = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.textBox1 = new Classes.BorderedTextBox();
+            this.textBox1 = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.textBox2 = new Classes.BorderedTextBox();
+            this.textBox2 = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
-            this.textBox3 = new Classes.BorderedTextBox();
-            this.textBox5 = new Classes.BorderedTextBox();
+            this.textBox3 = new RBX_Alt_Manager.Classes.BorderedTextBox();
+            this.textBox5 = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.button7 = new System.Windows.Forms.Button();
             this.EmailTip = new System.Windows.Forms.ToolTip(this.components);
             this.label3 = new System.Windows.Forms.Label();
-            this.Username = new Classes.BorderedTextBox();
+            this.Username = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.Block = new System.Windows.Forms.Button();
             this.SetDisplayName = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
+            this.AddFriend = new System.Windows.Forms.Button();
+            this.DisplayName = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.SuspendLayout();
             // 
             // WhoFollow
@@ -77,6 +78,7 @@
             // 
             // textBox1
             // 
+            this.textBox1.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
             this.textBox1.Location = new System.Drawing.Point(12, 24);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(205, 20);
@@ -97,6 +99,7 @@
             // 
             this.textBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox2.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
             this.textBox2.Location = new System.Drawing.Point(224, 24);
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(167, 20);
@@ -138,6 +141,7 @@
             // 
             this.textBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox3.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
             this.textBox3.Location = new System.Drawing.Point(224, 53);
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(167, 20);
@@ -148,6 +152,7 @@
             // textBox5
             // 
             this.textBox5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox5.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
             this.textBox5.Location = new System.Drawing.Point(283, 109);
             this.textBox5.MaxLength = 4;
             this.textBox5.Name = "textBox5";
@@ -190,6 +195,7 @@
             // 
             // Username
             // 
+            this.Username.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
             this.Username.Location = new System.Drawing.Point(12, 80);
             this.Username.Name = "Username";
             this.Username.Size = new System.Drawing.Size(72, 20);
@@ -216,22 +222,31 @@
             this.SetDisplayName.UseVisualStyleBackColor = true;
             this.SetDisplayName.Click += new System.EventHandler(this.SetDisplayName_Click);
             // 
-            // button4
+            // AddFriend
             // 
-            this.button4.Location = new System.Drawing.Point(146, 79);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(72, 22);
-            this.button4.TabIndex = 1004;
-            this.button4.Text = "Add Friend";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.button4_Click);
+            this.AddFriend.Location = new System.Drawing.Point(146, 79);
+            this.AddFriend.Name = "AddFriend";
+            this.AddFriend.Size = new System.Drawing.Size(72, 22);
+            this.AddFriend.TabIndex = 1004;
+            this.AddFriend.Text = "Add Friend";
+            this.AddFriend.UseVisualStyleBackColor = true;
+            this.AddFriend.Click += new System.EventHandler(this.AddFriend_Click);
+            // 
+            // DisplayName
+            // 
+            this.DisplayName.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
+            this.DisplayName.Location = new System.Drawing.Point(224, 79);
+            this.DisplayName.Name = "DisplayName";
+            this.DisplayName.Size = new System.Drawing.Size(168, 20);
+            this.DisplayName.TabIndex = 1005;
             // 
             // AccountUtils
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(518, 142);
-            this.Controls.Add(this.button4);
+            this.Controls.Add(this.DisplayName);
+            this.Controls.Add(this.AddFriend);
             this.Controls.Add(this.SetDisplayName);
             this.Controls.Add(this.Block);
             this.Controls.Add(this.Username);
@@ -275,6 +290,7 @@
         private Classes.BorderedTextBox Username;
         private System.Windows.Forms.Button Block;
         private System.Windows.Forms.Button SetDisplayName;
-        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button AddFriend;
+        private Classes.BorderedTextBox DisplayName;
     }
 }
