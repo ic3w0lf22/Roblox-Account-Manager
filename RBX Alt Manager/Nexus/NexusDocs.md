@@ -97,6 +97,15 @@ print(Nexus:GetText('Test'))
 Nexus:SetRelaunch(60 * 30) -- Account will relaunch in 30 minutes
 ```
 
+## \<void\> Nexus:SetAutoRelaunch(\<boolean\> Enabled)
+### Sets Auto Relaunch for the executing account
+
+## \<void\> Nexus:SetPlaceId(\<number\> PlaceId)
+### Sets Auto Relaunch Target PlaceId for the executing account
+
+## \<void\> Nexus:SetJobId(\<string\> JobId)
+### Sets Auto Relaunch Target JobId for the executing account
+
 ## \<void\> Nexus:AddCommand(\<string\> CommandName, \<function\> Function)
 ### Adds a command, Function is called with the remaining message after CommandName
 
@@ -143,5 +152,5 @@ Nexus.Commands.performance()
 ## Unmute
 ### Unmute the client's game
 
-## Performance
-### Enables performance mode for the client reducing CPU usage by 70-95%. Sets the FPS cap to 6 if FPS unlocker is enabled, the graphics level to 1 and disables rendering when the roblox window is not in focus.
+## Performance \<Target FPS\>
+### Enables performance mode for the client reducing CPU usage by 70-95%. Sets the FPS cap to 6 (or Target FPS) if FPS unlocker is enabled, the graphics level to 1 and disables rendering when the roblox window is not in focus.

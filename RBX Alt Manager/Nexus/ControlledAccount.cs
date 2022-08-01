@@ -18,11 +18,11 @@ namespace RBX_Alt_Manager.Nexus
         [JsonIgnore] public DateTime LastPing;
 
         public string Username;
-        public string JobId;
-        [JsonIgnore] public string InGameJobId;
         public string AutoExecute = "";
 
         public long PlaceId;
+        public string JobId;
+        [JsonIgnore] public string InGameJobId;
         public double RelaunchDelay = 30;
 
         public bool AutoRelaunch;
@@ -41,6 +41,9 @@ namespace RBX_Alt_Manager.Nexus
 
         public void Connect(WebSocketContext Context)
         {
+            if (Status == AccountStatus.Online)
+                Disconnect();
+
             Status = AccountStatus.Online;
 
             this.Context = Context;
@@ -65,7 +68,7 @@ namespace RBX_Alt_Manager.Nexus
             Status = AccountStatus.Offline;
             ClientCanReceive = false;
 
-            AccountControl.Instance.ContextList.Remove(Context);
+            if (Context != null) AccountControl.Instance.ContextList.Remove(Context);
             AccountControl.Instance.AccountsView.RefreshObject(this);
         }
 
@@ -75,8 +78,10 @@ namespace RBX_Alt_Manager.Nexus
 
             if (Message.TryParseJson(out Command command))
             {
-                /*if (command.Name != "ping")
-                    Console.WriteLine($"{command.Name}: {Message}");*/
+#if DEBUG
+                if (command.Name != "ping")
+                    Console.WriteLine($"{command.Name}: {Message}");
+#endif
 
                 if (command.Name == "ping")
                 {
@@ -89,6 +94,12 @@ namespace RBX_Alt_Manager.Nexus
                     SendMessage($"ElementText:{AccountControl.Instance.GetTextFromElement(command.Payload["Name"])}");
                 else if (command.Name == "SetRelaunch" && double.TryParse(command.Payload["Seconds"], out double Delay))
                     RelaunchDelay = Delay;
+                else if (command.Name == "SetAutoRelaunch" && !string.IsNullOrEmpty(command.Payload["Content"]) && bool.TryParse(command.Payload["Content"], out bool bRelaunch))
+                    AutoRelaunch = bRelaunch;
+                else if (command.Name == "SetPlaceId" && !string.IsNullOrEmpty(command.Payload["Content"]) && long.TryParse(command.Payload["Content"], out long lPlaceId))
+                    PlaceId = lPlaceId;
+                else if (command.Name == "SetJobId" && !string.IsNullOrEmpty(command.Payload["Content"]))
+                    JobId = command.Payload["Content"];
                 else if (command.Name == "Echo" && !string.IsNullOrEmpty(command.Payload["Content"]))
                     AccountControl.Instance.EmitMessage(command.Payload["Content"], true);
                 else if (Enum.TryParse(command.Name, out CommandCreateElement elementType))

@@ -33,40 +33,53 @@ namespace RBX_Alt_Manager.Classes
         public static uint SPIF_SENDCHANGE = 0x02;
         public static uint SPI_SETANIMATION = 0x0049;
 
+        private Pen opaquePen;
+        private Pen borderPen;
+
         public Color BorderColor
         {
             get { return borderColor; }
             set
             {
                 borderColor = value;
+                opaquePen = new Pen(new SolidBrush(Color.FromArgb(255, value.R, value.G, value.B)));
+                borderPen = new Pen(BorderColor, 1f);
+
                 RedrawWindow(Handle, IntPtr.Zero, IntPtr.Zero, RDW_FRAME | RDW_IUPDATENOW | RDW_INVALIDATE);
             }
         }
 
         protected override void WndProc(ref Message m)
         {
+            WM msg = (WM)m.Msg;
+
+            if (msg == WM.MOUSELEAVE || msg == WM.MOUSEHOVER)
+                return;
+
             base.WndProc(ref m);
-            if (m.Msg == WM_NCPAINT && BorderColor != Color.Transparent && BorderStyle == BorderStyle.Fixed3D)
+
+            if ((m.Msg == WM_NCPAINT || msg == WM.PAINT) && BorderColor != Color.Transparent && BorderStyle == BorderStyle.Fixed3D)
             {
                 var hdc = GetWindowDC(this.Handle);
 
                 using (var g = Graphics.FromHdcInternal(hdc))
-                using (var p = new Pen(BorderColor, 1f))
                 {
-                    SolidBrush opaqueBrush = new SolidBrush(Color.FromArgb(255, BorderColor.R, BorderColor.G, BorderColor.B));
+                    if (opaquePen == null || borderPen == null)
+                        BorderColor = borderColor;
 
-                    g.DrawRectangle(new Pen(opaqueBrush), new Rectangle(0, 0, Width - 1, Height - 1));
-                    g.DrawRectangle(p, new Rectangle(1, 1, Width - 3, Height - 3));
+                    g.DrawRectangle(opaquePen, new Rectangle(0, 0, Width - 1, Height - 1));
+                    g.DrawRectangle(borderPen, new Rectangle(1, 1, Width - 3, Height - 3));
                 }
+
                 ReleaseDC(this.Handle, hdc);
             }
         }
+
         protected override void OnSizeChanged(EventArgs e)
         {
             base.OnSizeChanged(e);
 
-            RedrawWindow(Handle, IntPtr.Zero, IntPtr.Zero,
-                   RDW_FRAME | RDW_IUPDATENOW | RDW_INVALIDATE);
+            RedrawWindow(Handle, IntPtr.Zero, IntPtr.Zero, RDW_FRAME | RDW_IUPDATENOW | RDW_INVALIDATE);
         }
     }
 }

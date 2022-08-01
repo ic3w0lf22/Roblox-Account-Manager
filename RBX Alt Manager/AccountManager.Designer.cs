@@ -348,7 +348,7 @@
             this.BrowserButton.Name = "BrowserButton";
             this.BrowserButton.Size = new System.Drawing.Size(133, 23);
             this.BrowserButton.TabIndex = 13;
-            this.BrowserButton.Text = "Open Account Utilities";
+            this.BrowserButton.Text = "Account Utilities";
             this.BrowserButton.UseVisualStyleBackColor = true;
             this.BrowserButton.Click += new System.EventHandler(this.BrowserButton_Click);
             // 

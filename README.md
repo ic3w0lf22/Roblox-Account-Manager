@@ -34,10 +34,20 @@ Be careful executing random scripts when having dangerous settings enabled.
 
 **A:** Open source programs such as this program are commonly detected as viruses because actual malware may be using the same libaries as this one. For example, account manager may be detected as a RAT because of the Account Control feature, this feature uses [websockets](https://github.com/ic3w0lf22/Roblox-Account-Manager/blob/master/RBX%20Alt%20Manager/Nexus/WebsocketServer.cs) to connect to clients which is the same way actual malware may use to connect maliciously to someone elses computer. If you'd like, you can download [visual studio](https://visualstudio.microsoft.com/downloads/) yourself (it's free) and compile this program on your own, you may even get the same virus detections as the public release.
 
-**Q: Why am I getting CefSharp.Core.Runtime.dll error, how do I fix it?**
 
-**A:** Download the x86 version from https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0
-If that doesn't work download the x64 version and the latest .NET Framework from https://dotnet.microsoft.com/download/dotnet-framework
+**Q: Why am I getting CefSharp.Core.Runtime.dll/Object reference not set errors, how do I fix it?**
+
+**A:** Download the x86 version from https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist | On an older OS? Try downloading [older versions of vcredist](https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2013-vc-120) by scrolling down on or clicking the link | If that doesn't work, download the latest .NET Framework from https://dotnet.microsoft.com/download/dotnet-framework
+
+
+**Q: Why do my accounts have yellow/red dots on them?**
+
+**A:** The yellow-red dots that appear on an account means that account hasn't been used in over 20 days, as that day counter goes up, the dot appears more red. You can get rid of this dot by joining a game or enabling developer mode and clicking "Get Authentication Ticket" when you right click an account (works with multiple).
+
+
+**Q: How do I backup my accounts file?**
+
+**A:** Download [RAMDecrypt](https://github.com/ic3w0lf22/RAMDecrypt) and follow the instructions provided, then you can save the fully decrypted file in google drive, on a flash drive, or where ever you'd like. This does **NOT** work on files that didn't originate from your PC.
 
 
 **Q: How do I prevent Windows Defender from deleting alt manager files?**

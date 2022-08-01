@@ -30,6 +30,7 @@ namespace RBX_Alt_Manager
         public static AccountManager Instance;
         public static List<Account> AccountsList;
         public static List<Account> SelectedAccounts;
+        public static List<RecentGame> RecentGames;
         public static Account SelectedAccount;
         public static RestClient MainClient;
         public static RestClient FriendsClient;
@@ -69,11 +70,12 @@ namespace RBX_Alt_Manager
 
         private static Mutex rbxMultiMutex;
         private readonly static object saveLock = new object();
+        private readonly static object rgSaveLock = new object();
 
         private bool LaunchNext;
         private CancellationTokenSource LauncherToken;
 
-        private delegate void SafeCallDelegateRefresh();
+        private delegate void SafeCallDelegateRefresh(object obj);
         private delegate void SafeCallDelegateGroup(string Group, OLVListItem Item = null);
         private delegate void SafeCallDelegateRemoveAt(int Index);
         private delegate void SafeCallDelegateUpdateAccountView(Account account);
@@ -147,8 +149,7 @@ namespace RBX_Alt_Manager
             if (e.Effect == DragDropEffects.Copy)
             {
                 string Text = (string)e.DragEventArgs.Data.GetData(DataFormats.Text);
-
-                var RSecRegex = new Regex(@"(_\|WARNING:-DO-NOT-SHARE-THIS\.--Sharing-this-will-allow-someone-to-log-in-as-you-and-to-steal-your-ROBUX-and-items\.\|\w+)");
+                Regex RSecRegex = new Regex(@"(_\|WARNING:-DO-NOT-SHARE-THIS\.--Sharing-this-will-allow-someone-to-log-in-as-you-and-to-steal-your-ROBUX-and-items\.\|\w+)");
                 MatchCollection RSecMatches = RSecRegex.Matches(Text);
 
                 foreach (Match match in RSecMatches)
@@ -157,8 +158,9 @@ namespace RBX_Alt_Manager
         }
 
         private readonly static string SaveFilePath = Path.Combine(Environment.CurrentDirectory, "AccountData.json");
+        private readonly static string RecentGamesFilePath = Path.Combine(Environment.CurrentDirectory, "RecentGames.json"); // i shouldve combined everything that isnt accountdata into one file but oh well im too lazy : |
 
-        private void RefreshView()
+        private void RefreshView(object obj = null)
         {
             if (AccountsView.InvokeRequired)
             {
@@ -169,6 +171,9 @@ namespace RBX_Alt_Manager
             {
                 AccountsView.BuildList(true);
                 AccountsView.BuildGroups();
+
+                if (obj != null)
+                    AccountsView.EnsureModelVisible(obj);
             }
         }
 
@@ -305,17 +310,20 @@ namespace RBX_Alt_Manager
 
                 if (exists != null)
                 {
-                    exists.SecurityToken = account.SecurityToken;
+                    exists.SecurityToken = SecurityToken;
                     exists.Password = Password;
                     exists.LastUse = DateTime.Now;
 
-                    Instance.RefreshView();
+                    Utilities.InvokeIfRequired(Instance.AccountsView, () =>
+                    {
+                        Instance.AccountsView.UpdateObject(exists);
+                    });
                 }
                 else
                 {
                     AccountsList.Add(account);
 
-                    Instance.RefreshView();
+                    Instance.RefreshView(account);
                 }
 
                 SaveAccounts();
@@ -372,13 +380,16 @@ namespace RBX_Alt_Manager
             }
             catch { }
 
-            if (File.Exists("AU.exe"))
-            {
-                if (File.Exists("Auto Update.exe"))
-                    File.Delete("Auto Update.exe");
+            string AFN = Path.Combine(Directory.GetCurrentDirectory(), "Auto Update.exe");
+            string AU2FN = Path.Combine(Directory.GetCurrentDirectory(), "AU.exe");
 
-                File.Copy("AU.exe", "Auto Update.exe");
-                File.Delete("AU.exe");
+            if (File.Exists(AU2FN))
+            {
+                if (File.Exists(AFN))
+                    File.Delete(AFN);
+
+                File.Copy(AU2FN, AFN);
+                File.Delete(AU2FN);
             }
 
             if (Directory.Exists(Path.Combine(Environment.CurrentDirectory, "Update")))
@@ -426,7 +437,7 @@ namespace RBX_Alt_Manager
 
             PlaceID_TextChanged(PlaceID, new EventArgs());
 
-            IniSettings = File.Exists("RAMSettings.ini") ? new IniFile("RAMSettings.ini") : new IniFile();
+            IniSettings = File.Exists(Path.Combine(Environment.CurrentDirectory, "RAMSettings.ini")) ? new IniFile("RAMSettings.ini") : new IniFile();
 
             General = IniSettings.Section("General");
             Developer = IniSettings.Section("Developer");
@@ -439,6 +450,7 @@ namespace RBX_Alt_Manager
             if (!General.Exists("DisableAgingAlert")) General.Set("DisableAgingAlert", "false");
             if (!General.Exists("SavePasswords")) General.Set("SavePasswords", "true");
             if (!General.Exists("ServerRegionFormat")) General.Set("ServerRegionFormat", "<city>, <countryCode>", "Visit http://ip-api.com/json/1.1.1.1 to see available format options");
+            if (!General.Exists("MaxRecentGames")) General.Set("MaxRecentGames", "8");
 
             if (!Developer.Exists("DevMode")) Developer.Set("DevMode", "false");
             if (!Developer.Exists("EnableWebServer")) Developer.Set("EnableWebServer", "false");
@@ -499,8 +511,6 @@ namespace RBX_Alt_Manager
 
                                 if (result == DialogResult.Yes)
                                 {
-                                    string AFN = Path.Combine(Directory.GetCurrentDirectory(), "Auto Update.exe");
-
                                     if (File.Exists(AFN))
                                     {
                                         Process.Start(AFN);
@@ -546,12 +556,18 @@ namespace RBX_Alt_Manager
             catch { }
 
             IniSettings.Save("RAMSettings.ini");
+
+            PlaceID.AutoCompleteCustomSource = new AutoCompleteStringCollection();
+            PlaceID.AutoCompleteMode = AutoCompleteMode.Suggest;
+            PlaceID.AutoCompleteSource = AutoCompleteSource.CustomSource;
+
+            LoadRecentGames();
         }
 
         public void ApplyTheme()
         {
-            this.BackColor = ThemeEditor.FormsBackground;
-            this.ForeColor = ThemeEditor.FormsForeground;
+            BackColor = ThemeEditor.FormsBackground;
+            ForeColor = ThemeEditor.FormsForeground;
 
             if (AccountsView.BackColor != ThemeEditor.AccountBackground || AccountsView.ForeColor != ThemeEditor.AccountForeground)
             {
@@ -606,6 +622,33 @@ namespace RBX_Alt_Manager
 
             if (ControlForm != null) ControlForm.ApplyTheme();
             if (SettingsForm != null) SettingsForm.ApplyTheme();
+        }
+
+        private void LoadRecentGames()
+        {
+            RecentGames = new List<RecentGame>();
+
+            if (File.Exists(RecentGamesFilePath))
+            {
+                foreach (RecentGame RG in JsonConvert.DeserializeObject<List<RecentGame>>(File.ReadAllText(RecentGamesFilePath)))
+                    AddRecentGame(RG);
+            }
+        }
+
+        private void AddRecentGame(RecentGame RG)
+        {
+            RecentGames.Add(RG);
+
+            while (RecentGames.Count > General.Get<int>("MaxRecentGames"))
+            {
+                PlaceID.AutoCompleteCustomSource.Remove(RecentGames[0].Name);
+                RecentGames.RemoveAt(0);
+            }
+
+            PlaceID.AutoCompleteCustomSource.Add(RG.Name);
+
+            lock (rgSaveLock)
+                File.WriteAllText(RecentGamesFilePath, JsonConvert.SerializeObject(RecentGames));
         }
 
         private List<ServerData> AttemptedJoins = new List<ServerData>();
@@ -875,7 +918,7 @@ namespace RBX_Alt_Manager
                     if (!rbxMultiMutex.WaitOne(TimeSpan.Zero, true) && !General.Get<bool>("HideRbxAlert"))
                         MessageBox.Show("WARNING: Roblox is currently running, multi roblox will not work until you restart the account manager with roblox closed.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
-                finally { }
+                catch { }
             }
         }
 
@@ -969,11 +1012,19 @@ namespace RBX_Alt_Manager
             if (PlaceID.Text.Contains("privateServerLinkCode") && IDMatch.Success)
                 JobID.Text = PlaceID.Text;
 
+            RecentGame G = RecentGames.FirstOrDefault(RG => RG.Name == PlaceID.Text);
+
+            if (G != null)
+                PlaceID.Text = G.PlaceId.ToString();
+
             PlaceID.Text = IDMatch.Success ? IDMatch.Groups[1].Value : Regex.Replace(PlaceID.Text, "[^0-9]", "");
 
             bool VIPServer = JobID.TextLength > 4 ? JobID.Text.Substring(0, 4) == "VIP:" : false;
 
             if (!long.TryParse(PlaceID.Text, out long PlaceId)) return;
+
+            if (!RecentGames.Exists(RG => RG.PlaceId == PlaceId) && !PlaceTimer.Enabled)
+                AddRecentGame(new RecentGame { PlaceId = PlaceId, Name = CurrentPlace.Text });
 
             CancelLaunching();
 
@@ -1121,10 +1172,26 @@ namespace RBX_Alt_Manager
 
         private void getAuthenticationTicketToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedAccount == null) return;
+            if (SelectedAccount != null)
+            {
+                if (SelectedAccount.GetAuthTicket(out string STicket))
+                    Clipboard.SetText(STicket);
 
-            if (SelectedAccount.GetAuthTicket(out string Ticket))
-                Clipboard.SetText(Ticket);
+                return;
+            }
+
+            if (SelectedAccounts.Count < 1) return;
+
+            List<string> Tickets = new List<string>();
+
+            foreach (Account acc in SelectedAccounts)
+            {
+                if (acc.GetAuthTicket(out string Ticket))
+                    Tickets.Add($"{acc.Username}:{Ticket}");
+            }
+
+            if (Tickets.Count > 0)
+                Clipboard.SetText(string.Join("\n", Tickets));
         }
 
         private void copyRbxplayerLinkToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1235,10 +1302,7 @@ namespace RBX_Alt_Manager
             }
         }
 
-        private void JoinDiscord_Click(object sender, EventArgs e)
-        {
-            Process.Start("https://discord.gg/MsEH7smXY8");
-        }
+        private void JoinDiscord_Click(object sender, EventArgs e) => Process.Start("https://discord.gg/MsEH7smXY8");
 
         private void OpenApp_Click(object sender, EventArgs e)
         {

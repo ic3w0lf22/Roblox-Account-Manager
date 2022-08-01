@@ -109,8 +109,8 @@ namespace RBX_Alt_Manager
 
             RestRequest request = new RestRequest("/v1/authentication-ticket/", Method.POST);
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
-            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
+            request.AddHeader("X-CSRF-TOKEN", GetCSRFToken(true));
+            request.AddHeader("Referer", "https://www.roblox.com/games/185655149/Welcome-to-Bloxburg");
 
             IRestResponse response = AccountManager.AuthClient.Execute(request);
 
@@ -128,12 +128,12 @@ namespace RBX_Alt_Manager
 
         public string GetCSRFToken(bool ForceRequest = false)
         {
-            if (!ForceRequest && (DateTime.Now - TokenSet).TotalMinutes < 3) return CSRFToken;
+            if (!ForceRequest && (DateTime.Now - TokenSet).TotalMinutes < 2) return CSRFToken;
 
             RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
 
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
+            request.AddHeader("Referer", "https://www.roblox.com/games/185655149/Welcome-to-Bloxburg");
 
             IRestResponse response = AccountManager.AuthClient.Execute(request);
             Parameter result = response.Headers.FirstOrDefault(x => x.Name == "x-csrf-token");
@@ -334,7 +334,7 @@ namespace RBX_Alt_Manager
 
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
             request.AddHeader("Referer", "https://www.roblox.com/");
-            request.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
+            request.AddHeader("X-CSRF-TOKEN", GetCSRFToken(true));
             request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
 
             IRestResponse response = AccountManager.MainClient.Execute(request);
@@ -547,7 +547,7 @@ namespace RBX_Alt_Manager
             string Token = GetCSRFToken();
 
             if (string.IsNullOrEmpty(Token))
-                return "ERROR: Account Session Expired, re-add the account or try again. (1)";
+                return "ERROR: Account Session Expired, re-add the account or try again. (Invalid X-CSRF-Token)";
 
             if (GetAuthTicket(out string Ticket))
             {
@@ -559,7 +559,7 @@ namespace RBX_Alt_Manager
                     RestRequest request = new RestRequest(string.Format("/games/{0}?privateServerLinkCode={1}", PlaceID, LinkCode), Method.GET);
                     request.AddCookie(".ROBLOSECURITY", SecurityToken);
                     request.AddHeader("X-CSRF-TOKEN", Token);
-                    request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
+                    request.AddHeader("Referer", "https://www.roblox.com/games/185655149/Welcome-to-Bloxburg");
 
                     IRestResponse response = AccountManager.MainClient.Execute(request);
 
@@ -579,7 +579,7 @@ namespace RBX_Alt_Manager
 
                         request.AddCookie(".ROBLOSECURITY", SecurityToken);
                         request.AddHeader("X-CSRF-TOKEN", Token);
-                        request.AddHeader("Referer", "https://www.roblox.com/games/606849621/Jailbreak");
+                        request.AddHeader("Referer", "https://www.roblox.com/games/185655149/Welcome-to-Bloxburg");
 
                         IRestResponse result = AccountManager.Web13Client.Execute(request);
 
@@ -665,7 +665,7 @@ namespace RBX_Alt_Manager
             string Token = GetCSRFToken();
 
             if (string.IsNullOrEmpty(Token))
-                return "ERROR: Account Session Expired, re-add the account or try again. (1)";
+                return "ERROR: Account Session Expired, re-add the account or try again. (Invalid X-CSRF-Token)";
 
             RestRequest request = new RestRequest("v1/join-game-instance", Method.POST);
             request.AddCookie(".ROBLOSECURITY", SecurityToken);

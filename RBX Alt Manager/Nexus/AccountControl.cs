@@ -40,6 +40,9 @@ namespace RBX_Alt_Manager.Forms
         [DllImport("user32", EntryPoint = "SendMessageA", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
         private static extern int SendMessage(int hwnd, int wMsg, int wParam, int lParam);
 
+        [DllImport("user32.dll")]
+        static extern bool PostMessage(IntPtr hWnd, UInt32 Msg, int wParam, int lParam);
+
         public AccountControl()
         {
             Instance = this;
@@ -435,7 +438,7 @@ namespace RBX_Alt_Manager.Forms
                 e.Handled = true;
         }
 
-        private void NexusDL_Click(object sender, EventArgs e)
+        private void NexusDL_Click(object sender, EventArgs e)  
         {
             string path = Path.Combine(Environment.CurrentDirectory, "Nexus.lua");
 
@@ -484,6 +487,12 @@ namespace RBX_Alt_Manager.Forms
             }
         }
 
+        private void copyJobIdToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (AccountsView.SelectedObject != null)
+                Clipboard.SetText(((ControlledAccount)AccountsView.SelectedObject).InGameJobId);
+        }
+
         private void AllowExternalConnectionsCB_CheckedChanged(object sender, EventArgs e)
         {
             if (!SettingsLoaded) return;
@@ -506,6 +515,18 @@ namespace RBX_Alt_Manager.Forms
 
             AccountManager.AccountControl.Set("NexusPort", PortNumber.Value.ToString());
             AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void MinimizeRoblox_Click(object sender, EventArgs e)
+        {
+            foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
+                PostMessage(p.MainWindowHandle, 0x0112, 0xF020, 0);
+        }
+
+        private void CloseRoblox_Click(object sender, EventArgs e)
+        {
+            foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
+                p.Kill();
         }
 
         #endregion

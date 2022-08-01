@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -140,6 +141,17 @@ namespace RBX_Alt_Manager
             }
             else
                 Favorites = new List<FavoriteGame>();
+
+            foreach (PropertyInfo prop in typeof(Game).GetProperties()) // was 2lazy to add em all manually : |
+            {
+                if (GamesListView.AllColumns.Find(x => x.AspectName == prop.Name) == null)
+                    GamesListView.AllColumns.Add(new OLVColumn
+                    {
+                        Text = prop.Name,
+                        AspectName = prop.Name,
+                        IsVisible = false
+                    });
+            }
         }
 
         private void ServerList_FormClosing(object sender, FormClosingEventArgs e)
@@ -368,7 +380,9 @@ namespace RBX_Alt_Manager
                             LikeRatio = (int)((decimal)(game.totalUpVotes / totalVotes) * 100);
                         }
 
-                        GamesListView.AddObject(new ListGame(game.name, game.playerCount, LikeRatio, game.placeId));
+                        game.likeRatio = LikeRatio;
+
+                        GamesListView.AddObject(game);
                     }
                 }
 
@@ -378,7 +392,7 @@ namespace RBX_Alt_Manager
 
         private void GamesListView_MouseClick(object sender, MouseEventArgs e)
         {
-            ListGame game = GamesListView.SelectedObject as ListGame;
+            Game game = GamesListView.SelectedObject as Game;
 
             if (game != null)
                 AccountManager.Instance.PlaceID.Text = game.placeId.ToString();
@@ -422,7 +436,7 @@ namespace RBX_Alt_Manager
 
         private void joinGameToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ListGame game = GamesListView.SelectedObject as ListGame;
+            Game game = GamesListView.SelectedObject as Game;
 
             if (game != null)
             {
@@ -437,7 +451,7 @@ namespace RBX_Alt_Manager
 
         private void addToFavoritesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ListGame game = GamesListView.SelectedObject as ListGame;
+            Game game = GamesListView.SelectedObject as Game;
 
             if (game != null)
             {
@@ -660,6 +674,17 @@ namespace RBX_Alt_Manager
 
                 pinger.Dispose();
             });
+        }
+
+        private void copyPlaceIdToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            List<long> Ids = new List<long>();
+
+            foreach (Game game in GamesListView.SelectedObjects)
+                Ids.Add(game.placeId);
+
+            if (Ids.Count > 0)
+                Clipboard.SetText(string.Join("\n", Ids));
         }
     }
 }
