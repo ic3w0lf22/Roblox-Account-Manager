@@ -42,6 +42,7 @@ namespace RBX_Alt_Manager
         public static RestClient Web13Client;
         public static string CurrentPlaceId;
         public static string CurrentJobId;
+        public static string Token;
         private AccountAdder aaform;
         private ArgumentsForm afform;
         private ServerList ServerListForm;
@@ -610,6 +611,7 @@ namespace RBX_Alt_Manager
 
         private List<ServerData> AttemptedJoins = new List<ServerData>();
 
+
         private string SendResponse(HttpListenerContext Context)
         {
             HttpListenerRequest request = Context.Request;
@@ -627,8 +629,6 @@ namespace RBX_Alt_Manager
             if (WebServer.Get<bool>("EveryRequestRequiresPassword") && (WSPassword.Length < 6 || Password != WSPassword)) return "Invalid Password";
 
             if ((Method == "GetCookie" || Method == "GetAccounts" || Method == "LaunchAccount") && (WSPassword.Length < 6 || Password != WSPassword)) return "Invalid Password";
-
-            Context.Response.StatusCode = 200;
 
             if (Method == "GetAccounts")
             {
