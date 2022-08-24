@@ -1041,6 +1041,15 @@ namespace RBX_Alt_Manager
                 if (!res.Contains("Success"))
                     MessageBox.Show(res);
             }
+            
+            Thread.Sleep(15000);
+            foreach (Process process in Process.GetProcesses())
+            {
+                if (process.ProcessName == "RobloxPlayerBeta" & process.PagedMemorySize64 < 50000000)
+                {
+                    process.Kill();
+                }
+            }
         }
 
         private void Follow_Click(object sender, EventArgs e)
