@@ -75,7 +75,6 @@ namespace RBX_Alt_Manager
         private bool LaunchNext;
         private CancellationTokenSource LauncherToken;
 
-        private delegate void SafeCallDelegateRefresh(object obj);
         private delegate void SafeCallDelegateGroup(string Group, OLVListItem Item = null);
         private delegate void SafeCallDelegateRemoveAt(int Index);
         private delegate void SafeCallDelegateUpdateAccountView(Account account);
@@ -162,19 +161,14 @@ namespace RBX_Alt_Manager
 
         private void RefreshView(object obj = null)
         {
-            if (AccountsView.InvokeRequired)
-            {
-                var refreshView = new SafeCallDelegateRefresh(RefreshView);
-                AccountsView.Invoke(refreshView);
-            }
-            else
+            AccountsView.InvokeIfRequired(() =>
             {
                 AccountsView.BuildList(true);
                 AccountsView.BuildGroups();
 
                 if (obj != null)
                     AccountsView.EnsureModelVisible(obj);
-            }
+            });
         }
 
         private void LoadAccounts()

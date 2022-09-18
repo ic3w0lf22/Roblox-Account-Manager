@@ -42,7 +42,10 @@ namespace RBX_Alt_Manager.Nexus
         public void Connect(WebSocketContext Context)
         {
             if (Status == AccountStatus.Online)
+            {
+                Program.Logger.Warn($"{Username} was already connected, disconnecting...");
                 Disconnect();
+            }
 
             Status = AccountStatus.Online;
 
@@ -50,6 +53,8 @@ namespace RBX_Alt_Manager.Nexus
 
             AccountControl.Instance.ContextList.Add(Context, this);
             AccountControl.Instance.AccountsView.RefreshObject(this);
+
+            Program.Logger.Info($"{Username} has connected");
 
             new Task(() =>
             {
@@ -65,10 +70,13 @@ namespace RBX_Alt_Manager.Nexus
 
         public void Disconnect()
         {
+            Program.Logger.Info($"{Username} has disconnected");
+
             Status = AccountStatus.Offline;
             ClientCanReceive = false;
 
             if (Context != null) AccountControl.Instance.ContextList.Remove(Context);
+
             AccountControl.Instance.AccountsView.RefreshObject(this);
         }
 
@@ -93,7 +101,10 @@ namespace RBX_Alt_Manager.Nexus
                 else if (command.Name == "GetText")
                     SendMessage($"ElementText:{AccountControl.Instance.GetTextFromElement(command.Payload["Name"])}");
                 else if (command.Name == "SetRelaunch" && double.TryParse(command.Payload["Seconds"], out double Delay))
+                {
+                    Program.Logger.Info($"Relaunch Delay for {Username} has been set to {Delay} through Nexus");
                     RelaunchDelay = Delay;
+                }
                 else if (command.Name == "SetAutoRelaunch" && !string.IsNullOrEmpty(command.Payload["Content"]) && bool.TryParse(command.Payload["Content"], out bool bRelaunch))
                     AutoRelaunch = bRelaunch;
                 else if (command.Name == "SetPlaceId" && !string.IsNullOrEmpty(command.Payload["Content"]) && long.TryParse(command.Payload["Content"], out long lPlaceId))

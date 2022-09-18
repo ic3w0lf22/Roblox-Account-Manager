@@ -376,34 +376,30 @@ namespace RBX_Alt_Manager
             {
                 if (!Regex.IsMatch(response.Content, @"\b" + BlockeeID.ToString() + @"\b"))
                 {
-                    RestRequest blockReq = new RestRequest("userblock/blockuser", Method.POST);
+                    RestRequest blockReq = new RestRequest($"v1/users/{BlockeeID}/block", Method.POST);
 
                     blockReq.AddCookie(".ROBLOSECURITY", SecurityToken);
-                    blockReq.AddHeader("Referer", "https://www.roblox.com/");
                     blockReq.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
-                    blockReq.AddHeader("Content-Type", "application/json");
-                    blockReq.AddJsonBody(new { blockeeId = BlockeeID.ToString() });
 
-                    IRestResponse blockRes = AccountManager.MainClient.Execute(blockReq);
+                    IRestResponse blockRes = AccountManager.AccountClient.Execute(blockReq);
+                    Console.WriteLine(blockRes.Content);
+                    Console.WriteLine(blockRes.StatusCode);
 
-                    if (blockRes.Content.Contains(@"""success"":true"))
+                    if (blockRes.IsSuccessful)
                         MessageBox.Show("Blocked " + Username);
                     else
                         MessageBox.Show("Failed to Block " + Username);
                 }
                 else
                 {
-                    RestRequest blockReq = new RestRequest("userblock/unblockuser", Method.POST);
+                    RestRequest blockReq = new RestRequest($"v1/users/{BlockeeID}/unblock", Method.POST);
 
                     blockReq.AddCookie(".ROBLOSECURITY", SecurityToken);
-                    blockReq.AddHeader("Referer", "https://www.roblox.com/");
                     blockReq.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
-                    blockReq.AddHeader("Content-Type", "application/json");
-                    blockReq.AddJsonBody(new { blockeeId = BlockeeID.ToString() });
 
-                    IRestResponse blockRes = AccountManager.MainClient.Execute(blockReq);
+                    IRestResponse blockRes = AccountManager.AccountClient.Execute(blockReq);
 
-                    if (blockRes.Content.Contains(@"""success"":true"))
+                    if (blockRes.IsSuccessful)
                         MessageBox.Show("Unblocked " + Username);
                     else
                         MessageBox.Show("Failed to Unblock " + Username);
@@ -423,15 +419,12 @@ namespace RBX_Alt_Manager
 
             if (!SkipPinCheck && !CheckPin(true)) return "Pin Locked";
 
-            RestRequest blockReq = new RestRequest("userblock/blockuser", Method.POST);
+            RestRequest blockReq = new RestRequest($"v1/users/{UserID}/block", Method.POST);
 
             blockReq.AddCookie(".ROBLOSECURITY", SecurityToken);
-            blockReq.AddHeader("Referer", "https://www.roblox.com/");
             blockReq.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
-            blockReq.AddHeader("Content-Type", "application/json");
-            blockReq.AddJsonBody(new { blockeeId = UserID });
 
-            IRestResponse blockRes = AccountManager.MainClient.Execute(blockReq);
+            IRestResponse blockRes = AccountManager.AccountClient.Execute(blockReq);
 
             if (Context != null)
                 Context.Response.StatusCode = (int)blockRes.StatusCode;
@@ -445,15 +438,12 @@ namespace RBX_Alt_Manager
 
             if (!SkipPinCheck && !CheckPin(true)) return "Pin Locked";
 
-            RestRequest blockReq = new RestRequest("userblock/unblockuser", Method.POST);
+            RestRequest blockReq = new RestRequest($"v1/users/{UserID}/unblock", Method.POST);
 
             blockReq.AddCookie(".ROBLOSECURITY", SecurityToken);
-            blockReq.AddHeader("Referer", "https://www.roblox.com/");
             blockReq.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
-            blockReq.AddHeader("Content-Type", "application/json");
-            blockReq.AddJsonBody(new { blockeeId = UserID });
 
-            IRestResponse blockRes = AccountManager.MainClient.Execute(blockReq);
+            IRestResponse blockRes = AccountManager.AccountClient.Execute(blockReq);
 
             if (Context != null) Context.Response.StatusCode = (int)blockRes.StatusCode;
 

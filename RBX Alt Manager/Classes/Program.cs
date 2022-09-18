@@ -1,5 +1,6 @@
 ﻿using CefSharp;
 using CefSharp.WinForms;
+using log4net;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
@@ -17,6 +18,7 @@ namespace RBX_Alt_Manager
         /// The main entry point for the application.
         /// </summary>
 
+        public static readonly ILog Logger = LogManager.GetLogger("Account Manager");
         private static Mutex mutex = new Mutex(true, "{93b3858f-3dac-4dc0-99cb-0476efc5adce}");
 
         [STAThread]

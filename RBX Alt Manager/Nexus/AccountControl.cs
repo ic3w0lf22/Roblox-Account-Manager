@@ -297,9 +297,9 @@ namespace RBX_Alt_Manager.Forms
             Listener.Start();
 
             try { Listener.Wait(50); }
-            catch (AggregateException x)
+            catch (InvalidOperationException x)
             {
-                MessageBox.Show(x.InnerException.Message, "Account Control", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"{x.Message} {x.StackTrace}", "Account Control", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Hide();
             }
 
@@ -457,6 +457,9 @@ namespace RBX_Alt_Manager.Forms
             {
                 if (account.AutoRelaunch && (DateTime.Now - account.LastPing).TotalSeconds > account.RelaunchDelay)
                 {
+                    Program.Logger.Info($"Relaunch Delay: {RelaunchDelay} | Current Time: {DateTime.Now}");
+                    Program.Logger.Info($"Relaunching {account.Username} to {account.PlaceId}, time since last relaunch: {(DateTime.Now - account.LastPing).TotalSeconds} seconds [{account.LastPing}]");
+
                     account.LastPing = DateTime.Now;
                     account.RelaunchDelay = RelaunchDelay;
 
