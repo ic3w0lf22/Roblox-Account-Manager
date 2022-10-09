@@ -454,11 +454,11 @@ namespace RBX_Alt_Manager
 
             if (!CheckPin(true)) return "Pin is Locked";
 
-            RestRequest request = new RestRequest($"userblock/getblockedusers?page=1", Method.GET);
+            RestRequest request = new RestRequest($"v1/users/get-detailed-blocked-users", Method.GET);
 
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
 
-            IRestResponse response = AccountManager.APIClient.Execute(request);
+            IRestResponse response = AccountManager.AccountClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
@@ -466,19 +466,17 @@ namespace RBX_Alt_Manager
 
                 Task.Run(async () =>
                 {
-                    Match R = Regex.Match(response.Content, "\"userList\":\\[(.+)\\]");
+                    JObject List = JObject.Parse(response.Content);
 
-                    if (R.Success && R.Groups.Count == 2)
+                    if (List.ContainsKey("blockedUsers"))
                     {
-                        string[] UserIDs = R.Groups[1].Value.Split(',');
-
-                        foreach (string UserId in UserIDs)
+                        foreach (var User in List["blockedUsers"])
                         {
-                            if (!UnblockUserId(UserId, true).Contains("true"))
+                            if (!UnblockUserId(User["userId"].Value<string>(), true).Contains("true"))
                             {
                                 await Task.Delay(20000);
 
-                                UnblockUserId(UserId, true);
+                                UnblockUserId(User["userId"].Value<string>(), true);
 
                                 if (!CheckPin(true))
                                     break;
