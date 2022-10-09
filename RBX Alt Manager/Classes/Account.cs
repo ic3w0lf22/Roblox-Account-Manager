@@ -366,11 +366,11 @@ namespace RBX_Alt_Manager
             if (!CheckPin()) return false;
             if (!AccountManager.GetUserID(Username, out long BlockeeID)) return false;
 
-            RestRequest request = new RestRequest($"userblock/getblockedusers?userId={UserID}&page=1", Method.GET);
+            RestRequest request = new RestRequest($"v1/users/get-detailed-blocked-users", Method.GET);
 
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
 
-            IRestResponse response = AccountManager.APIClient.Execute(request);
+            IRestResponse response = AccountManager.AccountClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
@@ -382,8 +382,6 @@ namespace RBX_Alt_Manager
                     blockReq.AddHeader("X-CSRF-TOKEN", GetCSRFToken());
 
                     IRestResponse blockRes = AccountManager.AccountClient.Execute(blockReq);
-                    Console.WriteLine(blockRes.Content);
-                    Console.WriteLine(blockRes.StatusCode);
 
                     if (blockRes.IsSuccessful)
                         MessageBox.Show("Blocked " + Username);
@@ -503,11 +501,11 @@ namespace RBX_Alt_Manager
 
             if (!CheckPin(true)) return "Pin is Locked";
 
-            RestRequest request = new RestRequest($"userblock/getblockedusers?page=1", Method.GET);
+            RestRequest request = new RestRequest($"v1/users/get-detailed-blocked-users", Method.GET);
 
             request.AddCookie(".ROBLOSECURITY", SecurityToken);
 
-            IRestResponse response = AccountManager.APIClient.Execute(request);
+            IRestResponse response = AccountManager.AccountClient.Execute(request);
 
             if (Context != null) Context.Response.StatusCode = (int)response.StatusCode;
 
