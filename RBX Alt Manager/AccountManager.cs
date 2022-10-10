@@ -67,6 +67,7 @@ namespace RBX_Alt_Manager
         public static IniSection Developer;
         public static IniSection WebServer;
         public static IniSection AccountControl;
+        public static IniSection Prompts;
 
         private static Mutex rbxMultiMutex;
         private readonly static object saveLock = new object();
@@ -437,6 +438,7 @@ namespace RBX_Alt_Manager
             Developer = IniSettings.Section("Developer");
             WebServer = IniSettings.Section("WebServer");
             AccountControl = IniSettings.Section("AccountControl");
+            Prompts = IniSettings.Section("Prompts");
 
             if (!General.Exists("CheckForUpdates")) General.Set("CheckForUpdates", "true");
             if (!General.Exists("AccountJoinDelay")) General.Set("AccountJoinDelay", "8");

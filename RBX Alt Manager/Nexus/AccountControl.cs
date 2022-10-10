@@ -358,6 +358,8 @@ namespace RBX_Alt_Manager.Forms
 
         private void ExecuteButton_Click(object sender, EventArgs e) => EmitMessage($"execute {ScriptBox.Text}");
 
+        private void AutoMinimizeCB_CheckedChanged(object sender, EventArgs e) => MinimzeTimer.Enabled = AutoMinimizeCB.Checked;
+
         private void AutoRelaunchCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             if (AutoRelaunchCheckBox.CheckState == CheckState.Indeterminate) return;
@@ -521,6 +523,12 @@ namespace RBX_Alt_Manager.Forms
         }
 
         private void MinimizeRoblox_Click(object sender, EventArgs e)
+        {
+            foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
+                PostMessage(p.MainWindowHandle, 0x0112, 0xF020, 0);
+        }
+
+        private void MinimzeTimer_Tick(object sender, EventArgs e)
         {
             foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
                 PostMessage(p.MainWindowHandle, 0x0112, 0xF020, 0);

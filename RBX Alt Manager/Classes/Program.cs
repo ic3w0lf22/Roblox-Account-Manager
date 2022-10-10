@@ -2,6 +2,7 @@
 using CefSharp.WinForms;
 using log4net;
 using Microsoft.Win32;
+using RBX_Alt_Manager.Properties;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -24,6 +25,16 @@ namespace RBX_Alt_Manager
         [STAThread]
         static void Main()
         {
+            if (!File.Exists($"{Application.ExecutablePath}.config") || !File.Exists(Path.Combine(Environment.CurrentDirectory, "RAMTheme.ini")) || !File.Exists(Path.Combine(Environment.CurrentDirectory, "log4.config")))
+            {
+                File.WriteAllText($"{Application.ExecutablePath}.config", Resources.AppConfig);
+                File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "RAMTheme.ini"), Resources.DefaultTheme);
+                File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "log4.config"), Resources.Log4Config);
+
+                Application.Restart();
+                Environment.Exit(0);
+            }
+
             const string subkey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
 
             using (var ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(subkey))
@@ -65,9 +76,8 @@ namespace RBX_Alt_Manager
 
                             Process.Start(VC).WaitForExit();
 
-                            MessageBox.Show("Roblox Account Manager must be restarted in order to function", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            Process.Start("explorer.exe", "/select, " + Assembly.GetExecutingAssembly().Location);
-                            Environment.Exit(1);
+                            Application.Restart();
+                            Environment.Exit(0);
                         }
                         else
                         {

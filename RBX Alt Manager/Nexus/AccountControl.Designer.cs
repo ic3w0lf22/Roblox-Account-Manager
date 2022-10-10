@@ -73,6 +73,8 @@
             this.RelaunchDelayNumber = new System.Windows.Forms.NumericUpDown();
             this.PortLabel = new System.Windows.Forms.Label();
             this.PortNumber = new System.Windows.Forms.NumericUpDown();
+            this.MinimizeRoblox = new System.Windows.Forms.Button();
+            this.CloseRoblox = new System.Windows.Forms.Button();
             this.HelpPage = new System.Windows.Forms.TabPage();
             this.label7 = new System.Windows.Forms.Label();
             this.NexusDocsButton = new System.Windows.Forms.Button();
@@ -81,8 +83,8 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.AutoRelaunchTimer = new System.Windows.Forms.Timer(this.components);
-            this.MinimizeRoblox = new System.Windows.Forms.Button();
-            this.CloseRoblox = new System.Windows.Forms.Button();
+            this.AutoMinimizeCB = new System.Windows.Forms.CheckBox();
+            this.MinimzeTimer = new System.Windows.Forms.Timer(this.components);
             this.ControlsPanel.SuspendLayout();
             this.ScriptLayoutPanel.SuspendLayout();
             this.ScriptTabs.SuspendLayout();
@@ -271,7 +273,6 @@
             this.ScriptBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.ScriptBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.ScriptBox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.ScriptBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.ScriptBox.IsReplaceMode = false;
             this.ScriptBox.Language = FastColoredTextBoxNS.Language.Lua;
             this.ScriptBox.LeftBracket = '(';
@@ -346,7 +347,6 @@
             this.AutoExecuteScriptBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.AutoExecuteScriptBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.AutoExecuteScriptBox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.AutoExecuteScriptBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.AutoExecuteScriptBox.IsReplaceMode = false;
             this.AutoExecuteScriptBox.Language = FastColoredTextBoxNS.Language.Lua;
             this.AutoExecuteScriptBox.LeftBracket = '(';
@@ -579,6 +579,7 @@
             this.flowLayoutPanel2.Controls.Add(this.PortLabel);
             this.flowLayoutPanel2.Controls.Add(this.PortNumber);
             this.flowLayoutPanel2.Controls.Add(this.MinimizeRoblox);
+            this.flowLayoutPanel2.Controls.Add(this.AutoMinimizeCB);
             this.flowLayoutPanel2.Controls.Add(this.CloseRoblox);
             this.flowLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel2.Location = new System.Drawing.Point(3, 3);
@@ -671,6 +672,26 @@
             0});
             this.PortNumber.ValueChanged += new System.EventHandler(this.PortNumber_ValueChanged);
             // 
+            // MinimizeRoblox
+            // 
+            this.MinimizeRoblox.Location = new System.Drawing.Point(15, 80);
+            this.MinimizeRoblox.Name = "MinimizeRoblox";
+            this.MinimizeRoblox.Size = new System.Drawing.Size(145, 23);
+            this.MinimizeRoblox.TabIndex = 12;
+            this.MinimizeRoblox.Text = "Minimize Roblox";
+            this.MinimizeRoblox.UseVisualStyleBackColor = true;
+            this.MinimizeRoblox.Click += new System.EventHandler(this.MinimizeRoblox_Click);
+            // 
+            // CloseRoblox
+            // 
+            this.CloseRoblox.Location = new System.Drawing.Point(15, 109);
+            this.CloseRoblox.Name = "CloseRoblox";
+            this.CloseRoblox.Size = new System.Drawing.Size(145, 23);
+            this.CloseRoblox.TabIndex = 13;
+            this.CloseRoblox.Text = "Close Roblox";
+            this.CloseRoblox.UseVisualStyleBackColor = true;
+            this.CloseRoblox.Click += new System.EventHandler(this.CloseRoblox_Click);
+            // 
             // HelpPage
             // 
             this.HelpPage.Controls.Add(this.label7);
@@ -752,26 +773,23 @@
             this.AutoRelaunchTimer.Interval = 9000;
             this.AutoRelaunchTimer.Tick += new System.EventHandler(this.AutoRelaunchTimer_Tick);
             // 
-            // MinimizeRoblox
+            // AutoMinimizeCB
             // 
-            this.flowLayoutPanel2.SetFlowBreak(this.MinimizeRoblox, true);
-            this.MinimizeRoblox.Location = new System.Drawing.Point(15, 80);
-            this.MinimizeRoblox.Name = "MinimizeRoblox";
-            this.MinimizeRoblox.Size = new System.Drawing.Size(145, 23);
-            this.MinimizeRoblox.TabIndex = 12;
-            this.MinimizeRoblox.Text = "Minimize Roblox";
-            this.MinimizeRoblox.UseVisualStyleBackColor = true;
-            this.MinimizeRoblox.Click += new System.EventHandler(this.MinimizeRoblox_Click);
+            this.AutoMinimizeCB.AutoSize = true;
+            this.flowLayoutPanel2.SetFlowBreak(this.AutoMinimizeCB, true);
+            this.AutoMinimizeCB.Location = new System.Drawing.Point(166, 84);
+            this.AutoMinimizeCB.Margin = new System.Windows.Forms.Padding(3, 7, 3, 3);
+            this.AutoMinimizeCB.Name = "AutoMinimizeCB";
+            this.AutoMinimizeCB.Size = new System.Drawing.Size(91, 17);
+            this.AutoMinimizeCB.TabIndex = 15;
+            this.AutoMinimizeCB.Text = "Auto Minimize";
+            this.AutoMinimizeCB.UseVisualStyleBackColor = true;
+            this.AutoMinimizeCB.CheckedChanged += new System.EventHandler(this.AutoMinimizeCB_CheckedChanged);
             // 
-            // CloseRoblox
+            // MinimzeTimer
             // 
-            this.CloseRoblox.Location = new System.Drawing.Point(15, 109);
-            this.CloseRoblox.Name = "CloseRoblox";
-            this.CloseRoblox.Size = new System.Drawing.Size(145, 23);
-            this.CloseRoblox.TabIndex = 13;
-            this.CloseRoblox.Text = "Close Roblox";
-            this.CloseRoblox.UseVisualStyleBackColor = true;
-            this.CloseRoblox.Click += new System.EventHandler(this.CloseRoblox_Click);
+            this.MinimzeTimer.Interval = 3000;
+            this.MinimzeTimer.Tick += new System.EventHandler(this.MinimzeTimer_Tick);
             // 
             // AccountControl
             // 
@@ -867,5 +885,7 @@
         private System.Windows.Forms.ToolStripMenuItem copyJobIdToolStripMenuItem;
         private System.Windows.Forms.Button MinimizeRoblox;
         private System.Windows.Forms.Button CloseRoblox;
+        private System.Windows.Forms.CheckBox AutoMinimizeCB;
+        private System.Windows.Forms.Timer MinimzeTimer;
     }
 }

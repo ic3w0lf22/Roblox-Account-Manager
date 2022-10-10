@@ -159,6 +159,9 @@
   <metadata name="ACStrip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>311, 17</value>
   </metadata>
+  <metadata name="StatusRenderer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
   <data name="label7.Text" xml:space="preserve">
     <value>Difference between checked accounts and selected accounts:
 Checked accounts are what commands/script executions will be sent to
@@ -167,5 +170,8 @@ Selected accounts are the accounts of which settings will be applied to
   </data>
   <metadata name="AutoRelaunchTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>152, 17</value>
+  </metadata>
+  <metadata name="MinimzeTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>397, 19</value>
   </metadata>
 </root>

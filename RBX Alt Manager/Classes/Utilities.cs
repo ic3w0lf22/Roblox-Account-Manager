@@ -1,7 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.WindowsAPICodePack.Dialogs;
+using Newtonsoft.Json;
+using RBX_Alt_Manager;
 using System;
 using System.Drawing;
 using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Text;
 using System.Windows.Forms;
 
@@ -75,6 +78,33 @@ public static class Utilities
         Ticks += (double)Date.Millisecond / 1000;
 
         return Ticks;
+    }
+
+    public static bool YesNoPrompt(string Caption, string Instruction, string Text)
+    {
+        string Hash = MD5($"{Caption}.{Instruction}.{Text}");
+
+        if (AccountManager.Prompts.Exists(Hash))
+            return AccountManager.Prompts.Get<bool>(Hash);
+
+        TaskDialog Dialog = TaskDialog.IsPlatformSupported == true ? new TaskDialog()
+        {
+            Caption = Caption,
+            InstructionText = Instruction,
+            Text = Text,
+            FooterCheckBoxText = "Don't show this again and remember my choice",
+            StandardButtons = TaskDialogStandardButtons.Yes | TaskDialogStandardButtons.No,
+        } : null;
+
+        var DR = Dialog?.Show();
+
+        if (Dialog?.FooterCheckBoxChecked == true)
+        {
+            AccountManager.Prompts.Set(Hash, DR == TaskDialogResult.Yes ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        return DR != null ? DR == TaskDialogResult.Yes : MessageBox.Show($"{Instruction}\n{Text}", Caption, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
     }
 
     public static double MapValue(double Input, double IL, double IH, double OL, double OH) => (Input - IL) / (IH - IL) * (OH - OL) + OL;

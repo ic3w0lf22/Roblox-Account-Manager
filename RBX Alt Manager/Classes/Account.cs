@@ -1,6 +1,4 @@
-﻿#pragma warning disable CS0618
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
@@ -424,8 +422,10 @@ namespace RBX_Alt_Manager
 
             IRestResponse blockRes = AccountManager.AccountClient.Execute(blockReq);
 
-            if (Context != null)
-                Context.Response.StatusCode = (int)blockRes.StatusCode;
+            if (Context != null) Context.Response.StatusCode = (int)blockRes.StatusCode;
+
+            if (!blockRes.IsSuccessful)
+                Program.Logger.Warn($"Failed to block {UserID} [{blockRes.StatusCode}]: {blockRes.Content}");
 
             return blockRes.Content;
         }
@@ -444,6 +444,9 @@ namespace RBX_Alt_Manager
             IRestResponse blockRes = AccountManager.AccountClient.Execute(blockReq);
 
             if (Context != null) Context.Response.StatusCode = (int)blockRes.StatusCode;
+
+            if (!blockRes.IsSuccessful)
+                Program.Logger.Warn($"Failed to unblock {UserID} [{blockRes.StatusCode}]: {blockRes.Content}");
 
             return blockRes.Content;
         }
@@ -467,6 +470,8 @@ namespace RBX_Alt_Manager
                 Task.Run(async () =>
                 {
                     JObject List = JObject.Parse(response.Content);
+
+                    Program.Logger.Info($"Unblocking Everyone | Blocked User List: {List}");
 
                     if (List.ContainsKey("blockedUsers"))
                     {
@@ -580,6 +585,43 @@ namespace RBX_Alt_Manager
                             }
                         }
                     }
+                }
+
+                if (JoinVIP)
+                {
+                    Task.Run(() =>
+                    {
+                        if (!CheckPin(true)) return;
+
+                        var request = new RestRequest("/account/settings/private-server-invite-privacy");
+
+                        request.AddCookie(".ROBLOSECURITY", SecurityToken);
+                        request.AddHeader("X-CSRF-TOKEN", Token);
+                        request.AddHeader("Referer", "https://www.roblox.com/my/account");
+
+                        IRestResponse result = AccountManager.MainClient.Execute(request);
+
+                        if (result.IsSuccessful && !result.Content.Contains("\"AllUsers\""))
+                        {
+                            AccountManager.Instance.InvokeIfRequired(() =>
+                            {
+                                if (Utilities.YesNoPrompt("Roblox Account Manager", "Account Manager has detected your account's privacy settings do not allow you to join private servers.", "Would you like to change this setting to Everyone now?"))
+                                {
+                                    var setRequest = new RestRequest("/account/settings/private-server-invite-privacy", Method.POST);
+
+                                    setRequest.AddCookie(".ROBLOSECURITY", SecurityToken);
+
+                                    setRequest.AddHeader("X-CSRF-TOKEN", Token);
+                                    setRequest.AddHeader("Referer", "https://www.roblox.com/my/account");
+                                    setRequest.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                                    setRequest.AddParameter("PrivateServerInvitePrivacy", "AllUsers");
+
+                                    AccountManager.MainClient.Execute(setRequest);
+                                }
+                            });
+                        }
+                    });
                 }
 
                 double LaunchTime = Math.Floor((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds * 1000);
