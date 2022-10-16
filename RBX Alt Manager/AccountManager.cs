@@ -1041,8 +1041,6 @@ namespace RBX_Alt_Manager
 
         private void Follow_Click(object sender, EventArgs e)
         {
-            if (SelectedAccount == null) return;
-
             if (!GetUserID(UserID.Text, out long UserId))
             {
                 MessageBox.Show("Failed to get UserId");
@@ -1436,7 +1434,7 @@ namespace RBX_Alt_Manager
             }
         }
 
-        private async void LaunchAccounts(List<Account> Accounts, long PlaceId, string JobID, bool FollowUser = false, bool VIPServer = false)
+        private async void LaunchAccounts(List<Account> Accounts, long PlaceID, string JobID, bool FollowUser = false, bool VIPServer = false)
         {
             int Delay = General.Exists("AccountJoinDelay") ? General.Get<int>("AccountJoinDelay") : 8;
 
@@ -1447,7 +1445,16 @@ namespace RBX_Alt_Manager
             {
                 if (Token.IsCancellationRequested) break;
 
-                account.JoinServer(PlaceId, JobID, FollowUser, VIPServer);
+                long PlaceId = PlaceID;
+                string JobId = JobID;
+
+                if (!FollowUser)
+                {
+                    if (!string.IsNullOrEmpty(account.GetField("SavedPlaceId")) && long.TryParse(account.GetField("SavedPlaceId"), out long PID)) PlaceId = PID;
+                    if (!string.IsNullOrEmpty(account.GetField("SavedJobId"))) JobId = account.GetField("SavedJobId");
+                }
+
+                account.JoinServer(PlaceId, JobId, FollowUser, VIPServer);
 
                 if (AsyncJoin)
                 {

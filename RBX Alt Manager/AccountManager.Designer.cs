@@ -479,8 +479,8 @@
             this.AccountsView.AllColumns.Add(this.Description);
             this.AccountsView.AllColumns.Add(this.Group);
             this.AccountsView.AllowDrop = true;
-            this.AccountsView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.AccountsView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.AccountsView.CellEditUseWholeCell = false;
             this.AccountsView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
