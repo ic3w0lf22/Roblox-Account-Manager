@@ -411,6 +411,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AccountManager.resx">
       <DependentUpon>AccountManager.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\AccountUtils.resx">
       <DependentUpon>AccountUtils.cs</DependentUpon>

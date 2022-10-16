@@ -50,6 +50,7 @@ namespace RBX_Alt_Manager.Forms
             AccountManager.SetDarkBar(Handle);
 
             InitializeComponent();
+            this.Rescale();
 
             LoadAccounts();
         }

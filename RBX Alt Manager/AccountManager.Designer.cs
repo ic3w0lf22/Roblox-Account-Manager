@@ -1,4 +1,9 @@
-﻿namespace RBX_Alt_Manager
+﻿using BrightIdeasSoftware;
+using System.Drawing;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace RBX_Alt_Manager
 {
     partial class AccountManager
     {
@@ -614,8 +619,9 @@
             // AccountManager
             // 
             this.AllowDrop = true;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            // this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            // this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            // this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 301);
             this.Controls.Add(this.ConfigButton);
             this.Controls.Add(this.LaunchNexus);
@@ -659,7 +665,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion

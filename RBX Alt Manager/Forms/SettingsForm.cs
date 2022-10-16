@@ -15,6 +15,7 @@ namespace RBX_Alt_Manager.Forms
             AccountManager.SetDarkBar(Handle);
 
             InitializeComponent();
+            this.Rescale();
         }
 
         private void SettingsForm_Load(object sender, EventArgs e)

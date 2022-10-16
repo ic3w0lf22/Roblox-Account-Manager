@@ -139,7 +139,6 @@
             this.Text = "Theme Editor";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ThemeEditor_FormClosing);
             this.ResumeLayout(false);
-
         }
 
         #endregion

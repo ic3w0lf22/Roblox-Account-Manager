@@ -90,7 +90,6 @@
             this.Load += new System.EventHandler(this.ArgumentsForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion

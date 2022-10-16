@@ -11,6 +11,7 @@ namespace RBX_Alt_Manager
             AccountManager.SetDarkBar(Handle);
 
             InitializeComponent();
+            this.Rescale();
         }
 
         public void ApplyTheme()

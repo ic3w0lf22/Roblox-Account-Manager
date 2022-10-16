@@ -46,7 +46,6 @@ namespace RBX_Alt_Manager
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AccountAdder_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
-
         }
 
         #endregion

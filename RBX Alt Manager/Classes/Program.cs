@@ -1,4 +1,5 @@
 ﻿using CefSharp;
+using CefSharp.DevTools.Browser;
 using CefSharp.WinForms;
 using log4net;
 using Microsoft.Win32;
@@ -20,6 +21,16 @@ namespace RBX_Alt_Manager
         /// </summary>
 
         public static readonly ILog Logger = LogManager.GetLogger("Account Manager");
+        public static float Scale
+        {
+            get
+            {
+                if (AccountManager.General != null && AccountManager.General.Exists("WindowScale"))
+                    return AccountManager.General.Get<float>("WindowScale");
+
+                return 1f;
+            }
+        }
         private static Mutex mutex = new Mutex(true, "{93b3858f-3dac-4dc0-99cb-0476efc5adce}");
 
         [STAThread]
@@ -99,6 +110,9 @@ namespace RBX_Alt_Manager
 
                 try
                 {
+                    if (Environment.OSVersion.Version.Major >= 6)
+                        SetProcessDPIAware();
+
                     Application.EnableVisualStyles();
                     Application.SetCompatibleTextRenderingDefault(false);
                     Application.Run(new AccountManager());
@@ -111,5 +125,8 @@ namespace RBX_Alt_Manager
             else
                 MessageBox.Show("Roblox Account Manager is already running!", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool SetProcessDPIAware();
     }
 }

@@ -483,7 +483,6 @@ namespace RBX_Alt_Manager.Forms
             ((System.ComponentModel.ISupportInitialize)(this.PortNumber)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.MaxRecentGamesNumber)).EndInit();
             this.ResumeLayout(false);
-
         }
 
         #endregion

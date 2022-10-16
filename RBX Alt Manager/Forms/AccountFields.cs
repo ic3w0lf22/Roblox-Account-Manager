@@ -11,16 +11,14 @@ namespace RBX_Alt_Manager
     public partial class AccountFields : Form
     {
         Account Viewing;
-        int FieldCount = 0;
-        int StartingControlCount = 0;
+        Color LastColor;
 
         public AccountFields()
         {
             AccountManager.SetDarkBar(Handle);
 
             InitializeComponent();
-
-            StartingControlCount = Controls.Count - 1;
+            this.Rescale();
         }
 
         public void ApplyTheme()
@@ -75,6 +73,7 @@ namespace RBX_Alt_Manager
 
         public void FlashGreen()
         {
+            LastColor = AccountName.ForeColor;
             AccountName.ForeColor = Color.Green;
 
             Success.Start();
@@ -83,10 +82,7 @@ namespace RBX_Alt_Manager
         private void AddField(string Field, string Value)
         {
             Field f = new Field(Viewing, Field, Value);
-            f.Parent = this;
-            f.Location = new Point(10, 45 + (25 * FieldCount));
-
-            FieldCount += 1;
+            FieldsPanel.Controls.Add(f);
         }
 
         public void View(Account account)
@@ -95,10 +91,8 @@ namespace RBX_Alt_Manager
 
             Viewing = account;
 
-            for (int i = Controls.Count - 1; i > StartingControlCount; i--)
-                Controls.RemoveAt(i);
+            FieldsPanel.Controls.Clear();
 
-            FieldCount = 0;
             AccountName.Text = "Viewing Fields of " + account.Username;
 
             foreach (KeyValuePair<string, string> Key in account.Fields) AddField(Key.Key, Key.Value);
@@ -124,7 +118,7 @@ namespace RBX_Alt_Manager
         {
             Success.Stop();
 
-            AccountName.ForeColor = SystemColors.ControlText;
+            AccountName.ForeColor = LastColor;
         }
     }
 }

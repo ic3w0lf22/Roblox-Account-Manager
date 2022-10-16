@@ -100,7 +100,40 @@ namespace RBX_Alt_Manager
 
             SetDarkBar(Handle);
 
+            IniSettings = File.Exists(Path.Combine(Environment.CurrentDirectory, "RAMSettings.ini")) ? new IniFile("RAMSettings.ini") : new IniFile();
+
+            General = IniSettings.Section("General");
+            Developer = IniSettings.Section("Developer");
+            WebServer = IniSettings.Section("WebServer");
+            AccountControl = IniSettings.Section("AccountControl");
+            Prompts = IniSettings.Section("Prompts");
+
+            if (!General.Exists("CheckForUpdates")) General.Set("CheckForUpdates", "true");
+            if (!General.Exists("AccountJoinDelay")) General.Set("AccountJoinDelay", "8");
+            if (!General.Exists("AsyncJoin")) General.Set("AsyncJoin", "false");
+            if (!General.Exists("DisableAgingAlert")) General.Set("DisableAgingAlert", "false");
+            if (!General.Exists("SavePasswords")) General.Set("SavePasswords", "true");
+            if (!General.Exists("ServerRegionFormat")) General.Set("ServerRegionFormat", "<city>, <countryCode>", "Visit http://ip-api.com/json/1.1.1.1 to see available format options");
+            if (!General.Exists("MaxRecentGames")) General.Set("MaxRecentGames", "8");
+            if (!General.Exists("WindowScale")) General.Set("WindowScale", Screen.PrimaryScreen.Bounds.Height <= Screen.PrimaryScreen.Bounds.Width ? (Math.Max(Math.Min(Screen.PrimaryScreen.Bounds.Height / 1080f, 2f), 1f)).ToString(".0#") : "1");
+
+            if (!Developer.Exists("DevMode")) Developer.Set("DevMode", "false");
+            if (!Developer.Exists("EnableWebServer")) Developer.Set("EnableWebServer", "false");
+
+            if (!WebServer.Exists("WebServerPort")) WebServer.Set("WebServerPort", "7963");
+            if (!WebServer.Exists("AllowGetCookie")) WebServer.Set("AllowGetCookie", "false");
+            if (!WebServer.Exists("AllowGetAccounts")) WebServer.Set("AllowGetAccounts", "false");
+            if (!WebServer.Exists("AllowLaunchAccount")) WebServer.Set("AllowLaunchAccount", "false");
+            if (!WebServer.Exists("AllowAccountEditing")) WebServer.Set("AllowAccountEditing", "false");
+            if (!WebServer.Exists("Password")) WebServer.Set("Password", ""); else WSPassword = WebServer.Get("Password");
+            if (!WebServer.Exists("EveryRequestRequiresPassword")) WebServer.Set("EveryRequestRequiresPassword", "false");
+
+            if (!AccountControl.Exists("AllowExternalConnections")) AccountControl.Set("AllowExternalConnections", "false");
+            if (!AccountControl.Exists("RelaunchDelay")) AccountControl.Set("RelaunchDelay", "60");
+            if (!AccountControl.Exists("NexusPort")) AccountControl.Set("NexusPort", "5242");
+
             InitializeComponent();
+            this.Rescale();
 
             AccountsList = new List<Account>();
             SelectedAccounts = new List<Account>();
@@ -432,37 +465,6 @@ namespace RBX_Alt_Manager
 
             PlaceID_TextChanged(PlaceID, new EventArgs());
 
-            IniSettings = File.Exists(Path.Combine(Environment.CurrentDirectory, "RAMSettings.ini")) ? new IniFile("RAMSettings.ini") : new IniFile();
-
-            General = IniSettings.Section("General");
-            Developer = IniSettings.Section("Developer");
-            WebServer = IniSettings.Section("WebServer");
-            AccountControl = IniSettings.Section("AccountControl");
-            Prompts = IniSettings.Section("Prompts");
-
-            if (!General.Exists("CheckForUpdates")) General.Set("CheckForUpdates", "true");
-            if (!General.Exists("AccountJoinDelay")) General.Set("AccountJoinDelay", "8");
-            if (!General.Exists("AsyncJoin")) General.Set("AsyncJoin", "false");
-            if (!General.Exists("DisableAgingAlert")) General.Set("DisableAgingAlert", "false");
-            if (!General.Exists("SavePasswords")) General.Set("SavePasswords", "true");
-            if (!General.Exists("ServerRegionFormat")) General.Set("ServerRegionFormat", "<city>, <countryCode>", "Visit http://ip-api.com/json/1.1.1.1 to see available format options");
-            if (!General.Exists("MaxRecentGames")) General.Set("MaxRecentGames", "8");
-
-            if (!Developer.Exists("DevMode")) Developer.Set("DevMode", "false");
-            if (!Developer.Exists("EnableWebServer")) Developer.Set("EnableWebServer", "false");
-
-            if (!WebServer.Exists("WebServerPort")) WebServer.Set("WebServerPort", "7963");
-            if (!WebServer.Exists("AllowGetCookie")) WebServer.Set("AllowGetCookie", "false");
-            if (!WebServer.Exists("AllowGetAccounts")) WebServer.Set("AllowGetAccounts", "false");
-            if (!WebServer.Exists("AllowLaunchAccount")) WebServer.Set("AllowLaunchAccount", "false");
-            if (!WebServer.Exists("AllowAccountEditing")) WebServer.Set("AllowAccountEditing", "false");
-            if (!WebServer.Exists("Password")) WebServer.Set("Password", ""); else WSPassword = WebServer.Get("Password");
-            if (!WebServer.Exists("EveryRequestRequiresPassword")) WebServer.Set("EveryRequestRequiresPassword", "false");
-
-            if (!AccountControl.Exists("AllowExternalConnections")) AccountControl.Set("AllowExternalConnections", "false");
-            if (!AccountControl.Exists("RelaunchDelay")) AccountControl.Set("RelaunchDelay", "60");
-            if (!AccountControl.Exists("NexusPort")) AccountControl.Set("NexusPort", "5242");
-
             PlaceID.Text = General.Exists("SavedPlaceId") ? General.Get("SavedPlaceId") : "5315046213";
 
             if (!Developer.Get<bool>("DevMode"))
@@ -476,8 +478,8 @@ namespace RBX_Alt_Manager
             else
             {
                 ImportByCookie.Visible = true;
-                OpenApp.Location = new Point(398, 266);
-                OpenApp.Size = new Size(70, 23);
+                OpenApp.Location = new Point((int)(398 * Program.Scale), (int)(266 * Program.Scale));
+                OpenApp.Size = new Size((int)(70 * Program.Scale), (int)(23 * Program.Scale));
                 ArgumentsB.Visible = true;
             }
 
@@ -1085,7 +1087,7 @@ namespace RBX_Alt_Manager
         {
             AccountsView.BeginUpdate();
 
-            Username.Width = HideUsernamesCheckbox.Checked ? 0 : 120;
+            Username.Width = HideUsernamesCheckbox.Checked ? 0 : (int)(120 * Program.Scale);
 
             AccountsView.EndUpdate();
         }

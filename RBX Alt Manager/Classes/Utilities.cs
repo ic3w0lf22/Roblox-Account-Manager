@@ -1,8 +1,11 @@
-﻿using Microsoft.WindowsAPICodePack.Dialogs;
+﻿using BrightIdeasSoftware;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
 using RBX_Alt_Manager;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Text;
 using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
@@ -78,6 +81,39 @@ public static class Utilities
         Ticks += (double)Date.Millisecond / 1000;
 
         return Ticks;
+    }
+
+    // probably not the best way to do it but it works so whatever
+    public static void Rescale(this Control control, Form ParentForm = null)
+    {
+        ParentForm ??= control.FindForm();
+        Font font = ParentForm?.Font ?? SystemFonts.DefaultFont;
+
+        control.Font = new Font(font.FontFamily.Name, font.SizeInPoints * Program.Scale);
+
+        if (control is Button btn && btn.Image != null)
+            btn.Image = new Bitmap(btn.Image, new Size((int)(btn.Image.Width * Program.Scale), (int)(btn.Image.Height * Program.Scale)));
+
+        if (control is ObjectListView olv)
+            foreach (OLVColumn col in olv.Columns)
+                col.Width = (int)(col.Width * Program.Scale);
+    }
+
+    public static void Rescale(this Form form)
+    {
+        form.Scale(new SizeF(Program.Scale, Program.Scale));
+
+        void RescaleControls(Control.ControlCollection controls)
+        {
+            foreach (Control control in controls)
+            {
+                control.Rescale();
+
+                RescaleControls(control.Controls);
+            }
+        }
+
+        RescaleControls(form.Controls);
     }
 
     public static bool YesNoPrompt(string Caption, string Instruction, string Text)

@@ -827,7 +827,6 @@
             this.HelpPage.ResumeLayout(false);
             this.HelpPage.PerformLayout();
             this.ResumeLayout(false);
-
         }
 
         #endregion

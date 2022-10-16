@@ -22,6 +22,7 @@ namespace RBX_Alt_Manager
             AccountManager.SetDarkBar(Handle);
 
             InitializeComponent();
+            this.Rescale();
 
             chromeBrowser = new ChromiumWebBrowser("https://roblox.com/login");
             chromeBrowser.AddressChanged += OnNavigated;

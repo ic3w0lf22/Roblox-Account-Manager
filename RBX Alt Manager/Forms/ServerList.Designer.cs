@@ -560,7 +560,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.ServerListView)).EndInit();
             this.Tabs.ResumeLayout(false);
             this.ResumeLayout(false);
-
         }
 
         #endregion
