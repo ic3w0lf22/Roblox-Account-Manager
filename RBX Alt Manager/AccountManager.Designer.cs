@@ -619,9 +619,6 @@ namespace RBX_Alt_Manager
             // AccountManager
             // 
             this.AllowDrop = true;
-            // this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
-            // this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            // this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 301);
             this.Controls.Add(this.ConfigButton);
             this.Controls.Add(this.LaunchNexus);

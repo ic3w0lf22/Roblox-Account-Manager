@@ -115,7 +115,7 @@ namespace RBX_Alt_Manager
             if (!General.Exists("SavePasswords")) General.Set("SavePasswords", "true");
             if (!General.Exists("ServerRegionFormat")) General.Set("ServerRegionFormat", "<city>, <countryCode>", "Visit http://ip-api.com/json/1.1.1.1 to see available format options");
             if (!General.Exists("MaxRecentGames")) General.Set("MaxRecentGames", "8");
-            if (!General.Exists("WindowScale")) General.Set("WindowScale", Screen.PrimaryScreen.Bounds.Height <= Screen.PrimaryScreen.Bounds.Width ? (Math.Max(Math.Min(Screen.PrimaryScreen.Bounds.Height / 1080f, 2f), 1f)).ToString(".0#") : "1");
+            if (!General.Exists("WindowScale")) General.Set("WindowScale", Screen.PrimaryScreen.Bounds.Height <= Screen.PrimaryScreen.Bounds.Width ? Math.Max(Math.Min(Screen.PrimaryScreen.Bounds.Height / 1080f, 2f), 1f).ToString(".0#") : "1.0");
 
             if (!Developer.Exists("DevMode")) Developer.Set("DevMode", "false");
             if (!Developer.Exists("EnableWebServer")) Developer.Set("EnableWebServer", "false");

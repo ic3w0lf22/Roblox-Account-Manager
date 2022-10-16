@@ -84,10 +84,11 @@ public static class Utilities
     }
 
     // probably not the best way to do it but it works so whatever
-    public static void Rescale(this Control control, Form ParentForm = null)
+    public static void Rescale(this Control control, bool UseControlFont = false)
     {
-        ParentForm ??= control.FindForm();
-        Font font = ParentForm?.Font ?? SystemFonts.DefaultFont;
+        Font font = control.FindForm()?.Font ?? SystemFonts.DefaultFont;
+
+        if (UseControlFont) font = control?.Font;
 
         control.Font = new Font(font.FontFamily.Name, font.SizeInPoints * Program.Scale);
 
@@ -107,7 +108,7 @@ public static class Utilities
         {
             foreach (Control control in controls)
             {
-                control.Rescale();
+                control.Rescale(control is ObjectListView);
 
                 RescaleControls(control.Controls);
             }
