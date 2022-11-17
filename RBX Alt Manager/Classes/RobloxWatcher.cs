@@ -65,7 +65,7 @@ namespace RBX_Alt_Manager.Classes
         public static bool IsHandleEulaAccepted()
         {
             RegistryKey AcceptedHEULA = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Sysinternals\Handle");
-            object EulaObject = AcceptedHEULA.GetValue("EulaAccepted");
+            object EulaObject = AcceptedHEULA?.GetValue("EulaAccepted");
 
             return AcceptedHEULA != null && EulaObject != null && int.TryParse(EulaObject.ToString(), out int EULA) && EULA == 1;
         }
