@@ -42,13 +42,17 @@
             this.AccountsStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addAccountsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeAccountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyUsernameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyPasswordToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyUserPassComboToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyProfileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyUserIdToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sortAlphabeticallyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveGroupUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toggleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyGroupToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.infoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.infoToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -68,30 +72,34 @@
             this.ImportByCookie = new System.Windows.Forms.Button();
             this.SaveToAccount = new System.Windows.Forms.Button();
             this.SaveTooltip = new System.Windows.Forms.ToolTip(this.components);
+            this.ShuffleIcon = new System.Windows.Forms.PictureBox();
             this.JobID = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.DonateButton = new System.Windows.Forms.Button();
-            this.SaveTimer = new System.Windows.Forms.Timer(this.components);
             this.AccountsView = new BrightIdeasSoftware.ObjectListView();
             this.Username = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.AccountAlias = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.Description = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.Group = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.LastUsedColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.EditTheme = new System.Windows.Forms.Button();
+            this.LaunchNexus = new System.Windows.Forms.Button();
+            this.ConfigButton = new System.Windows.Forms.Button();
+            this.HistoryIcon = new System.Windows.Forms.PictureBox();
             this.UserID = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.Alias = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.DescriptionBox = new RBX_Alt_Manager.Classes.BorderedRichTextBox();
             this.PlaceID = new RBX_Alt_Manager.Classes.BorderedTextBox();
-            this.LaunchNexus = new System.Windows.Forms.Button();
-            this.ConfigButton = new System.Windows.Forms.Button();
             this.AccountsStrip.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.ShuffleIcon)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.HistoryIcon)).BeginInit();
             this.SuspendLayout();
             // 
             // LabelJobID
             // 
             this.LabelJobID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.LabelJobID.AutoSize = true;
-            this.LabelJobID.Location = new System.Drawing.Point(591, 27);
+            this.LabelJobID.Location = new System.Drawing.Point(600, 27);
             this.LabelJobID.Name = "LabelJobID";
             this.LabelJobID.Size = new System.Drawing.Size(38, 13);
             this.LabelJobID.TabIndex = 1000;
@@ -123,9 +131,9 @@
             // JoinServer
             // 
             this.JoinServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.JoinServer.Location = new System.Drawing.Point(504, 69);
+            this.JoinServer.Location = new System.Drawing.Point(503, 67);
             this.JoinServer.Name = "JoinServer";
-            this.JoinServer.Size = new System.Drawing.Size(168, 23);
+            this.JoinServer.Size = new System.Drawing.Size(198, 23);
             this.JoinServer.TabIndex = 4;
             this.JoinServer.Text = "Join Server";
             this.JoinServer.UseVisualStyleBackColor = true;
@@ -178,11 +186,11 @@
             // ServerList
             // 
             this.ServerList.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ServerList.Location = new System.Drawing.Point(707, 69);
+            this.ServerList.Location = new System.Drawing.Point(707, 67);
             this.ServerList.Name = "ServerList";
             this.ServerList.Size = new System.Drawing.Size(65, 23);
             this.ServerList.TabIndex = 6;
-            this.ServerList.Text = "Server List";
+            this.ServerList.Text = "Utilities";
             this.SaveTooltip.SetToolTip(this.ServerList, "Contains Server List, Games List, and Favorites List");
             this.ServerList.UseVisualStyleBackColor = true;
             this.ServerList.Click += new System.EventHandler(this.ServerList_Click);
@@ -192,9 +200,7 @@
             this.AccountsStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addAccountsToolStripMenuItem,
             this.removeAccountToolStripMenuItem,
-            this.copyUsernameToolStripMenuItem,
-            this.copyPasswordToolStripMenuItem,
-            this.copyProfileToolStripMenuItem,
+            this.copyToolStripMenuItem,
             this.sortAlphabeticallyToolStripMenuItem,
             this.moveGroupUpToolStripMenuItem,
             this.infoToolStripMenuItem,
@@ -204,7 +210,7 @@
             this.copyRbxplayerLinkToolStripMenuItem,
             this.copyAppLinkToolStripMenuItem});
             this.AccountsStrip.Name = "contextMenuStrip1";
-            this.AccountsStrip.Size = new System.Drawing.Size(209, 290);
+            this.AccountsStrip.Size = new System.Drawing.Size(209, 246);
             // 
             // addAccountsToolStripMenuItem
             // 
@@ -220,26 +226,52 @@
             this.removeAccountToolStripMenuItem.Text = "Remove Account";
             this.removeAccountToolStripMenuItem.Click += new System.EventHandler(this.removeAccountToolStripMenuItem_Click);
             // 
+            // copyToolStripMenuItem
+            // 
+            this.copyToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.copyUsernameToolStripMenuItem,
+            this.copyPasswordToolStripMenuItem,
+            this.copyUserPassComboToolStripMenuItem,
+            this.copyProfileToolStripMenuItem,
+            this.copyUserIdToolStripMenuItem});
+            this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.copyToolStripMenuItem.Text = "Copy";
+            // 
             // copyUsernameToolStripMenuItem
             // 
             this.copyUsernameToolStripMenuItem.Name = "copyUsernameToolStripMenuItem";
-            this.copyUsernameToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.copyUsernameToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
             this.copyUsernameToolStripMenuItem.Text = "Copy Username";
             this.copyUsernameToolStripMenuItem.Click += new System.EventHandler(this.copyUsernameToolStripMenuItem_Click);
             // 
             // copyPasswordToolStripMenuItem
             // 
             this.copyPasswordToolStripMenuItem.Name = "copyPasswordToolStripMenuItem";
-            this.copyPasswordToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.copyPasswordToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
             this.copyPasswordToolStripMenuItem.Text = "Copy Password";
             this.copyPasswordToolStripMenuItem.Click += new System.EventHandler(this.copyPasswordToolStripMenuItem_Click);
+            // 
+            // copyUserPassComboToolStripMenuItem
+            // 
+            this.copyUserPassComboToolStripMenuItem.Name = "copyUserPassComboToolStripMenuItem";
+            this.copyUserPassComboToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.copyUserPassComboToolStripMenuItem.Text = "Copy User Pass Combo";
+            this.copyUserPassComboToolStripMenuItem.Click += new System.EventHandler(this.copyUserPassComboToolStripMenuItem_Click);
             // 
             // copyProfileToolStripMenuItem
             // 
             this.copyProfileToolStripMenuItem.Name = "copyProfileToolStripMenuItem";
-            this.copyProfileToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.copyProfileToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
             this.copyProfileToolStripMenuItem.Text = "Copy Profile";
             this.copyProfileToolStripMenuItem.Click += new System.EventHandler(this.copyProfileToolStripMenuItem_Click);
+            // 
+            // copyUserIdToolStripMenuItem
+            // 
+            this.copyUserIdToolStripMenuItem.Name = "copyUserIdToolStripMenuItem";
+            this.copyUserIdToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.copyUserIdToolStripMenuItem.Text = "Copy UserId";
+            this.copyUserIdToolStripMenuItem.Click += new System.EventHandler(this.copyUserIdToolStripMenuItem_Click);
             // 
             // sortAlphabeticallyToolStripMenuItem
             // 
@@ -252,7 +284,8 @@
             // 
             this.moveGroupUpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toggleToolStripMenuItem,
-            this.moveToToolStripMenuItem});
+            this.moveToToolStripMenuItem,
+            this.copyGroupToolStripMenuItem});
             this.moveGroupUpToolStripMenuItem.Name = "moveGroupUpToolStripMenuItem";
             this.moveGroupUpToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.moveGroupUpToolStripMenuItem.Text = "Groups";
@@ -270,6 +303,13 @@
             this.moveToToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
             this.moveToToolStripMenuItem.Text = "Move Account To";
             this.moveToToolStripMenuItem.Click += new System.EventHandler(this.moveToToolStripMenuItem_Click);
+            // 
+            // copyGroupToolStripMenuItem
+            // 
+            this.copyGroupToolStripMenuItem.Name = "copyGroupToolStripMenuItem";
+            this.copyGroupToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.copyGroupToolStripMenuItem.Text = "Copy Group";
+            this.copyGroupToolStripMenuItem.Click += new System.EventHandler(this.copyGroupToolStripMenuItem_Click);
             // 
             // infoToolStripMenuItem
             // 
@@ -355,12 +395,13 @@
             // ArgumentsB
             // 
             this.ArgumentsB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ArgumentsB.Location = new System.Drawing.Point(678, 69);
+            this.ArgumentsB.Location = new System.Drawing.Point(691, 7);
             this.ArgumentsB.Name = "ArgumentsB";
             this.ArgumentsB.Size = new System.Drawing.Size(23, 23);
             this.ArgumentsB.TabIndex = 5;
             this.ArgumentsB.Text = "A";
             this.ArgumentsB.UseVisualStyleBackColor = true;
+            this.ArgumentsB.Visible = false;
             this.ArgumentsB.Click += new System.EventHandler(this.ArgumentsB_Click);
             // 
             // CurrentPlace
@@ -442,17 +483,31 @@
             // 
             this.SaveTooltip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             // 
+            // ShuffleIcon
+            // 
+            this.ShuffleIcon.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ShuffleIcon.BackColor = System.Drawing.Color.Transparent;
+            this.ShuffleIcon.Image = global::RBX_Alt_Manager.Properties.Resources.ShuffleIcon;
+            this.ShuffleIcon.Location = new System.Drawing.Point(583, 45);
+            this.ShuffleIcon.Name = "ShuffleIcon";
+            this.ShuffleIcon.Size = new System.Drawing.Size(18, 16);
+            this.ShuffleIcon.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.ShuffleIcon.TabIndex = 1004;
+            this.ShuffleIcon.TabStop = false;
+            this.SaveTooltip.SetToolTip(this.ShuffleIcon, "Selects a random JobId every single time you press \"Join Server\"\r\nThis setting wi" +
+        "ll be ignored if you have a JobId set");
+            this.ShuffleIcon.Click += new System.EventHandler(this.ShuffleIcon_Click);
+            // 
             // JobID
             // 
             this.JobID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.JobID.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
-            this.JobID.Location = new System.Drawing.Point(594, 43);
+            this.JobID.Location = new System.Drawing.Point(602, 43);
             this.JobID.Name = "JobID";
-            this.JobID.Size = new System.Drawing.Size(150, 20);
+            this.JobID.Size = new System.Drawing.Size(143, 20);
             this.JobID.TabIndex = 2;
             this.SaveTooltip.SetToolTip(this.JobID, "Job ID is a unique ID assigned to every roblox server.\r\nYou may also put a Privat" +
         "e Server link in this box to join it.");
-            this.JobID.TextChanged += new System.EventHandler(this.JobID_TextChanged);
             // 
             // DonateButton
             // 
@@ -467,17 +522,13 @@
             this.DonateButton.UseVisualStyleBackColor = true;
             this.DonateButton.Click += new System.EventHandler(this.DonateButton_Click);
             // 
-            // SaveTimer
-            // 
-            this.SaveTimer.Interval = 2500;
-            this.SaveTimer.Tick += new System.EventHandler(this.SaveTimer_Tick);
-            // 
             // AccountsView
             // 
             this.AccountsView.AllColumns.Add(this.Username);
             this.AccountsView.AllColumns.Add(this.AccountAlias);
             this.AccountsView.AllColumns.Add(this.Description);
             this.AccountsView.AllColumns.Add(this.Group);
+            this.AccountsView.AllColumns.Add(this.LastUsedColumn);
             this.AccountsView.AllowDrop = true;
             this.AccountsView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
@@ -511,6 +562,7 @@
             // Username
             // 
             this.Username.AspectName = "Username";
+            this.Username.IsEditable = false;
             this.Username.Sortable = false;
             this.Username.Text = "Username";
             this.Username.Width = 130;
@@ -530,10 +582,18 @@
             // Group
             // 
             this.Group.AspectName = "Group";
-            this.Group.MaximumWidth = 0;
-            this.Group.MinimumWidth = 0;
             this.Group.Text = "";
             this.Group.Width = 0;
+            // 
+            // LastUsedColumn
+            // 
+            this.LastUsedColumn.AspectName = "LastUse";
+            this.LastUsedColumn.AspectToStringFormat = "{0:MM/dd/yyyy hh:mm tt}";
+            this.LastUsedColumn.DisplayIndex = 4;
+            this.LastUsedColumn.IsVisible = false;
+            this.LastUsedColumn.Text = "Last Used";
+            this.LastUsedColumn.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.LastUsedColumn.Width = 130;
             // 
             // EditTheme
             // 
@@ -545,6 +605,43 @@
             this.EditTheme.Text = "Edit Theme";
             this.EditTheme.UseVisualStyleBackColor = true;
             this.EditTheme.Click += new System.EventHandler(this.EditTheme_Click);
+            // 
+            // LaunchNexus
+            // 
+            this.LaunchNexus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.LaunchNexus.Location = new System.Drawing.Point(639, 266);
+            this.LaunchNexus.Name = "LaunchNexus";
+            this.LaunchNexus.Size = new System.Drawing.Size(133, 23);
+            this.LaunchNexus.TabIndex = 14;
+            this.LaunchNexus.Text = "Account Control";
+            this.LaunchNexus.UseVisualStyleBackColor = true;
+            this.LaunchNexus.Click += new System.EventHandler(this.LaunchNexus_Click);
+            // 
+            // ConfigButton
+            // 
+            this.ConfigButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ConfigButton.FlatAppearance.BorderSize = 0;
+            this.ConfigButton.Image = global::RBX_Alt_Manager.Properties.Resources.configIcon;
+            this.ConfigButton.ImageAlign = System.Drawing.ContentAlignment.BottomRight;
+            this.ConfigButton.Location = new System.Drawing.Point(720, 6);
+            this.ConfigButton.Name = "ConfigButton";
+            this.ConfigButton.Size = new System.Drawing.Size(24, 24);
+            this.ConfigButton.TabIndex = 1002;
+            this.ConfigButton.UseVisualStyleBackColor = true;
+            this.ConfigButton.Click += new System.EventHandler(this.ConfigButton_Click);
+            // 
+            // HistoryIcon
+            // 
+            this.HistoryIcon.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.HistoryIcon.BackColor = System.Drawing.Color.Transparent;
+            this.HistoryIcon.Image = global::RBX_Alt_Manager.Properties.Resources.icons8_history_32;
+            this.HistoryIcon.Location = new System.Drawing.Point(583, 27);
+            this.HistoryIcon.Name = "HistoryIcon";
+            this.HistoryIcon.Size = new System.Drawing.Size(16, 16);
+            this.HistoryIcon.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.HistoryIcon.TabIndex = 1003;
+            this.HistoryIcon.TabStop = false;
+            this.HistoryIcon.MouseHover += new System.EventHandler(this.HistoryIcon_MouseHover);
             // 
             // UserID
             // 
@@ -582,34 +679,10 @@
             this.PlaceID.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
             this.PlaceID.Location = new System.Drawing.Point(504, 43);
             this.PlaceID.Name = "PlaceID";
-            this.PlaceID.Size = new System.Drawing.Size(84, 20);
+            this.PlaceID.Size = new System.Drawing.Size(78, 20);
             this.PlaceID.TabIndex = 1;
             this.PlaceID.Text = "5315046213";
             this.PlaceID.TextChanged += new System.EventHandler(this.PlaceID_TextChanged);
-            // 
-            // LaunchNexus
-            // 
-            this.LaunchNexus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.LaunchNexus.Location = new System.Drawing.Point(639, 266);
-            this.LaunchNexus.Name = "LaunchNexus";
-            this.LaunchNexus.Size = new System.Drawing.Size(133, 23);
-            this.LaunchNexus.TabIndex = 14;
-            this.LaunchNexus.Text = "Account Control";
-            this.LaunchNexus.UseVisualStyleBackColor = true;
-            this.LaunchNexus.Click += new System.EventHandler(this.LaunchNexus_Click);
-            // 
-            // ConfigButton
-            // 
-            this.ConfigButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ConfigButton.FlatAppearance.BorderSize = 0;
-            this.ConfigButton.Image = global::RBX_Alt_Manager.Properties.Resources.configIcon;
-            this.ConfigButton.ImageAlign = System.Drawing.ContentAlignment.BottomRight;
-            this.ConfigButton.Location = new System.Drawing.Point(720, 6);
-            this.ConfigButton.Name = "ConfigButton";
-            this.ConfigButton.Size = new System.Drawing.Size(24, 24);
-            this.ConfigButton.TabIndex = 1002;
-            this.ConfigButton.UseVisualStyleBackColor = true;
-            this.ConfigButton.Click += new System.EventHandler(this.ConfigButton_Click);
             // 
             // AccountManager
             // 
@@ -617,6 +690,8 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 301);
+            this.Controls.Add(this.ShuffleIcon);
+            this.Controls.Add(this.HistoryIcon);
             this.Controls.Add(this.ConfigButton);
             this.Controls.Add(this.LaunchNexus);
             this.Controls.Add(this.DonateButton);
@@ -651,12 +726,13 @@
             this.MinimumSize = new System.Drawing.Size(800, 340);
             this.Name = "AccountManager";
             this.Text = "Roblox Account Manager";
-            this.HelpButtonClicked += new System.ComponentModel.CancelEventHandler(this.AccountManager_HelpButtonClicked);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AccountManager_FormClosing);
             this.Load += new System.EventHandler(this.AccountManager_Load);
             this.Shown += new System.EventHandler(this.AccountManager_Shown);
             this.AccountsStrip.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.ShuffleIcon)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.HistoryIcon)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -701,7 +777,6 @@
         private System.Windows.Forms.ToolStripMenuItem viewFieldsToolStripMenuItem;
         private System.Windows.Forms.Button SaveToAccount;
         private System.Windows.Forms.ToolTip SaveTooltip;
-        private System.Windows.Forms.Timer SaveTimer;
         public BrightIdeasSoftware.ObjectListView AccountsView;
         private BrightIdeasSoftware.OLVColumn Group;
         private BrightIdeasSoftware.OLVColumn Username;
@@ -716,5 +791,12 @@
         private System.Windows.Forms.Button LaunchNexus;
         private System.Windows.Forms.ToolStripMenuItem copyPasswordToolStripMenuItem;
         private System.Windows.Forms.Button ConfigButton;
+        private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem copyUserIdToolStripMenuItem;
+        private System.Windows.Forms.PictureBox HistoryIcon;
+        private BrightIdeasSoftware.OLVColumn LastUsedColumn;
+        private System.Windows.Forms.ToolStripMenuItem copyGroupToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem copyUserPassComboToolStripMenuItem;
+        private System.Windows.Forms.PictureBox ShuffleIcon;
     }
 }

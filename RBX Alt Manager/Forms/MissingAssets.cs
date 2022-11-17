@@ -1,32 +1,49 @@
-﻿using RBX_Alt_Manager.Forms;
-using System;
+﻿using RBX_Alt_Manager.Classes;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace RBX_Alt_Manager
+namespace RBX_Alt_Manager.Forms
 {
-    public partial class ImportForm : Form
+    public partial class MissingAssets : Form
     {
-        public ImportForm()
-        {
-            AccountManager.SetDarkBar(Handle);
+        public Account account;
 
+        private MissingAssets()
+        {
             InitializeComponent();
             this.Rescale();
         }
+
+        public MissingAssets(Account account, params long[] Assets) : this()
+        {
+            this.account = account;
+
+            Text = $"Missing Assets for {account.Username}";
+
+            foreach (long ID in Assets)
+                AssetPanel.Controls.Add(new MissingAssetControl(ID));
+
+            ApplyTheme();
+        }
+
+        #region Themes
 
         public void ApplyTheme()
         {
             BackColor = ThemeEditor.FormsBackground;
             ForeColor = ThemeEditor.FormsForeground;
 
-            foreach (Control control in this.Controls)
+            ApplyTheme(Controls);
+        }
+
+        public void ApplyTheme(Control.ControlCollection _Controls)
+        {
+            foreach (Control control in _Controls)
             {
                 if (control is Button || control is CheckBox)
                 {
-                    if (control is Button)
+                    if (control is Button b)
                     {
-                        Button b = control as Button;
                         b.FlatStyle = ThemeEditor.ButtonStyle;
                         b.FlatAppearance.BorderColor = ThemeEditor.ButtonsBorder;
                     }
@@ -56,35 +73,29 @@ namespace RBX_Alt_Manager
                     control.BackColor = ThemeEditor.LabelTransparent ? Color.Transparent : ThemeEditor.LabelBackground;
                     control.ForeColor = ThemeEditor.LabelForeground;
                 }
+                else if (control is LinkLabel Label) {
+                    Label.BackColor = ThemeEditor.LabelTransparent ? Color.Transparent : ThemeEditor.LabelBackground;
+                    Label.VisitedLinkColor = ThemeEditor.LabelForeground;
+                }
                 else if (control is ListBox)
                 {
                     control.BackColor = ThemeEditor.ButtonsBackground;
                     control.ForeColor = ThemeEditor.ButtonsForeground;
                 }
+                else if (control is TabPage)
+                {
+                    ApplyTheme(control.Controls);
+
+                    control.BackColor = ThemeEditor.ButtonsBackground;
+                    control.ForeColor = ThemeEditor.ButtonsForeground;
+                }
+                else if (control is FastColoredTextBoxNS.FastColoredTextBox)
+                    control.ForeColor = Color.Black;
+                else if (control is FlowLayoutPanel || control is Panel || control is TabControl || control is MissingAssetControl)
+                    ApplyTheme(control.Controls);
             }
         }
 
-        private void ImportForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            e.Cancel = true;
-            Hide();
-        }
-
-        private void ImportButton_Click(object sender, EventArgs e)
-        {
-            string[] List = Accounts.Text.Split('\n');
-
-            Accounts.Text = string.Empty;
-
-            foreach (string Token in List)
-            {
-                Account NewAccount = AccountManager.AddAccount(Token);
-
-                if (NewAccount != null)
-                    Accounts.Text += $"Added {NewAccount.Username}";
-                else
-                    Accounts.Text += $"Failed to add {Token}";
-            }
-        }
+        #endregion
     }
 }

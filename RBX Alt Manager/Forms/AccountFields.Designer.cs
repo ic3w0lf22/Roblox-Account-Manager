@@ -32,6 +32,7 @@
             this.AccountName = new System.Windows.Forms.Label();
             this.Add = new System.Windows.Forms.Button();
             this.Success = new System.Windows.Forms.Timer(this.components);
+            this.FieldsPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.SuspendLayout();
             // 
             // AccountName
@@ -63,11 +64,23 @@
             this.Success.Interval = 300;
             this.Success.Tick += new System.EventHandler(this.Success_Tick);
             // 
+            // FieldsPanel
+            // 
+            this.FieldsPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.FieldsPanel.AutoScroll = true;
+            this.FieldsPanel.Location = new System.Drawing.Point(0, 35);
+            this.FieldsPanel.Name = "FieldsPanel";
+            this.FieldsPanel.Size = new System.Drawing.Size(289, 226);
+            this.FieldsPanel.TabIndex = 2;
+            // 
             // AccountFields
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(289, 261);
+            this.Controls.Add(this.FieldsPanel);
             this.Controls.Add(this.Add);
             this.Controls.Add(this.AccountName);
             this.HelpButton = true;
@@ -90,5 +103,6 @@
         private System.Windows.Forms.Label AccountName;
         private System.Windows.Forms.Button Add;
         private System.Windows.Forms.Timer Success;
+        private System.Windows.Forms.FlowLayoutPanel FieldsPanel;
     }
 }

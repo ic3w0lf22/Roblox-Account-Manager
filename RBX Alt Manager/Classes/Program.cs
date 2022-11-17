@@ -1,11 +1,12 @@
 ﻿using CefSharp;
 using CefSharp.WinForms;
+using log4net;
 using Microsoft.Win32;
+using RBX_Alt_Manager.Properties;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -17,11 +18,47 @@ namespace RBX_Alt_Manager
         /// The main entry point for the application.
         /// </summary>
 
+        public static readonly ILog Logger = LogManager.GetLogger("Account Manager");
+        public static float Scale
+        {
+            get
+            {
+                if (AccountManager.General != null && AccountManager.General.Exists("WindowScale"))
+                    return AccountManager.General.Get<float>("WindowScale");
+
+                return 1f;
+            }
+        }
+
+        public static bool ScaleFonts
+        {
+            get
+            {
+                if (AccountManager.General != null && AccountManager.General.Exists("ScaleFonts"))
+                    return AccountManager.General.Get<bool>("ScaleFonts");
+
+                return true;
+            }
+        }
+
         private static Mutex mutex = new Mutex(true, "{93b3858f-3dac-4dc0-99cb-0476efc5adce}");
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool SetProcessDPIAware();
 
         [STAThread]
         static void Main()
         {
+            if (!File.Exists($"{Application.ExecutablePath}.config") || !File.Exists(Path.Combine(Environment.CurrentDirectory, "RAMTheme.ini")) || !File.Exists(Path.Combine(Environment.CurrentDirectory, "log4.config")))
+            {
+                File.WriteAllText($"{Application.ExecutablePath}.config", Resources.AppConfig);
+                File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "RAMTheme.ini"), Resources.DefaultTheme);
+                File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "log4.config"), Resources.Log4Config);
+
+                Application.Restart();
+                Environment.Exit(0);
+            }
+
             const string subkey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
 
             using (var ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(subkey))
@@ -63,9 +100,8 @@ namespace RBX_Alt_Manager
 
                             Process.Start(VC).WaitForExit();
 
-                            MessageBox.Show("Roblox Account Manager must be restarted in order to function", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            Process.Start("explorer.exe", "/select, " + Assembly.GetExecutingAssembly().Location);
-                            Environment.Exit(1);
+                            Application.Restart();
+                            Environment.Exit(0);
                         }
                         else
                         {
@@ -87,6 +123,9 @@ namespace RBX_Alt_Manager
 
                 try
                 {
+                    /*if (Environment.OSVersion.Version.Major >= 6)
+                        SetProcessDPIAware();*/
+
                     Application.EnableVisualStyles();
                     Application.SetCompatibleTextRenderingDefault(false);
                     Application.Run(new AccountManager());

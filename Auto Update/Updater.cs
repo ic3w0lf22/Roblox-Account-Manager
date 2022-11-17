@@ -1,11 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Auto_Update
@@ -17,7 +18,7 @@ namespace Auto_Update
             InitializeComponent();
         }
 
-        private Thread currentThread;
+        private Task currentTask;
         private string FileName = "Update.zip";
         private string UpdatePath = Path.Combine(Environment.CurrentDirectory, "Update");
         private delegate void SafeCallDelegateSetProgress(int Progress);
@@ -26,24 +27,21 @@ namespace Auto_Update
         private void AutoUpdater_Load(object sender, EventArgs e)
         {
             string[] args = Environment.GetCommandLineArgs();
-            DialogResult result;
+            bool ShouldUpdate;
 
             if (args.Length > 1 && args[1] == "skip")
-                result = DialogResult.Yes;
+                ShouldUpdate = true;
             else
-                result = MessageBox.Show($"Auto Update?", "Alt Manager Auto Updater", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                ShouldUpdate = MessageBox.Show($"Auto Update?", "Alt Manager Auto Updater", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
 
             if (Directory.Exists(UpdatePath)) Directory.Delete(UpdatePath, true);
 
             FileName = Path.Combine(Directory.GetCurrentDirectory(), FileName);
 
-            if (result == DialogResult.Yes)
-            {
-                currentThread = new Thread(Download);
-                currentThread.Start();
-            }
+            if (ShouldUpdate)
+                currentTask = Task.Run(Download);
             else
-                this.Close();
+                Close();
         }
 
         private void SetStatus(string Text)
@@ -81,11 +79,15 @@ namespace Auto_Update
 
         void downloadCompleted(object sender, AsyncCompletedEventArgs e)
         {
-            currentThread.Abort();
+            if (e.Cancelled)
+                Invoke(new Action(() => { MessageBox.Show(this, $"Something went w21rong! \n{e.Error}"); }));
+
+            currentTask.Dispose();
+
             SetStatus("Extracting Files...");
             SetProgress(100);
-            currentThread = new Thread(Extract);
-            currentThread.Start();
+
+            currentTask = Task.Run(Extract);
         }
 
         private void Download()
@@ -103,7 +105,7 @@ namespace Auto_Update
                     return;
                 }
 
-                WebClient client = new WebClient();
+                WebClient client = new nWebClient();
 
                 client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(progressChanged);
                 client.DownloadFileCompleted += new AsyncCompletedEventHandler(downloadCompleted);
@@ -111,8 +113,17 @@ namespace Auto_Update
             }
         }
 
-        private void Extract()
+        private async void Extract()
         {
+            bool ErorrOccured = false;
+
+            try
+            {
+                foreach (Process p in Process.GetProcessesByName("RBX Alt Manager"))
+                    p.Kill();
+            }
+            catch { }
+
             try
             {
                 using (ZipArchive archive = ZipFile.OpenRead(FileName))
@@ -159,13 +170,23 @@ namespace Auto_Update
             }
             catch (Exception x)
             {
+                ErorrOccured = true;
                 SetStatus("Error");
-                Invoke(new Action(() => { MessageBox.Show(this, "Something went wrong! " + x.Message); }));
-                Environment.Exit(0);
+                Invoke(new Action(() => {
+                    var Result = MessageBox.Show(this, $"Something went wrong! \n{x.Message}\n{x.StackTrace}", "Auto Updater", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+
+                    if (Result == DialogResult.Retry)
+                        currentTask.ContinueWith(t => { currentTask = Task.Run(Download); });
+                    else
+                        Environment.Exit(0);
+                }));
             }
 
+            if (ErorrOccured)
+                return;
+
             SetStatus("Done!");
-            Thread.Sleep(2500);
+            await Task.Delay(2500);
             File.Delete(FileName);
 
             if (File.Exists("RBX Alt Manager.exe"))
@@ -176,8 +197,8 @@ namespace Auto_Update
 
         private void AutoUpdater_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (currentThread != null && currentThread.IsAlive)
-                currentThread.Abort();
+            if (currentTask != null && currentTask.IsCompleted)
+                currentTask.Dispose();
         }
 
         private static void RunAsDesktopUser(string fileName) // ahhh, pasting. (https://stackoverflow.com/a/40501607)
@@ -267,7 +288,6 @@ namespace Auto_Update
                 CloseHandle(hPrimaryToken);
                 CloseHandle(hShellProcess);
             }
-
         }
 
         #region Interop
@@ -390,5 +410,15 @@ namespace Auto_Update
         private static extern bool CreateProcessWithTokenW(IntPtr hToken, int dwLogonFlags, string lpApplicationName, string lpCommandLine, int dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory, [In] ref STARTUPINFO lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation);
 
         #endregion
+    }
+
+    public class nWebClient : WebClient
+    {
+        protected override WebRequest GetWebRequest(Uri address)
+        {
+            var req = base.GetWebRequest(address);
+            req.Timeout = TimeSpan.FromMinutes(30).Milliseconds;
+            return req;
+        }
     }
 }
