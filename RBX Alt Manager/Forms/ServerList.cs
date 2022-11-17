@@ -113,7 +113,6 @@ namespace RBX_Alt_Manager
         public static RestClient ThumbClient;
         public static RestClient DevelopClient;
         public static RestClient GamesClient;
-        public static RestClient IPAPIClient;
         private int Page = 0;
         private List<FavoriteGame> Favorites;
         private readonly string FavGamesFN = Path.Combine(Environment.CurrentDirectory, "FavoriteGames.json");

@@ -43,9 +43,6 @@ namespace RBX_Alt_Manager
 
         private static Mutex mutex = new Mutex(true, "{93b3858f-3dac-4dc0-99cb-0476efc5adce}");
 
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern bool SetProcessDPIAware();
-
         [STAThread]
         static void Main()
         {
@@ -123,9 +120,6 @@ namespace RBX_Alt_Manager
 
                 try
                 {
-                    /*if (Environment.OSVersion.Version.Major >= 6)
-                        SetProcessDPIAware();*/
-
                     Application.EnableVisualStyles();
                     Application.SetCompatibleTextRenderingDefault(false);
                     Application.Run(new AccountManager());

@@ -472,23 +472,27 @@ namespace RBX_Alt_Manager.Forms
         {
             if (!double.TryParse(AccountManager.AccountControl.Get("RelaunchDelay"), out double RelaunchDelay)) return;
 
-            foreach (ControlledAccount account in Accounts)
+            try
             {
-                if (account.AutoRelaunch && (DateTime.Now - account.LastPing).TotalSeconds > account.RelaunchDelay)
+                foreach (ControlledAccount account in Accounts)
                 {
-                    Program.Logger.Info($"Relaunch Delay: {RelaunchDelay} | Current Time: {DateTime.Now}");
-                    Program.Logger.Info($"Relaunching {account.Username} to {account.PlaceId}, time since last relaunch: {(DateTime.Now - account.LastPing).TotalSeconds} seconds [{account.LastPing}]");
+                    if (account.AutoRelaunch && (DateTime.Now - account.LastPing).TotalSeconds > account.RelaunchDelay)
+                    {
+                        Program.Logger.Info($"Relaunch Delay: {RelaunchDelay} | Current Time: {DateTime.Now}");
+                        Program.Logger.Info($"Relaunching {account.Username} to {account.PlaceId}, time since last relaunch: {(DateTime.Now - account.LastPing).TotalSeconds} seconds [{account.LastPing}]");
 
-                    account.LastPing = DateTime.Now;
-                    account.RelaunchDelay = RelaunchDelay;
+                        account.LastPing = DateTime.Now;
+                        account.RelaunchDelay = RelaunchDelay;
 
-                    await account.LinkedAccount.JoinServer(account.PlaceId, account.JobId);
+                        await account.LinkedAccount.JoinServer(account.PlaceId, account.JobId);
 
-                    break;
+                        break;
+                    }
                 }
-            }
 
-            ClearDeadProcesses();
+                ClearDeadProcesses();
+            }
+            catch (Exception x) { Program.Logger.Error($"An error occured launching an account from auto relaunch: {x.Message}"); }
         }
 
         private void AccountControl_FormClosing(object sender, FormClosingEventArgs e)

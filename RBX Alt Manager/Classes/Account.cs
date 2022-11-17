@@ -489,14 +489,16 @@ namespace RBX_Alt_Manager
 
         public bool ParseAccessCode(IRestResponse response, out string Code)
         {
-            string pattern = "Roblox.GameLauncher.joinPrivateGame\\(\\d+\\,\\s*'(\\w+\\-\\w+\\-\\w+\\-\\w+\\-\\w+)'";
-            Regex regex = new Regex(pattern);
-            MatchCollection matches = regex.Matches(response.Content);
+            Code = "";
 
-            Code = matches?[0]?.Groups[1]?.Value ?? string.Empty;
+            Match match = Regex.Match(response.Content, "Roblox.GameLauncher.joinPrivateGame\\(\\d+\\,\\s*'(\\w+\\-\\w+\\-\\w+\\-\\w+\\-\\w+)'");
+            
+            if (match.Success && match.Groups.Count == 2)
+            {
+                Code = match.Groups[1]?.Value ?? string.Empty;
 
-            if (matches.Count > 0 && matches[0].Groups.Count > 0)
                 return true;
+            }
 
             return false;
         }

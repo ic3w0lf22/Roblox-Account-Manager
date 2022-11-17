@@ -119,12 +119,13 @@ namespace RBX_Alt_Manager
             if (!General.Exists("MaxRecentGames")) General.Set("MaxRecentGames", "8");
             if (!General.Exists("ShuffleChoosesLowestServer")) General.Set("ShuffleChoosesLowestServer", "false");
             if (!General.Exists("ShufflePageCount")) General.Set("ShufflePageCount", "5");
+            if (!General.Exists("IPApiLink")) General.Set("IPApiLink", "http://ip-api.com/json/<ip>");
             if (!General.Exists("WindowScale"))
             {
                 General.Set("WindowScale", Screen.PrimaryScreen.Bounds.Height <= Screen.PrimaryScreen.Bounds.Width /*scuffed*/ ? Math.Max(Math.Min(Screen.PrimaryScreen.Bounds.Height / 1080f, 2f), 1f).ToString(".0#") : "1.0");
 
                 if (Program.Scale > 1)
-                    if (!Utilities.YesNoPrompt("Roblox Account Manager", "RAM has detected you a monitor larger than average", $"Would you like to keep the WindowScale setting of {Program.Scale:F2}?"))
+                    if (!Utilities.YesNoPrompt("Roblox Account Manager", "RAM has detected you have a monitor larger than average", $"Would you like to keep the WindowScale setting of {Program.Scale:F2}?", false))
                         General.Set("WindowScale", "1.0");
                     else
                         MessageBox.Show("In case the font scaling is incorrect, open RAMSettings.ini and change \"ScaleFonts=true\" to \"ScaleFonts=false\" without the quotes.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
