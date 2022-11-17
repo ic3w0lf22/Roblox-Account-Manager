@@ -2,6 +2,7 @@
 name: "Download Button Action"
 
 on:
+  workflow_dispatch:
   release:
     types:
       - published
