@@ -1,4 +1,6 @@
 ﻿
+using RBX_Alt_Manager.Classes;
+
 namespace RBX_Alt_Manager.Forms
 {
     partial class SettingsForm
@@ -38,14 +40,17 @@ namespace RBX_Alt_Manager.Forms
             this.SavePasswordCB = new System.Windows.Forms.CheckBox();
             this.DisableAgingAlertCB = new System.Windows.Forms.CheckBox();
             this.HideMRobloxCB = new System.Windows.Forms.CheckBox();
+            this.StartOnPCStartup = new System.Windows.Forms.CheckBox();
             this.RegionFormatLabel = new System.Windows.Forms.Label();
             this.RegionFormatTB = new System.Windows.Forms.TextBox();
+            this.MRGLabel = new System.Windows.Forms.Label();
+            this.MaxRecentGamesNumber = new System.Windows.Forms.NumericUpDown();
             this.RSLabel = new System.Windows.Forms.Label();
             this.DecryptAC = new System.Windows.Forms.Button();
             this.Helper = new System.Windows.Forms.ToolTip(this.components);
             this.WSPWLabel = new System.Windows.Forms.Label();
             this.PasswordTextBox = new System.Windows.Forms.TextBox();
-            this.SettingsTC = new System.Windows.Forms.TabControl();
+            this.SettingsTC = new RBX_Alt_Manager.Classes.NBTabControl();
             this.GeneralTab = new System.Windows.Forms.TabPage();
             this.DeveloperTab = new System.Windows.Forms.TabPage();
             this.DevSettingsLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
@@ -58,16 +63,16 @@ namespace RBX_Alt_Manager.Forms
             this.AllowGACB = new System.Windows.Forms.CheckBox();
             this.AllowLACB = new System.Windows.Forms.CheckBox();
             this.AllowAECB = new System.Windows.Forms.CheckBox();
-            this.MRGLabel = new System.Windows.Forms.Label();
-            this.MaxRecentGamesNumber = new System.Windows.Forms.NumericUpDown();
+            this.DisableImagesCB = new System.Windows.Forms.CheckBox();
+            this.ShuffleLowestServerCB = new System.Windows.Forms.CheckBox();
             this.SettingsLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.LaunchDelayNumber)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxRecentGamesNumber)).BeginInit();
             this.SettingsTC.SuspendLayout();
             this.GeneralTab.SuspendLayout();
             this.DeveloperTab.SuspendLayout();
             this.DevSettingsLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PortNumber)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.MaxRecentGamesNumber)).BeginInit();
             this.SuspendLayout();
             // 
             // SettingsLayoutPanel
@@ -79,6 +84,8 @@ namespace RBX_Alt_Manager.Forms
             this.SettingsLayoutPanel.Controls.Add(this.SavePasswordCB);
             this.SettingsLayoutPanel.Controls.Add(this.DisableAgingAlertCB);
             this.SettingsLayoutPanel.Controls.Add(this.HideMRobloxCB);
+            this.SettingsLayoutPanel.Controls.Add(this.StartOnPCStartup);
+            this.SettingsLayoutPanel.Controls.Add(this.ShuffleLowestServerCB);
             this.SettingsLayoutPanel.Controls.Add(this.RegionFormatLabel);
             this.SettingsLayoutPanel.Controls.Add(this.RegionFormatTB);
             this.SettingsLayoutPanel.Controls.Add(this.MRGLabel);
@@ -89,7 +96,7 @@ namespace RBX_Alt_Manager.Forms
             this.SettingsLayoutPanel.Location = new System.Drawing.Point(3, 3);
             this.SettingsLayoutPanel.Name = "SettingsLayoutPanel";
             this.SettingsLayoutPanel.Padding = new System.Windows.Forms.Padding(12);
-            this.SettingsLayoutPanel.Size = new System.Drawing.Size(302, 239);
+            this.SettingsLayoutPanel.Size = new System.Drawing.Size(305, 292);
             this.SettingsLayoutPanel.TabIndex = 0;
             // 
             // AutoUpdateCB
@@ -188,10 +195,22 @@ namespace RBX_Alt_Manager.Forms
             this.HideMRobloxCB.UseVisualStyleBackColor = true;
             this.HideMRobloxCB.CheckedChanged += new System.EventHandler(this.HideMRobloxCB_CheckedChanged);
             // 
+            // StartOnPCStartup
+            // 
+            this.StartOnPCStartup.AutoSize = true;
+            this.SettingsLayoutPanel.SetFlowBreak(this.StartOnPCStartup, true);
+            this.StartOnPCStartup.Location = new System.Drawing.Point(15, 130);
+            this.StartOnPCStartup.Name = "StartOnPCStartup";
+            this.StartOnPCStartup.Size = new System.Drawing.Size(145, 17);
+            this.StartOnPCStartup.TabIndex = 21;
+            this.StartOnPCStartup.Text = "Run on Windows Startup";
+            this.StartOnPCStartup.UseVisualStyleBackColor = true;
+            this.StartOnPCStartup.CheckedChanged += new System.EventHandler(this.StartOnPCStartup_CheckedChanged);
+            // 
             // RegionFormatLabel
             // 
             this.RegionFormatLabel.AutoSize = true;
-            this.RegionFormatLabel.Location = new System.Drawing.Point(15, 131);
+            this.RegionFormatLabel.Location = new System.Drawing.Point(15, 177);
             this.RegionFormatLabel.Margin = new System.Windows.Forms.Padding(3, 4, 35, 0);
             this.RegionFormatLabel.Name = "RegionFormatLabel";
             this.RegionFormatLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
@@ -202,17 +221,53 @@ namespace RBX_Alt_Manager.Forms
             // 
             // RegionFormatTB
             // 
-            this.RegionFormatTB.Location = new System.Drawing.Point(129, 130);
+            this.RegionFormatTB.Location = new System.Drawing.Point(129, 176);
             this.RegionFormatTB.Name = "RegionFormatTB";
             this.RegionFormatTB.Size = new System.Drawing.Size(152, 20);
             this.RegionFormatTB.TabIndex = 18;
             this.Helper.SetToolTip(this.RegionFormatTB, "Requires 6 or more characters, not recommended to use your main password");
             this.RegionFormatTB.TextChanged += new System.EventHandler(this.RegionFormatTB_TextChanged);
             // 
+            // MRGLabel
+            // 
+            this.MRGLabel.AutoSize = true;
+            this.MRGLabel.Location = new System.Drawing.Point(15, 203);
+            this.MRGLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
+            this.MRGLabel.Name = "MRGLabel";
+            this.MRGLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.MRGLabel.Size = new System.Drawing.Size(101, 13);
+            this.MRGLabel.TabIndex = 20;
+            this.MRGLabel.Text = "Max Recent Games";
+            // 
+            // MaxRecentGamesNumber
+            // 
+            this.SettingsLayoutPanel.SetFlowBreak(this.MaxRecentGamesNumber, true);
+            this.MaxRecentGamesNumber.Location = new System.Drawing.Point(129, 200);
+            this.MaxRecentGamesNumber.Margin = new System.Windows.Forms.Padding(10, 1, 3, 0);
+            this.MaxRecentGamesNumber.Maximum = new decimal(new int[] {
+            30,
+            0,
+            0,
+            0});
+            this.MaxRecentGamesNumber.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.MaxRecentGamesNumber.Name = "MaxRecentGamesNumber";
+            this.MaxRecentGamesNumber.Size = new System.Drawing.Size(56, 20);
+            this.MaxRecentGamesNumber.TabIndex = 19;
+            this.MaxRecentGamesNumber.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.MaxRecentGamesNumber.ValueChanged += new System.EventHandler(this.MaxRecentGamesNumber_ValueChanged);
+            // 
             // RSLabel
             // 
             this.RSLabel.AutoSize = true;
-            this.RSLabel.Location = new System.Drawing.Point(15, 178);
+            this.RSLabel.Location = new System.Drawing.Point(15, 224);
             this.RSLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
             this.RSLabel.Name = "RSLabel";
             this.RSLabel.Size = new System.Drawing.Size(263, 26);
@@ -223,7 +278,7 @@ namespace RBX_Alt_Manager.Forms
             // DecryptAC
             // 
             this.SettingsLayoutPanel.SetFlowBreak(this.DecryptAC, true);
-            this.DecryptAC.Location = new System.Drawing.Point(15, 207);
+            this.DecryptAC.Location = new System.Drawing.Point(15, 253);
             this.DecryptAC.Name = "DecryptAC";
             this.DecryptAC.Size = new System.Drawing.Size(164, 23);
             this.DecryptAC.TabIndex = 13;
@@ -234,7 +289,7 @@ namespace RBX_Alt_Manager.Forms
             // WSPWLabel
             // 
             this.WSPWLabel.AutoSize = true;
-            this.WSPWLabel.Location = new System.Drawing.Point(15, 177);
+            this.WSPWLabel.Location = new System.Drawing.Point(15, 200);
             this.WSPWLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
             this.WSPWLabel.Name = "WSPWLabel";
             this.WSPWLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
@@ -245,7 +300,7 @@ namespace RBX_Alt_Manager.Forms
             // 
             // PasswordTextBox
             // 
-            this.PasswordTextBox.Location = new System.Drawing.Point(129, 176);
+            this.PasswordTextBox.Location = new System.Drawing.Point(129, 199);
             this.PasswordTextBox.Name = "PasswordTextBox";
             this.PasswordTextBox.Size = new System.Drawing.Size(152, 20);
             this.PasswordTextBox.TabIndex = 16;
@@ -260,33 +315,34 @@ namespace RBX_Alt_Manager.Forms
             this.SettingsTC.Location = new System.Drawing.Point(0, 0);
             this.SettingsTC.Name = "SettingsTC";
             this.SettingsTC.SelectedIndex = 0;
-            this.SettingsTC.Size = new System.Drawing.Size(316, 271);
+            this.SettingsTC.Size = new System.Drawing.Size(319, 327);
             this.SettingsTC.TabIndex = 18;
             // 
             // GeneralTab
             // 
             this.GeneralTab.Controls.Add(this.SettingsLayoutPanel);
-            this.GeneralTab.Location = new System.Drawing.Point(4, 22);
+            this.GeneralTab.Location = new System.Drawing.Point(4, 25);
             this.GeneralTab.Name = "GeneralTab";
             this.GeneralTab.Padding = new System.Windows.Forms.Padding(3);
-            this.GeneralTab.Size = new System.Drawing.Size(308, 245);
+            this.GeneralTab.Size = new System.Drawing.Size(311, 298);
             this.GeneralTab.TabIndex = 0;
             this.GeneralTab.Text = "General";
             this.GeneralTab.UseVisualStyleBackColor = true;
             // 
             // DeveloperTab
             // 
+            this.DeveloperTab.BackColor = System.Drawing.Color.Transparent;
             this.DeveloperTab.Controls.Add(this.DevSettingsLayoutPanel);
-            this.DeveloperTab.Location = new System.Drawing.Point(4, 22);
+            this.DeveloperTab.Location = new System.Drawing.Point(4, 25);
             this.DeveloperTab.Name = "DeveloperTab";
             this.DeveloperTab.Padding = new System.Windows.Forms.Padding(3);
-            this.DeveloperTab.Size = new System.Drawing.Size(308, 224);
+            this.DeveloperTab.Size = new System.Drawing.Size(308, 275);
             this.DeveloperTab.TabIndex = 1;
             this.DeveloperTab.Text = "Developer";
-            this.DeveloperTab.UseVisualStyleBackColor = true;
             // 
             // DevSettingsLayoutPanel
             // 
+            this.DevSettingsLayoutPanel.BackColor = System.Drawing.Color.Transparent;
             this.DevSettingsLayoutPanel.Controls.Add(this.EnableDMCB);
             this.DevSettingsLayoutPanel.Controls.Add(this.EnableWSCB);
             this.DevSettingsLayoutPanel.Controls.Add(this.PortLabel);
@@ -296,13 +352,15 @@ namespace RBX_Alt_Manager.Forms
             this.DevSettingsLayoutPanel.Controls.Add(this.AllowGACB);
             this.DevSettingsLayoutPanel.Controls.Add(this.AllowLACB);
             this.DevSettingsLayoutPanel.Controls.Add(this.AllowAECB);
+            this.DevSettingsLayoutPanel.Controls.Add(this.DisableImagesCB);
             this.DevSettingsLayoutPanel.Controls.Add(this.WSPWLabel);
             this.DevSettingsLayoutPanel.Controls.Add(this.PasswordTextBox);
             this.DevSettingsLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.DevSettingsLayoutPanel.ForeColor = System.Drawing.SystemColors.ControlText;
             this.DevSettingsLayoutPanel.Location = new System.Drawing.Point(3, 3);
             this.DevSettingsLayoutPanel.Name = "DevSettingsLayoutPanel";
             this.DevSettingsLayoutPanel.Padding = new System.Windows.Forms.Padding(12);
-            this.DevSettingsLayoutPanel.Size = new System.Drawing.Size(302, 218);
+            this.DevSettingsLayoutPanel.Size = new System.Drawing.Size(302, 269);
             this.DevSettingsLayoutPanel.TabIndex = 2;
             // 
             // EnableDMCB
@@ -425,47 +483,35 @@ namespace RBX_Alt_Manager.Forms
             this.AllowAECB.UseVisualStyleBackColor = true;
             this.AllowAECB.CheckedChanged += new System.EventHandler(this.AllowAECB_CheckedChanged);
             // 
-            // MRGLabel
+            // DisableImagesCB
             // 
-            this.MRGLabel.AutoSize = true;
-            this.MRGLabel.Location = new System.Drawing.Point(15, 157);
-            this.MRGLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
-            this.MRGLabel.Name = "MRGLabel";
-            this.MRGLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.MRGLabel.Size = new System.Drawing.Size(101, 13);
-            this.MRGLabel.TabIndex = 20;
-            this.MRGLabel.Text = "Max Recent Games";
+            this.DisableImagesCB.AutoSize = true;
+            this.DevSettingsLayoutPanel.SetFlowBreak(this.DisableImagesCB, true);
+            this.DisableImagesCB.Location = new System.Drawing.Point(15, 176);
+            this.DisableImagesCB.Name = "DisableImagesCB";
+            this.DisableImagesCB.Size = new System.Drawing.Size(201, 17);
+            this.DisableImagesCB.TabIndex = 18;
+            this.DisableImagesCB.Text = "Disable Image Loading [Less Ram %]";
+            this.DisableImagesCB.UseVisualStyleBackColor = true;
+            this.DisableImagesCB.CheckedChanged += new System.EventHandler(this.DisableImagesCB_CheckedChanged);
             // 
-            // MaxRecentGamesNumber
+            // ShuffleLowestServerCB
             // 
-            this.SettingsLayoutPanel.SetFlowBreak(this.MaxRecentGamesNumber, true);
-            this.MaxRecentGamesNumber.Location = new System.Drawing.Point(129, 154);
-            this.MaxRecentGamesNumber.Margin = new System.Windows.Forms.Padding(10, 1, 3, 0);
-            this.MaxRecentGamesNumber.Maximum = new decimal(new int[] {
-            30,
-            0,
-            0,
-            0});
-            this.MaxRecentGamesNumber.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.MaxRecentGamesNumber.Name = "MaxRecentGamesNumber";
-            this.MaxRecentGamesNumber.Size = new System.Drawing.Size(56, 20);
-            this.MaxRecentGamesNumber.TabIndex = 19;
-            this.MaxRecentGamesNumber.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.MaxRecentGamesNumber.ValueChanged += new System.EventHandler(this.MaxRecentGamesNumber_ValueChanged);
+            this.ShuffleLowestServerCB.AutoSize = true;
+            this.SettingsLayoutPanel.SetFlowBreak(this.ShuffleLowestServerCB, true);
+            this.ShuffleLowestServerCB.Location = new System.Drawing.Point(15, 153);
+            this.ShuffleLowestServerCB.Name = "ShuffleLowestServerCB";
+            this.ShuffleLowestServerCB.Size = new System.Drawing.Size(174, 17);
+            this.ShuffleLowestServerCB.TabIndex = 22;
+            this.ShuffleLowestServerCB.Text = "Shuffle Chooses Lowest Server";
+            this.ShuffleLowestServerCB.UseVisualStyleBackColor = true;
+            this.ShuffleLowestServerCB.CheckedChanged += new System.EventHandler(this.ShuffleLowestServerCB_CheckedChanged);
             // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(316, 271);
+            this.ClientSize = new System.Drawing.Size(316, 327);
             this.Controls.Add(this.SettingsTC);
             this.Name = "SettingsForm";
             this.ShowIcon = false;
@@ -475,18 +521,18 @@ namespace RBX_Alt_Manager.Forms
             this.SettingsLayoutPanel.ResumeLayout(false);
             this.SettingsLayoutPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.LaunchDelayNumber)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxRecentGamesNumber)).EndInit();
             this.SettingsTC.ResumeLayout(false);
             this.GeneralTab.ResumeLayout(false);
             this.DeveloperTab.ResumeLayout(false);
             this.DevSettingsLayoutPanel.ResumeLayout(false);
             this.DevSettingsLayoutPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PortNumber)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.MaxRecentGamesNumber)).EndInit();
             this.ResumeLayout(false);
 
         }
 
-        #endregion
+#endregion
 
         private System.Windows.Forms.FlowLayoutPanel SettingsLayoutPanel;
         private System.Windows.Forms.CheckBox AutoUpdateCB;
@@ -497,7 +543,6 @@ namespace RBX_Alt_Manager.Forms
         private System.Windows.Forms.Label DelayLabel;
         private System.Windows.Forms.NumericUpDown LaunchDelayNumber;
         private System.Windows.Forms.ToolTip Helper;
-        private System.Windows.Forms.TabControl SettingsTC;
         private System.Windows.Forms.TabPage GeneralTab;
         private System.Windows.Forms.TabPage DeveloperTab;
         private System.Windows.Forms.FlowLayoutPanel DevSettingsLayoutPanel;
@@ -518,5 +563,9 @@ namespace RBX_Alt_Manager.Forms
         private System.Windows.Forms.TextBox RegionFormatTB;
         private System.Windows.Forms.Label MRGLabel;
         private System.Windows.Forms.NumericUpDown MaxRecentGamesNumber;
+        private System.Windows.Forms.CheckBox StartOnPCStartup;
+        private System.Windows.Forms.CheckBox DisableImagesCB;
+        private System.Windows.Forms.CheckBox ShuffleLowestServerCB;
+        private NBTabControl SettingsTC;
     }
 }

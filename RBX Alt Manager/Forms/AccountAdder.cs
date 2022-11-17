@@ -3,6 +3,7 @@ using CefSharp.WinForms;
 using RBX_Alt_Manager.Forms;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Cookie = CefSharp.Cookie;
@@ -11,7 +12,6 @@ namespace RBX_Alt_Manager
 {
     public partial class AccountAdder : Form
     {
-        private delegate void SafeCallDelegate();
         private string SecurityToken;
         private string Password;
         public bool BrowserMode = false;
@@ -22,6 +22,7 @@ namespace RBX_Alt_Manager
             AccountManager.SetDarkBar(Handle);
 
             InitializeComponent();
+            this.Rescale();
 
             chromeBrowser = new ChromiumWebBrowser("https://roblox.com/login");
             chromeBrowser.AddressChanged += OnNavigated;
@@ -49,7 +50,7 @@ namespace RBX_Alt_Manager
                     if (!(control is CheckBox)) control.BackColor = ThemeEditor.ButtonsBackground;
                     control.ForeColor = ThemeEditor.ButtonsForeground;
                 }
-                else if (control is TextBox || control is RichTextBox || control is Label)
+                else if (control is TextBox || control is RichTextBox)
                 {
                     if (control is Classes.BorderedTextBox)
                     {
@@ -66,6 +67,11 @@ namespace RBX_Alt_Manager
                     control.BackColor = ThemeEditor.TextBoxesBackground;
                     control.ForeColor = ThemeEditor.TextBoxesForeground;
                 }
+                else if (control is Label)
+                {
+                    control.BackColor = ThemeEditor.LabelTransparent ? Color.Transparent : ThemeEditor.LabelBackground;
+                    control.ForeColor = ThemeEditor.LabelForeground;
+                }
                 else if (control is ListBox)
                 {
                     control.BackColor = ThemeEditor.ButtonsBackground;
@@ -76,30 +82,14 @@ namespace RBX_Alt_Manager
 
         private void Form1_Load(object sender, EventArgs e) => chromeBrowser.Dock = DockStyle.Fill;
 
-        private void CloseForm()
-        {
-            if (this.InvokeRequired)
-            {
-                var close = new SafeCallDelegate(CloseForm);
-                this.Invoke(close, new object[] { });
-            }
-            else
-                Close();
-        }
-
         public void HideForm()
         {
-            if (this.InvokeRequired)
-            {
-                var hide = new SafeCallDelegate(HideForm);
-                this.Invoke(hide, new object[] { });
-            }
-            else
+            this.InvokeIfRequired(() =>
             {
                 Hide();
                 ClearData();
                 chromeBrowser.Load("https://roblox.com/login");
-            }
+            });
         }
 
         public void ShowForm() => Show();
@@ -137,6 +127,8 @@ namespace RBX_Alt_Manager
 
         private async void OnNavigated(object sender, AddressChangedEventArgs args)
         {
+            Program.Logger.Info($"Browser Navigated to {args.Address}"); // someone has an issue where they land on a home page and nothing happens
+
             string url = args.Address;
 
             if (!BrowserMode && url.Contains("/home"))

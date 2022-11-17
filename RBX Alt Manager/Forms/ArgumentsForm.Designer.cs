@@ -85,6 +85,7 @@
             this.MaximumSize = new System.Drawing.Size(289, 221);
             this.MinimumSize = new System.Drawing.Size(289, 221);
             this.Name = "ArgumentsForm";
+            this.ShowIcon = false;
             this.Text = "ArgumentsForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ArgumentsForm_FormClosing);
             this.Load += new System.EventHandler(this.ArgumentsForm_Load);

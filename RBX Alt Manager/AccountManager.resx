@@ -130,7 +130,7 @@
   <data name="SaveToAccount.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
-        wwAADsMBx2+oZAAAAltJREFUOE+FzUlPk1EYhuHvB0nQGFECxiCjQEBcuHGHCRpEApJKFWWeyqAYMKIx
+        vAAADrwBlbxySQAAAltJREFUOE+FzUlPk1EYhuHvB0nQGFECxiCjQEBcuHGHCRpEApJKFWWeyqAYMKIx
         CiIIBKqAA8EgU6jUllYClBZaKkOZoVIoQ0Fvv9MfYBf36lzPe6RgpdYTlm0gLN/E2Uw9AYofnMn4zun0
         YU6lDXEytR//lG/4Jfdy4mYPwfe0hGbrCVKOeKTIvJ8kFOrI+eCiomuVso5lVO8dlKjnKW77RWHrLAXN
         VvLfWchtnCKzaYn4Ai3hOUakyxV2FOojvk4d4zn+6zPhhI8rn0WKK7eT1nrIl4kj3Id/fPZZdsLHqORx
@@ -143,8 +143,8 @@
         o2fIyJ1aHQGZRu/QP23E8w+e/8nYGLZPlQAAAABJRU5ErkJggg==
 </value>
   </data>
-  <metadata name="SaveTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>375, 16</value>
+  <metadata name="SaveTooltip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>156, 17</value>
   </metadata>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace RBX_Alt_Manager
 {
@@ -34,5 +35,26 @@ namespace RBX_Alt_Manager
         public object Remaining { get; set; }
         public int MinimumMembershipLevel { get; set; }
         public int ContentRatingTypeId { get; set; }
+    }
+
+    public partial class InvalidAsset
+    {
+        [JsonProperty("id")]
+        public long Id { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("assetType")]
+        public AssetType AssetType { get; set; }
+    }
+
+    public partial class AssetType
+    {
+        [JsonProperty("id")]
+        public long Id { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
     }
 }

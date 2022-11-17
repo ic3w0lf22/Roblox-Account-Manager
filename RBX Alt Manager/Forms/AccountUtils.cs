@@ -1,5 +1,6 @@
 ﻿using RBX_Alt_Manager.Forms;
 using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace RBX_Alt_Manager
@@ -13,6 +14,7 @@ namespace RBX_Alt_Manager
             AccountManager.SetDarkBar(Handle);
 
             InitializeComponent();
+            this.Rescale();
         }
 
         public void ApplyTheme()
@@ -34,7 +36,7 @@ namespace RBX_Alt_Manager
                     if (!(control is CheckBox)) control.BackColor = ThemeEditor.ButtonsBackground;
                     control.ForeColor = ThemeEditor.ButtonsForeground;
                 }
-                else if (control is TextBox || control is RichTextBox || control is Label)
+                else if (control is TextBox || control is RichTextBox)
                 {
                     if (control is Classes.BorderedTextBox)
                     {
@@ -50,6 +52,11 @@ namespace RBX_Alt_Manager
 
                     control.BackColor = ThemeEditor.TextBoxesBackground;
                     control.ForeColor = ThemeEditor.TextBoxesForeground;
+                }
+                else if (control is Label)
+                {
+                    control.BackColor = ThemeEditor.LabelTransparent ? Color.Transparent : ThemeEditor.LabelBackground;
+                    control.ForeColor = ThemeEditor.LabelForeground;
                 }
                 else if (control is ListBox)
                 {
@@ -127,7 +134,16 @@ namespace RBX_Alt_Manager
         {
             if (AccountManager.SelectedAccount == null) return;
 
-            AccountManager.SelectedAccount.BlockPlayer(Username.Text);
+            bool WasUnblocked = false;
+
+            try
+            {
+                if (AccountManager.SelectedAccount.TogglePlayerBlocked(Username.Text, ref WasUnblocked))
+                    MessageBox.Show($"{(WasUnblocked ? "Unb" : "B")}locked {Username.Text}");
+                else
+                    MessageBox.Show($"Failed to {(WasUnblocked ? "Unb" : "B")}lock {Username.Text}");
+            }
+            catch (Exception x) { MessageBox.Show($"Failed to {(WasUnblocked ? "Unb" : "B")}lock {Username.Text}\n\n{x.Message}"); }
         }
 
         private void SetDisplayName_Click(object sender, EventArgs e)

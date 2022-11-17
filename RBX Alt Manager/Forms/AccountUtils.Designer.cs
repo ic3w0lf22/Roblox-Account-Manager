@@ -47,12 +47,12 @@
             this.SetDisplayName = new System.Windows.Forms.Button();
             this.AddFriend = new System.Windows.Forms.Button();
             this.DisplayName = new RBX_Alt_Manager.Classes.BorderedTextBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // WhoFollow
             // 
-            this.WhoFollow.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.WhoFollow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.WhoFollow.FormattingEnabled = true;
             this.WhoFollow.Items.AddRange(new object[] {
             "Everyone",
@@ -60,7 +60,7 @@
             "Friends, Followed",
             "Friends",
             "No one"});
-            this.WhoFollow.Location = new System.Drawing.Point(398, 109);
+            this.WhoFollow.Location = new System.Drawing.Point(398, 130);
             this.WhoFollow.Name = "WhoFollow";
             this.WhoFollow.Size = new System.Drawing.Size(108, 21);
             this.WhoFollow.TabIndex = 13;
@@ -151,9 +151,9 @@
             // 
             // textBox5
             // 
-            this.textBox5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox5.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
-            this.textBox5.Location = new System.Drawing.Point(283, 109);
+            this.textBox5.Location = new System.Drawing.Point(283, 130);
             this.textBox5.MaxLength = 4;
             this.textBox5.Name = "textBox5";
             this.textBox5.Size = new System.Drawing.Size(52, 20);
@@ -164,8 +164,8 @@
             // 
             // button7
             // 
-            this.button7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button7.Location = new System.Drawing.Point(341, 108);
+            this.button7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.button7.Location = new System.Drawing.Point(341, 129);
             this.button7.Name = "button7";
             this.button7.Size = new System.Drawing.Size(51, 22);
             this.button7.TabIndex = 12;
@@ -187,7 +187,7 @@
             // 
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 109);
+            this.label3.Location = new System.Drawing.Point(12, 130);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(193, 26);
             this.label3.TabIndex = 1001;
@@ -196,16 +196,17 @@
             // Username
             // 
             this.Username.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
-            this.Username.Location = new System.Drawing.Point(12, 80);
+            this.Username.Location = new System.Drawing.Point(106, 79);
             this.Username.Name = "Username";
-            this.Username.Size = new System.Drawing.Size(72, 20);
+            this.Username.Size = new System.Drawing.Size(112, 20);
             this.Username.TabIndex = 7;
             // 
             // Block
             // 
-            this.Block.Location = new System.Drawing.Point(90, 79);
+            this.Block.Location = new System.Drawing.Point(83, 101);
+            this.Block.Margin = new System.Windows.Forms.Padding(0);
             this.Block.Name = "Block";
-            this.Block.Size = new System.Drawing.Size(50, 22);
+            this.Block.Size = new System.Drawing.Size(55, 22);
             this.Block.TabIndex = 8;
             this.Block.Text = "Block";
             this.Block.UseVisualStyleBackColor = true;
@@ -224,7 +225,8 @@
             // 
             // AddFriend
             // 
-            this.AddFriend.Location = new System.Drawing.Point(146, 79);
+            this.AddFriend.Location = new System.Drawing.Point(11, 101);
+            this.AddFriend.Margin = new System.Windows.Forms.Padding(0);
             this.AddFriend.Name = "AddFriend";
             this.AddFriend.Size = new System.Drawing.Size(72, 22);
             this.AddFriend.TabIndex = 1004;
@@ -234,21 +236,33 @@
             // 
             // DisplayName
             // 
+            this.DisplayName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.DisplayName.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
             this.DisplayName.Location = new System.Drawing.Point(224, 79);
             this.DisplayName.Name = "DisplayName";
             this.DisplayName.Size = new System.Drawing.Size(168, 20);
             this.DisplayName.TabIndex = 1005;
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(12, 81);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(89, 13);
+            this.label4.TabIndex = 1006;
+            this.label4.Text = "Target Username";
+            // 
             // AccountUtils
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(518, 142);
-            this.Controls.Add(this.DisplayName);
+            this.ClientSize = new System.Drawing.Size(518, 163);
             this.Controls.Add(this.AddFriend);
-            this.Controls.Add(this.SetDisplayName);
             this.Controls.Add(this.Block);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.DisplayName);
+            this.Controls.Add(this.SetDisplayName);
             this.Controls.Add(this.Username);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.button7);
@@ -262,9 +276,9 @@
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.WhoFollow);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.MinimumSize = new System.Drawing.Size(534, 181);
+            this.MinimumSize = new System.Drawing.Size(534, 202);
             this.Name = "AccountUtils";
+            this.ShowIcon = false;
             this.Text = " Account Utilities";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AccountUtils_FormClosing);
             this.ResumeLayout(false);
@@ -292,5 +306,6 @@
         private System.Windows.Forms.Button SetDisplayName;
         private System.Windows.Forms.Button AddFriend;
         private Classes.BorderedTextBox DisplayName;
+        private System.Windows.Forms.Label label4;
     }
 }

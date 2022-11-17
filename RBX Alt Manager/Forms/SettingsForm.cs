@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Text.RegularExpressions;
@@ -9,12 +10,14 @@ namespace RBX_Alt_Manager.Forms
     public partial class SettingsForm : Form
     {
         private bool SettingsLoaded = false;
+        private RegistryKey StartupKey;
 
         public SettingsForm()
         {
             AccountManager.SetDarkBar(Handle);
 
             InitializeComponent();
+            this.Rescale();
         }
 
         private void SettingsForm_Load(object sender, EventArgs e)
@@ -25,6 +28,7 @@ namespace RBX_Alt_Manager.Forms
             SavePasswordCB.Checked = AccountManager.General.Get<bool>("SavePasswords");
             DisableAgingAlertCB.Checked = AccountManager.General.Get<bool>("DisableAgingAlert");
             HideMRobloxCB.Checked = AccountManager.General.Get<bool>("HideRbxAlert");
+            ShuffleLowestServerCB.Checked = AccountManager.General.Get<bool>("ShuffleChoosesLowestServer");
             RegionFormatTB.Text = AccountManager.General.Get<string>("ServerRegionFormat");
             MaxRecentGamesNumber.Value = AccountManager.General.Get<int>("MaxRecentGames");
 
@@ -37,6 +41,16 @@ namespace RBX_Alt_Manager.Forms
             AllowAECB.Checked = AccountManager.WebServer.Get<bool>("AllowAccountEditing");
             PasswordTextBox.Text = AccountManager.WebServer.Get("Password");
             PortNumber.Value = AccountManager.WebServer.Get<decimal>("WebServerPort");
+
+            try { StartupKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true); } catch { }
+
+            if (StartupKey != null && StartupKey.GetValue(Application.ProductName) is string ExistingPath)
+            {
+                if (ExistingPath != Application.ExecutablePath) // fix the path if moved
+                    StartupKey.SetValue(Application.ProductName, Application.ExecutablePath);
+
+                StartOnPCStartup.Checked = true;
+            }
 
             SettingsLoaded = true;
 
@@ -61,6 +75,8 @@ namespace RBX_Alt_Manager.Forms
 
         private void AsyncJoinCB_CheckedChanged(object sender, EventArgs e)
         {
+            LaunchDelayNumber.Enabled = !AsyncJoinCB.Checked;
+
             if (!SettingsLoaded) return;
 
             AccountManager.General.Set("AsyncJoin", AsyncJoinCB.Checked ? "true" : "false");
@@ -111,8 +127,30 @@ namespace RBX_Alt_Manager.Forms
         {
             if (!SettingsLoaded) return;
 
-            AccountManager.General.Set("ServerRegionFormat", RegionFormatTB.Text, "Visit http://ip-api.com/json/1.1.1.1 to see available format options");
+            AccountManager.General.Set("ServerRegionFormat", RegionFormatTB.Text, "Visit http://ip-api.com/json to see available format options");
             AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void DisableImagesCB_CheckedChanged(object sender, EventArgs e)
+        {
+            AccountManager.General.Set("DisableImages", DisableImagesCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void ShuffleLowestServerCB_CheckedChanged(object sender, EventArgs e)
+        {
+            AccountManager.General.Set("ShuffleChoosesLowestServer", ShuffleLowestServerCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void StartOnPCStartup_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!SettingsLoaded) return;
+
+            if (StartOnPCStartup.Checked)
+                StartupKey?.SetValue(Application.ProductName, Application.ExecutablePath);
+            else
+                StartupKey?.DeleteValue(Application.ProductName);
         }
 
         #endregion
@@ -224,7 +262,7 @@ namespace RBX_Alt_Manager.Forms
                     if (!(control is CheckBox)) control.BackColor = ThemeEditor.ButtonsBackground;
                     control.ForeColor = ThemeEditor.ButtonsForeground;
                 }
-                else if (control is TextBox || control is RichTextBox || control is Label)
+                else if (control is TextBox || control is RichTextBox)
                 {
                     if (control is Classes.BorderedTextBox)
                     {
@@ -240,6 +278,11 @@ namespace RBX_Alt_Manager.Forms
 
                     control.BackColor = ThemeEditor.TextBoxesBackground;
                     control.ForeColor = ThemeEditor.TextBoxesForeground;
+                }
+                else if (control is Label)
+                {
+                    control.BackColor = ThemeEditor.LabelTransparent ? Color.Transparent : ThemeEditor.LabelBackground;
+                    control.ForeColor = ThemeEditor.LabelForeground;
                 }
                 else if (control is ListBox)
                 {

@@ -9,7 +9,6 @@ namespace RBX_Alt_Manager.Classes
         Account account;
         string FieldName;
         string FieldValue;
-        AccountFields parent;
 
         public Field(Account account, string Field, string Value)
         {
@@ -24,21 +23,10 @@ namespace RBX_Alt_Manager.Classes
         {
             FieldBox.Text = FieldName;
             ValueBox.Text = FieldValue;
-
-            parent = Parent as AccountFields;
         }
 
         private void Delete_Click(object sender, EventArgs e)
         {
-            int idx = Parent.Controls.GetChildIndex(this);
-
-            for (int i = idx; i < Parent.Controls.Count; i++)
-            {
-                Control control = Parent.Controls[i];
-
-                control.Location = new Point(control.Location.X, control.Location.Y - 25);
-            }
-
             Parent.Controls.Remove(this);
 
             account.RemoveField(FieldBox.Text);
@@ -59,7 +47,7 @@ namespace RBX_Alt_Manager.Classes
 
                 account.SetField(FieldBox.Text, ValueBox.Text);
 
-                parent.FlashGreen();
+                (this.FindForm() as AccountFields)?.FlashGreen();
             }
         }
     }

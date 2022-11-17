@@ -19,7 +19,7 @@ namespace RBX_Alt_Manager.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -61,12 +61,58 @@ namespace RBX_Alt_Manager.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;configuration&gt;
+        ///    &lt;startup&gt;
+        ///        &lt;supportedRuntime version=&quot;v4.0&quot; sku=&quot;.NETFramework,Version=v4.8&quot; /&gt;
+        ///    &lt;/startup&gt;
+        ///    &lt;appSettings&gt;
+        ///        &lt;add key=&quot;log4net.Config&quot; value=&quot;log4.config&quot; /&gt;
+        ///        &lt;add key=&quot;log4net.Config.Watch&quot; value=&quot;True&quot; /&gt;
+        ///        &lt;add key=&quot;log4net.Internal.Debug&quot; value=&quot;False&quot; /&gt;
+        ///    &lt;/appSettings&gt;
+        ///    &lt;runtime&gt;
+        ///        &lt;assemblyBinding xmlns=&quot;urn:schemas-microsoft-com:asm.v1&quot;&gt;
+        ///            &lt;probing privatePath=&quot;x86&quot; /&gt;
+        ///       [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string AppConfig {
+            get {
+                return ResourceManager.GetString("AppConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap configIcon {
             get {
                 object obj = ResourceManager.GetObject("configIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [RBX Alt Manager]
+        ///AccountsBG=#1E1F28
+        ///AccountsFG=#FFFFFF
+        ///ButtonsBG=#292929
+        ///ButtonsFG=#FFFFFF
+        ///ButtonsBC=#282828
+        ///ButtonStyle=Popup
+        ///FormsBG=#292929
+        ///FormsFG=#FFFFFF
+        ///DarkTopBar=True
+        ///LightImages=True
+        ///LabelsTransparent=True
+        ///ShowHeaders=True
+        ///TextBoxesBG=#3A3A3A
+        ///TextBoxesFG=#FFFFFF
+        ///TextBoxesBC=#282828.
+        /// </summary>
+        internal static string DefaultTheme {
+            get {
+                return ResourceManager.GetString("DefaultTheme", resourceCulture);
             }
         }
         
@@ -87,6 +133,47 @@ namespace RBX_Alt_Manager.Properties {
             get {
                 object obj = ResourceManager.GetObject("donation", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] handle {
+            get {
+                object obj = ResourceManager.GetObject("handle", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap icons8_history_32 {
+            get {
+                object obj = ResourceManager.GetObject("icons8_history_32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
+        ///&lt;configuration&gt;
+        ///    &lt;configSections&gt;
+        ///        &lt;section name=&quot;log4net&quot; type=&quot;log4net.Config.Log4NetConfigurationSectionHandler, log4net&quot; /&gt;
+        ///    &lt;/configSections&gt;
+        ///
+        ///    &lt;log4net&gt;
+        ///        &lt;appender name=&quot;RollingFileAppender&quot; type=&quot;log4net.Appender.RollingFileAppender&quot;&gt;
+        ///            &lt;file value=&quot;log.txt&quot; /&gt;
+        ///            &lt;appendToFile value=&quot;true&quot; /&gt;
+        ///            &lt;rollingStyle value=&quot;Size&quot; /&gt;
+        ///            &lt;maxSizeRollBackups value=&quot;1&quot; /&gt;
+        ///            &lt;maximumFileSize  [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string Log4Config {
+            get {
+                return ResourceManager.GetString("Log4Config", resourceCulture);
             }
         }
         
@@ -127,6 +214,16 @@ namespace RBX_Alt_Manager.Properties {
             get {
                 object obj = ResourceManager.GetObject("server_icon_white", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ShuffleIcon {
+            get {
+                object obj = ResourceManager.GetObject("ShuffleIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
