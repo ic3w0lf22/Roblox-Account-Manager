@@ -137,7 +137,7 @@ namespace RBX_Alt_Manager.Classes
 
         private void WaitForLogPath()
         {
-            if (LogFileRetries > 20) return;
+            if (LogFileRetries > 30) return;
             if (RbxProcess.HasExited) return;
 
             Program.Logger.Info($"Attempting to find LogFile for {RbxProcess.Id}, retries: {LogFileRetries}");
@@ -154,7 +154,7 @@ namespace RBX_Alt_Manager.Classes
 
             Process HandleProc = Process.Start(handle);
 
-            HandleProc.WaitForExit(5000);
+            HandleProc.WaitForExit(6000);
 
             StreamReader reader = HandleProc.StandardOutput;
             string output = reader.ReadToEnd();
@@ -170,7 +170,8 @@ namespace RBX_Alt_Manager.Classes
             }
             else
             {
-                Thread.Sleep(500);
+                Thread.Sleep(1500);
+
                 new Thread(WaitForLogPath).Start();
             }
         }

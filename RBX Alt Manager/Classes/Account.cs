@@ -737,16 +737,22 @@ namespace RBX_Alt_Manager
 
         public void SetAvatar(string AvatarJSONData)
         {
-            JObject Avatar = JObject.Parse(AvatarJSONData);
-
+            if (string.IsNullOrEmpty(AvatarJSONData)) return;
+            if (!AvatarJSONData.TryParseJson(out JObject Avatar)) return;
+            if (Avatar == null) return;
             if (!GetCSRFToken(out string Token)) return;
 
-            RestRequest request = new RestRequest("v1/avatar/set-player-avatar-type", Method.POST);
-            request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddJsonBody(new { playerAvatarType = Avatar["playerAvatarType"].Value<string>() });
+            RestRequest request;
 
-            AccountManager.AvatarClient.Execute(request);
+            if (Avatar.ContainsKey("playerAvatarType"))
+            {
+                request = new RestRequest("v1/avatar/set-player-avatar-type", Method.POST);
+                request.AddCookie(".ROBLOSECURITY", SecurityToken);
+                request.AddHeader("X-CSRF-TOKEN", Token);
+                request.AddJsonBody(new { playerAvatarType = Avatar["playerAvatarType"].Value<string>() });
+
+                AccountManager.AvatarClient.Execute(request);
+            }
 
             JToken ScaleObject = Avatar.ContainsKey("scales") ? Avatar["scales"] : (Avatar.ContainsKey("scale") ? Avatar["scale"] : null);
 

@@ -77,6 +77,8 @@ namespace RBX_Alt_Manager.Forms
             this.AllowExternalConnectionsCB = new System.Windows.Forms.CheckBox();
             this.RLLabel = new System.Windows.Forms.Label();
             this.RelaunchDelayNumber = new System.Windows.Forms.NumericUpDown();
+            this.LDLabel = new System.Windows.Forms.Label();
+            this.LauncherDelayNumber = new System.Windows.Forms.NumericUpDown();
             this.PortLabel = new System.Windows.Forms.Label();
             this.PortNumber = new System.Windows.Forms.NumericUpDown();
             this.MinimizeRoblox = new System.Windows.Forms.Button();
@@ -98,8 +100,6 @@ namespace RBX_Alt_Manager.Forms
             this.AutoRelaunchTimer = new System.Windows.Forms.Timer(this.components);
             this.MinimzeTimer = new System.Windows.Forms.Timer(this.components);
             this.CloseTimer = new System.Windows.Forms.Timer(this.components);
-            this.LDLabel = new System.Windows.Forms.Label();
-            this.LauncherDelayNumber = new System.Windows.Forms.NumericUpDown();
             this.ControlsPanel.SuspendLayout();
             this.ScriptLayoutPanel.SuspendLayout();
             this.ScriptTabs.SuspendLayout();
@@ -116,11 +116,11 @@ namespace RBX_Alt_Manager.Forms
             this.SettingsTab.SuspendLayout();
             this.flowLayoutPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RelaunchDelayNumber)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.LauncherDelayNumber)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PortNumber)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.AutoMinIntervalNum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.AutoCloseIntervalNum)).BeginInit();
             this.HelpPage.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.LauncherDelayNumber)).BeginInit();
             this.SuspendLayout();
             // 
             // ControlsPanel
@@ -294,7 +294,6 @@ namespace RBX_Alt_Manager.Forms
             this.ScriptBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.ScriptBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.ScriptBox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.ScriptBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.ScriptBox.IsReplaceMode = false;
             this.ScriptBox.Language = FastColoredTextBoxNS.Language.Lua;
             this.ScriptBox.LeftBracket = '(';
@@ -370,7 +369,6 @@ namespace RBX_Alt_Manager.Forms
             this.AutoExecuteScriptBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.AutoExecuteScriptBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.AutoExecuteScriptBox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.AutoExecuteScriptBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.AutoExecuteScriptBox.IsReplaceMode = false;
             this.AutoExecuteScriptBox.Language = FastColoredTextBoxNS.Language.Lua;
             this.AutoExecuteScriptBox.LeftBracket = '(';
@@ -627,9 +625,9 @@ namespace RBX_Alt_Manager.Forms
             this.flowLayoutPanel2.SetFlowBreak(this.StartOnLaunch, true);
             this.StartOnLaunch.Location = new System.Drawing.Point(15, 15);
             this.StartOnLaunch.Name = "StartOnLaunch";
-            this.StartOnLaunch.Size = new System.Drawing.Size(102, 17);
+            this.StartOnLaunch.Size = new System.Drawing.Size(223, 17);
             this.StartOnLaunch.TabIndex = 15;
-            this.StartOnLaunch.Text = "Start on Launch";
+            this.StartOnLaunch.Text = "Start Nexus on Account Manager Launch";
             this.StartOnLaunch.UseVisualStyleBackColor = true;
             this.StartOnLaunch.CheckedChanged += new System.EventHandler(this.StartOnLaunch_CheckedChanged);
             // 
@@ -680,6 +678,41 @@ namespace RBX_Alt_Manager.Forms
             0,
             0});
             this.RelaunchDelayNumber.ValueChanged += new System.EventHandler(this.RelaunchDelayNumber_ValueChanged);
+            // 
+            // LDLabel
+            // 
+            this.LDLabel.Location = new System.Drawing.Point(15, 83);
+            this.LDLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
+            this.LDLabel.Name = "LDLabel";
+            this.LDLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.LDLabel.Size = new System.Drawing.Size(171, 13);
+            this.LDLabel.TabIndex = 23;
+            this.LDLabel.Text = "Launcher Delay (sec)";
+            // 
+            // LauncherDelayNumber
+            // 
+            this.flowLayoutPanel2.SetFlowBreak(this.LauncherDelayNumber, true);
+            this.LauncherDelayNumber.Location = new System.Drawing.Point(192, 80);
+            this.LauncherDelayNumber.Margin = new System.Windows.Forms.Padding(3, 1, 3, 0);
+            this.LauncherDelayNumber.Maximum = new decimal(new int[] {
+            3600,
+            0,
+            0,
+            0});
+            this.LauncherDelayNumber.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.LauncherDelayNumber.Name = "LauncherDelayNumber";
+            this.LauncherDelayNumber.Size = new System.Drawing.Size(56, 20);
+            this.LauncherDelayNumber.TabIndex = 22;
+            this.LauncherDelayNumber.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.LauncherDelayNumber.ValueChanged += new System.EventHandler(this.LauncherDelayNumber_ValueChanged);
             // 
             // PortLabel
             // 
@@ -930,41 +963,6 @@ namespace RBX_Alt_Manager.Forms
             this.CloseTimer.Interval = 1200000;
             this.CloseTimer.Tick += new System.EventHandler(this.CloseTimer_Tick);
             // 
-            // LDLabel
-            // 
-            this.LDLabel.Location = new System.Drawing.Point(15, 83);
-            this.LDLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
-            this.LDLabel.Name = "LDLabel";
-            this.LDLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.LDLabel.Size = new System.Drawing.Size(171, 13);
-            this.LDLabel.TabIndex = 23;
-            this.LDLabel.Text = "Launcher Delay (sec)";
-            // 
-            // LauncherDelayNumber
-            // 
-            this.flowLayoutPanel2.SetFlowBreak(this.LauncherDelayNumber, true);
-            this.LauncherDelayNumber.Location = new System.Drawing.Point(192, 80);
-            this.LauncherDelayNumber.Margin = new System.Windows.Forms.Padding(3, 1, 3, 0);
-            this.LauncherDelayNumber.Maximum = new decimal(new int[] {
-            3600,
-            0,
-            0,
-            0});
-            this.LauncherDelayNumber.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.LauncherDelayNumber.Name = "LauncherDelayNumber";
-            this.LauncherDelayNumber.Size = new System.Drawing.Size(56, 20);
-            this.LauncherDelayNumber.TabIndex = 22;
-            this.LauncherDelayNumber.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.LauncherDelayNumber.ValueChanged += new System.EventHandler(this.LauncherDelayNumber_ValueChanged);
-            // 
             // AccountControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -997,12 +995,12 @@ namespace RBX_Alt_Manager.Forms
             this.flowLayoutPanel2.ResumeLayout(false);
             this.flowLayoutPanel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RelaunchDelayNumber)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.LauncherDelayNumber)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PortNumber)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.AutoMinIntervalNum)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.AutoCloseIntervalNum)).EndInit();
             this.HelpPage.ResumeLayout(false);
             this.HelpPage.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.LauncherDelayNumber)).EndInit();
             this.ResumeLayout(false);
 
         }

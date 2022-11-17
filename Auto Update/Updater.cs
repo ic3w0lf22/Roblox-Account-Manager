@@ -145,10 +145,10 @@ namespace Auto_Update
 
                     foreach (string s in Directory.GetDirectories(UpdatePath))
                     {
-                        string FN = Path.GetFileName(s);
+                        DirectoryInfo dir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, Path.GetFileName(s)));
 
-                        if (Directory.Exists(Path.Combine(Environment.CurrentDirectory, FN)))
-                            Directory.Delete(Path.Combine(Environment.CurrentDirectory, FN), true);
+                        if (dir.Exists)
+                            dir.RecursiveDelete();
                     }
 
                     DirectoryInfo UpdateDir = new DirectoryInfo(UpdatePath);
@@ -166,6 +166,8 @@ namespace Auto_Update
                                 File.Delete(Path.Combine(Environment.CurrentDirectory, file.Name));
                         }
                     }
+
+                    UpdateDir.RecursiveDelete();
                 }
             }
             catch (Exception x)
@@ -176,7 +178,10 @@ namespace Auto_Update
                     var Result = MessageBox.Show(this, $"Something went wrong! \n{x.Message}\n{x.StackTrace}", "Auto Updater", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
 
                     if (Result == DialogResult.Retry)
-                        currentTask.ContinueWith(t => { currentTask = Task.Run(Download); });
+                        currentTask.ContinueWith(t => {
+                            Application.Restart();
+                            Environment.Exit(0);
+                        });
                     else
                         Environment.Exit(0);
                 }));
