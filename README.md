@@ -5,11 +5,6 @@
 
 <!-- BEGIN LATEST DOWNLOAD BUTTON -->
 [![Download zip](https://custom-icon-badges.herokuapp.com/badge/-Download-blue?style=for-the-badge&logo=download&logoColor=white "Download")](https://github.com/ic3w0lf22/Roblox-Account-Manager/releases/download/3.3.1/Roblox.Account.Manager.3.3.zip)
-
-https://github.com/ic3w0lf22/Roblox-Account-Manager/archive/Roblox.Account.Manager.3.3.zip
-
-
-
 <!-- END LATEST DOWNLOAD BUTTON -->
 
 # Features
