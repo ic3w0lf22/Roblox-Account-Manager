@@ -441,7 +441,6 @@ namespace RBX_Alt_Manager
                 Client.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
             ApplyTheme();
-            // new MissingAssets().Show();
 
             RGForm.RecentGameSelected += (sender, e) => { PlaceID.Text = e.Game.Details?.placeId.ToString(); };
 
@@ -541,9 +540,6 @@ namespace RBX_Alt_Manager
             PlaceID.AutoCompleteSource = AutoCompleteSource.CustomSource;
 
             Task.Run(LoadRecentGames);
-
-            if (AccountControl.Get<bool>("StartOnLaunch"))
-                LaunchNexus.PerformClick();
 
             if (General.Get<bool>("ShuffleJobId"))
                 ShuffleIcon_Click(null, EventArgs.Empty);
@@ -949,6 +945,9 @@ namespace RBX_Alt_Manager
                 }
                 catch { }
             }
+
+            if (AccountControl.Get<bool>("StartOnLaunch"))
+                LaunchNexus.PerformClick();
         }
 
         private void Remove_Click(object sender, EventArgs e)

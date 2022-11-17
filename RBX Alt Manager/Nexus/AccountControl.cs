@@ -84,9 +84,9 @@ namespace RBX_Alt_Manager.Forms
 
                         if (account != null)
                             cAccount.LinkedAccount = account;
-                        else
-                            Accounts.Remove(cAccount);
                     }
+
+                    Accounts.RemoveAll(x => x.LinkedAccount == null);
                 }
                 catch { }
             }
@@ -479,7 +479,7 @@ namespace RBX_Alt_Manager.Forms
                     if (account.AutoRelaunch && (DateTime.Now - account.LastPing).TotalSeconds > account.RelaunchDelay)
                     {
                         Program.Logger.Info($"Relaunch Delay: {RelaunchDelay} | Current Time: {DateTime.Now}");
-                        Program.Logger.Info($"Relaunching {account.Username} to {account.PlaceId}, time since last relaunch: {(DateTime.Now - account.LastPing).TotalSeconds} seconds [{account.LastPing}]");
+                        Program.Logger.Info($"Relaunching {account.Username} to {account.PlaceId}, time since last relaunch: {(DateTime.Now - account.LastPing).TotalSeconds} seconds [{account.LastPing}] | Linked: {account.LinkedAccount}");
 
                         account.LastPing = DateTime.Now;
                         account.RelaunchDelay = RelaunchDelay;
@@ -492,7 +492,7 @@ namespace RBX_Alt_Manager.Forms
 
                 ClearDeadProcesses();
             }
-            catch (Exception x) { Program.Logger.Error($"An error occured launching an account from auto relaunch: {x.Message}"); }
+            catch (Exception x) { Program.Logger.Error($"An error occured launching an account from auto relaunch: {x.Message} Trace: {x.StackTrace}"); }
         }
 
         private void AccountControl_FormClosing(object sender, FormClosingEventArgs e)
