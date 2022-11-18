@@ -159,7 +159,7 @@ namespace RBX_Alt_Manager.Classes
             StreamReader reader = HandleProc.StandardOutput;
             string output = reader.ReadToEnd();
 
-            Match LogMatch = Regex.Match(output, @"\w+: File\s+(\w+:.+\\logs\\)([\d+.]+_\w+_Player_\w+_last.log)");
+            Match LogMatch = Regex.Match(output, @"\w+: File.+(\w+:.+\\logs\\)([\d+.]+_\w+_Player_\w+_last.log)");
 
             if (LogMatch.Success && LogMatch.Groups.Count == 3)
             {
