@@ -691,8 +691,9 @@ namespace RBX_Alt_Manager.Forms
                     control.BackColor = ThemeEditor.LabelTransparent ? Color.Transparent : ThemeEditor.LabelBackground;
                     control.ForeColor = ThemeEditor.LabelForeground;
                 }
-                else if (control is ListBox)
+                else if (control is ListBox || control is ObjectListView)
                 {
+                    if (control is ObjectListView view) view.HeaderStyle = ThemeEditor.ShowHeaders ? ColumnHeaderStyle.Clickable : ColumnHeaderStyle.None;
                     control.BackColor = ThemeEditor.ButtonsBackground;
                     control.ForeColor = ThemeEditor.ButtonsForeground;
                 }
