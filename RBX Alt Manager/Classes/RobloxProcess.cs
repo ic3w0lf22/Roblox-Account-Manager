@@ -18,6 +18,7 @@ namespace RBX_Alt_Manager.Classes
         private long LastPosition = 0;
         private long CurrentDataModel;
         private bool IsDMPaused;
+        private string LastLine;
 
         private static readonly Dictionary<string, string> Matches = new Dictionary<string, string>{
             { "DataModelInit", @"\[FLog::UGCGameController\] UGCGameController, initialized DataModel\((\w+)\)" },
@@ -43,11 +44,13 @@ namespace RBX_Alt_Manager.Classes
 
         private void ReadLogFile(object s, EventArgs e)
         {
-            if (LogStream == null) return;
+            if (LogStream == null || !LogStream.CanRead) return;
 
             if (LogStream.Length > LastPosition)
             {
                 int Length = (int)(LogStream.Length - LastPosition);
+
+                if (Length == 0 || Length > LogStream.Length) return;
 
                 LogStream.Seek(-Length, SeekOrigin.End);
                 byte[] Bytes = new byte[Length];
@@ -93,10 +96,11 @@ namespace RBX_Alt_Manager.Classes
                         Program.Logger.Info($"RTA1: {RTA1}");
                         Program.Logger.Info($"RTA2: {RTA2}");
                         Program.Logger.Info($"Was Paused: {IsDMPaused}");
+                        Program.Logger.Info($"Current Line: {i}");
 
-                        if (RobloxWatcher.VerifyDataModel)
+                        if (RobloxWatcher.VerifyDataModel && !string.IsNullOrEmpty(LastLine))
                         {
-                            Match DMS = Regex.Match(Lines[i - 1], Matches["DataModelStop"]); // should always have lines[i-1] unless someone somehow manages to mess this up by 1 nanosecond
+                            Match DMS = Regex.Match(LastLine, Matches["DataModelStop"]); // should always have lines[i-1] unless someone somehow manages to mess this up by 1 nanosecond
 
                             if (IsDMPaused || (DMS.Success && DMS.Groups.Count == 2 && long.TryParse(DMS.Groups[1].Value, System.Globalization.NumberStyles.HexNumber, null, out MatchedDataModel) && MatchedDataModel == CurrentDataModel))
                             {
@@ -116,6 +120,8 @@ namespace RBX_Alt_Manager.Classes
 
                     if (RobloxWatcher.VerifyDataModel && IsDMPaused && Regex.IsMatch(Line, Matches["DataModelStop2"]))
                         CurrentDataModel = -1;
+
+                    LastLine = Line;
                 }
 
                 LastPosition = LogStream.Length;

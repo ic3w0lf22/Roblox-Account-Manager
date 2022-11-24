@@ -43,11 +43,18 @@ namespace RBX_Alt_Manager
 
             if (!AccountManager.Watcher.Exists("VerifyDataModel")) AccountManager.Watcher.Set("VerifyDataModel", "true");
             if (!AccountManager.Watcher.Exists("IgnoreExistingProcesses")) AccountManager.Watcher.Set("IgnoreExistingProcesses", "true");
+            if (!AccountManager.Watcher.Exists("ExpectedWindowTitle")) AccountManager.Watcher.Set("ExpectedWindowTitle", "Roblox");
 
             RobloxScannerCB.Checked = AccountManager.Watcher.Get<bool>("Enabled");
             ExitIfBetaDetectedCB.Checked = AccountManager.Watcher.Get<bool>("ExitOnBeta");
             VerifyDataModelCB.Checked = AccountManager.Watcher.Get<bool>("VerifyDataModel");
             IgnoreExistingProcesses.Checked = AccountManager.Watcher.Get<bool>("IgnoreExistingProcesses");
+            CloseRbxWindowTitleCB.Checked = AccountManager.Watcher.Get<bool>("CloseRbxWindowTitle");
+            RbxMemoryCB.Checked = AccountManager.Watcher.Get<bool>("CloseRbxMemory");
+
+            RbxWindowNameTB.Text = AccountManager.Watcher.Get<string>("ExpectedWindowTitle");
+
+            RbxMemoryLTNum.Value = AccountManager.Watcher.Exists("MemoryLowValue") ? Utilities.Clamp(AccountManager.Watcher.Get<decimal>("MemoryLowValue"), RbxMemoryLTNum.Minimum, RbxMemoryLTNum.Maximum) : 200;
 
             ScanIntervalN.Value = AccountManager.Watcher.Exists("ScanInterval") ? AccountManager.Watcher.Get<int>("ScanInterval") : 6;
             ReadIntervalN.Value = AccountManager.Watcher.Exists("ReadInterval") ? AccountManager.Watcher.Get<int>("ReadInterval") : 250;
@@ -928,6 +935,38 @@ namespace RBX_Alt_Manager
             RobloxWatcher.IgnoreExistingProcesses = IgnoreExistingProcesses.Checked;
 
             AccountManager.Watcher.Set("IgnoreExistingProcesses", IgnoreExistingProcesses.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void RbxMemoryCB_CheckedChanged(object sender, EventArgs e)
+        {
+            RobloxWatcher.CloseIfMemoryLow = RbxMemoryCB.Checked;
+
+            AccountManager.Watcher.Set("CloseRbxMemory", RbxMemoryCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void RbxMemoryLTNum_ValueChanged(object sender, EventArgs e)
+        {
+            RobloxWatcher.MemoryLowValue = (int)RbxMemoryLTNum.Value;
+
+            AccountManager.Watcher.Set("MemoryLowValue", RbxMemoryLTNum.Value.ToString());
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void CloseRbxWindowTitleCB_CheckedChanged(object sender, EventArgs e)
+        {
+            RobloxWatcher.CloseIfWindowTitle = CloseRbxWindowTitleCB.Checked;
+
+            AccountManager.Watcher.Set("CloseRbxWindowTitle", CloseRbxWindowTitleCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void RbxWindowNameTB_TextChanged(object sender, EventArgs e)
+        {
+            RobloxWatcher.ExpectedWindowTitle = RbxWindowNameTB.Text;
+
+            AccountManager.Watcher.Set("ExpectedWindowTitle", RbxWindowNameTB.Text);
             AccountManager.IniSettings.Save("RAMSettings.ini");
         }
     }

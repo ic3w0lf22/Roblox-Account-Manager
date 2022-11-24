@@ -100,15 +100,20 @@ namespace RBX_Alt_Manager
             this.ViewOutfits = new System.Windows.Forms.Button();
             this.OutfitsPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.RobloxScan = new System.Windows.Forms.TabPage();
-            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+            this.WatcherPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.RobloxScannerCB = new System.Windows.Forms.CheckBox();
             this.ScanESLabel = new System.Windows.Forms.Label();
             this.ScanIntervalN = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
             this.ReadIntervalN = new System.Windows.Forms.NumericUpDown();
             this.ExitIfBetaDetectedCB = new System.Windows.Forms.CheckBox();
-            this.WatcherTimer = new System.Windows.Forms.Timer(this.components);
             this.IgnoreExistingProcesses = new System.Windows.Forms.CheckBox();
+            this.RbxMemoryCB = new System.Windows.Forms.CheckBox();
+            this.RbxMemoryLTNum = new System.Windows.Forms.NumericUpDown();
+            this.MBLabel = new System.Windows.Forms.Label();
+            this.CloseRbxWindowTitleCB = new System.Windows.Forms.CheckBox();
+            this.RbxWindowNameTB = new System.Windows.Forms.TextBox();
+            this.WatcherTimer = new System.Windows.Forms.Timer(this.components);
             this.ServerListStrip.SuspendLayout();
             this.GamesStrip.SuspendLayout();
             this.FavoritesStrip.SuspendLayout();
@@ -123,9 +128,10 @@ namespace RBX_Alt_Manager
             this.UniversePage.SuspendLayout();
             this.OutfitsPage.SuspendLayout();
             this.RobloxScan.SuspendLayout();
-            this.flowLayoutPanel1.SuspendLayout();
+            this.WatcherPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ScanIntervalN)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ReadIntervalN)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.RbxMemoryLTNum)).BeginInit();
             this.SuspendLayout();
             // 
             // ServerID
@@ -312,7 +318,7 @@ namespace RBX_Alt_Manager
             // VerifyDataModelCB
             // 
             this.VerifyDataModelCB.AutoSize = true;
-            this.flowLayoutPanel1.SetFlowBreak(this.VerifyDataModelCB, true);
+            this.WatcherPanel.SetFlowBreak(this.VerifyDataModelCB, true);
             this.VerifyDataModelCB.Location = new System.Drawing.Point(11, 109);
             this.VerifyDataModelCB.Name = "VerifyDataModelCB";
             this.VerifyDataModelCB.Size = new System.Drawing.Size(136, 17);
@@ -787,7 +793,7 @@ namespace RBX_Alt_Manager
             // 
             // RobloxScan
             // 
-            this.RobloxScan.Controls.Add(this.flowLayoutPanel1);
+            this.RobloxScan.Controls.Add(this.WatcherPanel);
             this.RobloxScan.Location = new System.Drawing.Point(4, 25);
             this.RobloxScan.Name = "RobloxScan";
             this.RobloxScan.Size = new System.Drawing.Size(491, 278);
@@ -795,27 +801,32 @@ namespace RBX_Alt_Manager
             this.RobloxScan.Text = "Watcher";
             this.RobloxScan.UseVisualStyleBackColor = true;
             // 
-            // flowLayoutPanel1
+            // WatcherPanel
             // 
-            this.flowLayoutPanel1.Controls.Add(this.RobloxScannerCB);
-            this.flowLayoutPanel1.Controls.Add(this.ScanESLabel);
-            this.flowLayoutPanel1.Controls.Add(this.ScanIntervalN);
-            this.flowLayoutPanel1.Controls.Add(this.label2);
-            this.flowLayoutPanel1.Controls.Add(this.ReadIntervalN);
-            this.flowLayoutPanel1.Controls.Add(this.ExitIfBetaDetectedCB);
-            this.flowLayoutPanel1.Controls.Add(this.VerifyDataModelCB);
-            this.flowLayoutPanel1.Controls.Add(this.IgnoreExistingProcesses);
-            this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Padding = new System.Windows.Forms.Padding(8);
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(491, 278);
-            this.flowLayoutPanel1.TabIndex = 0;
+            this.WatcherPanel.Controls.Add(this.RobloxScannerCB);
+            this.WatcherPanel.Controls.Add(this.ScanESLabel);
+            this.WatcherPanel.Controls.Add(this.ScanIntervalN);
+            this.WatcherPanel.Controls.Add(this.label2);
+            this.WatcherPanel.Controls.Add(this.ReadIntervalN);
+            this.WatcherPanel.Controls.Add(this.ExitIfBetaDetectedCB);
+            this.WatcherPanel.Controls.Add(this.VerifyDataModelCB);
+            this.WatcherPanel.Controls.Add(this.IgnoreExistingProcesses);
+            this.WatcherPanel.Controls.Add(this.RbxMemoryCB);
+            this.WatcherPanel.Controls.Add(this.RbxMemoryLTNum);
+            this.WatcherPanel.Controls.Add(this.MBLabel);
+            this.WatcherPanel.Controls.Add(this.CloseRbxWindowTitleCB);
+            this.WatcherPanel.Controls.Add(this.RbxWindowNameTB);
+            this.WatcherPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.WatcherPanel.Location = new System.Drawing.Point(0, 0);
+            this.WatcherPanel.Name = "WatcherPanel";
+            this.WatcherPanel.Padding = new System.Windows.Forms.Padding(8);
+            this.WatcherPanel.Size = new System.Drawing.Size(491, 278);
+            this.WatcherPanel.TabIndex = 0;
             // 
             // RobloxScannerCB
             // 
             this.RobloxScannerCB.AutoSize = true;
-            this.flowLayoutPanel1.SetFlowBreak(this.RobloxScannerCB, true);
+            this.WatcherPanel.SetFlowBreak(this.RobloxScannerCB, true);
             this.RobloxScannerCB.Location = new System.Drawing.Point(11, 11);
             this.RobloxScannerCB.Name = "RobloxScannerCB";
             this.RobloxScannerCB.Size = new System.Drawing.Size(139, 17);
@@ -836,7 +847,7 @@ namespace RBX_Alt_Manager
             // 
             // ScanIntervalN
             // 
-            this.flowLayoutPanel1.SetFlowBreak(this.ScanIntervalN, true);
+            this.WatcherPanel.SetFlowBreak(this.ScanIntervalN, true);
             this.ScanIntervalN.Location = new System.Drawing.Point(113, 34);
             this.ScanIntervalN.Maximum = new decimal(new int[] {
             600,
@@ -870,7 +881,7 @@ namespace RBX_Alt_Manager
             // 
             // ReadIntervalN
             // 
-            this.flowLayoutPanel1.SetFlowBreak(this.ReadIntervalN, true);
+            this.WatcherPanel.SetFlowBreak(this.ReadIntervalN, true);
             this.ReadIntervalN.Location = new System.Drawing.Point(110, 60);
             this.ReadIntervalN.Maximum = new decimal(new int[] {
             3000,
@@ -895,7 +906,7 @@ namespace RBX_Alt_Manager
             // ExitIfBetaDetectedCB
             // 
             this.ExitIfBetaDetectedCB.AutoSize = true;
-            this.flowLayoutPanel1.SetFlowBreak(this.ExitIfBetaDetectedCB, true);
+            this.WatcherPanel.SetFlowBreak(this.ExitIfBetaDetectedCB, true);
             this.ExitIfBetaDetectedCB.Location = new System.Drawing.Point(11, 86);
             this.ExitIfBetaDetectedCB.Name = "ExitIfBetaDetectedCB";
             this.ExitIfBetaDetectedCB.Size = new System.Drawing.Size(184, 17);
@@ -904,15 +915,10 @@ namespace RBX_Alt_Manager
             this.ExitIfBetaDetectedCB.UseVisualStyleBackColor = true;
             this.ExitIfBetaDetectedCB.CheckedChanged += new System.EventHandler(this.ExitIfBetaDetectedCB_CheckedChanged);
             // 
-            // WatcherTimer
-            // 
-            this.WatcherTimer.Interval = 12000;
-            this.WatcherTimer.Tick += new System.EventHandler(this.WatcherTimer_Tick);
-            // 
             // IgnoreExistingProcesses
             // 
             this.IgnoreExistingProcesses.AutoSize = true;
-            this.flowLayoutPanel1.SetFlowBreak(this.IgnoreExistingProcesses, true);
+            this.WatcherPanel.SetFlowBreak(this.IgnoreExistingProcesses, true);
             this.IgnoreExistingProcesses.Location = new System.Drawing.Point(11, 132);
             this.IgnoreExistingProcesses.Name = "IgnoreExistingProcesses";
             this.IgnoreExistingProcesses.Size = new System.Drawing.Size(218, 17);
@@ -920,6 +926,82 @@ namespace RBX_Alt_Manager
             this.IgnoreExistingProcesses.Text = "Ignore Existing Processes During Startup";
             this.IgnoreExistingProcesses.UseVisualStyleBackColor = true;
             this.IgnoreExistingProcesses.CheckedChanged += new System.EventHandler(this.IgnoreExistingProcesses_CheckedChanged);
+            // 
+            // RbxMemoryCB
+            // 
+            this.RbxMemoryCB.AutoSize = true;
+            this.RbxMemoryCB.Location = new System.Drawing.Point(11, 155);
+            this.RbxMemoryCB.Margin = new System.Windows.Forms.Padding(3, 3, 0, 3);
+            this.RbxMemoryCB.Name = "RbxMemoryCB";
+            this.RbxMemoryCB.Size = new System.Drawing.Size(199, 17);
+            this.RbxMemoryCB.TabIndex = 8;
+            this.RbxMemoryCB.Text = "Close Roblox if Memory is Less Than";
+            this.RbxMemoryCB.UseVisualStyleBackColor = true;
+            this.RbxMemoryCB.CheckedChanged += new System.EventHandler(this.RbxMemoryCB_CheckedChanged);
+            // 
+            // RbxMemoryLTNum
+            // 
+            this.RbxMemoryLTNum.Location = new System.Drawing.Point(213, 155);
+            this.RbxMemoryLTNum.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.RbxMemoryLTNum.Minimum = new decimal(new int[] {
+            20,
+            0,
+            0,
+            0});
+            this.RbxMemoryLTNum.Name = "RbxMemoryLTNum";
+            this.RbxMemoryLTNum.Size = new System.Drawing.Size(52, 20);
+            this.RbxMemoryLTNum.TabIndex = 9;
+            this.RbxMemoryLTNum.Value = new decimal(new int[] {
+            200,
+            0,
+            0,
+            0});
+            this.RbxMemoryLTNum.ValueChanged += new System.EventHandler(this.RbxMemoryLTNum_ValueChanged);
+            // 
+            // MBLabel
+            // 
+            this.MBLabel.AutoSize = true;
+            this.WatcherPanel.SetFlowBreak(this.MBLabel, true);
+            this.MBLabel.Location = new System.Drawing.Point(271, 158);
+            this.MBLabel.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
+            this.MBLabel.Name = "MBLabel";
+            this.MBLabel.Size = new System.Drawing.Size(23, 13);
+            this.MBLabel.TabIndex = 10;
+            this.MBLabel.Text = "MB";
+            // 
+            // CloseRbxWindowTitleCB
+            // 
+            this.CloseRbxWindowTitleCB.AutoSize = true;
+            this.CloseRbxWindowTitleCB.Location = new System.Drawing.Point(11, 181);
+            this.CloseRbxWindowTitleCB.Margin = new System.Windows.Forms.Padding(3, 3, 0, 3);
+            this.CloseRbxWindowTitleCB.Name = "CloseRbxWindowTitleCB";
+            this.CloseRbxWindowTitleCB.Size = new System.Drawing.Size(180, 17);
+            this.CloseRbxWindowTitleCB.TabIndex = 11;
+            this.CloseRbxWindowTitleCB.Text = "Close Roblox if WindowTitle Isn\'t";
+            this.CloseRbxWindowTitleCB.UseVisualStyleBackColor = true;
+            this.CloseRbxWindowTitleCB.CheckedChanged += new System.EventHandler(this.CloseRbxWindowTitleCB_CheckedChanged);
+            // 
+            // RbxWindowNameTB
+            // 
+            this.RbxWindowNameTB.AutoCompleteCustomSource.AddRange(new string[] {
+            "Roblox"});
+            this.RbxWindowNameTB.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.WatcherPanel.SetFlowBreak(this.RbxWindowNameTB, true);
+            this.RbxWindowNameTB.Location = new System.Drawing.Point(194, 181);
+            this.RbxWindowNameTB.Name = "RbxWindowNameTB";
+            this.RbxWindowNameTB.Size = new System.Drawing.Size(52, 20);
+            this.RbxWindowNameTB.TabIndex = 12;
+            this.RbxWindowNameTB.Text = "Roblox";
+            this.RbxWindowNameTB.TextChanged += new System.EventHandler(this.RbxWindowNameTB_TextChanged);
+            // 
+            // WatcherTimer
+            // 
+            this.WatcherTimer.Interval = 12000;
+            this.WatcherTimer.Tick += new System.EventHandler(this.WatcherTimer_Tick);
             // 
             // ServerList
             // 
@@ -954,10 +1036,11 @@ namespace RBX_Alt_Manager
             this.OutfitsPage.ResumeLayout(false);
             this.OutfitsPage.PerformLayout();
             this.RobloxScan.ResumeLayout(false);
-            this.flowLayoutPanel1.ResumeLayout(false);
-            this.flowLayoutPanel1.PerformLayout();
+            this.WatcherPanel.ResumeLayout(false);
+            this.WatcherPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ScanIntervalN)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ReadIntervalN)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.RbxMemoryLTNum)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1022,7 +1105,7 @@ namespace RBX_Alt_Manager
         private System.Windows.Forms.CheckBox FavoriteListViewCB;
         private System.Windows.Forms.FlowLayoutPanel FavoriteGamesPanel;
         private System.Windows.Forms.TabPage RobloxScan;
-        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
+        private System.Windows.Forms.FlowLayoutPanel WatcherPanel;
         private System.Windows.Forms.CheckBox RobloxScannerCB;
         private NBTabControl Tabs;
         private System.Windows.Forms.Label ScanESLabel;
@@ -1039,5 +1122,10 @@ namespace RBX_Alt_Manager
         private System.Windows.Forms.Button WearCustomButton;
         private System.Windows.Forms.CheckBox VerifyDataModelCB;
         private System.Windows.Forms.CheckBox IgnoreExistingProcesses;
+        private System.Windows.Forms.CheckBox RbxMemoryCB;
+        private System.Windows.Forms.NumericUpDown RbxMemoryLTNum;
+        private System.Windows.Forms.Label MBLabel;
+        private System.Windows.Forms.CheckBox CloseRbxWindowTitleCB;
+        private System.Windows.Forms.TextBox RbxWindowNameTB;
     }
 }

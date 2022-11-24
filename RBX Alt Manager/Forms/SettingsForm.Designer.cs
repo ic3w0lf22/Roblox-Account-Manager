@@ -41,6 +41,7 @@ namespace RBX_Alt_Manager.Forms
             this.DisableAgingAlertCB = new System.Windows.Forms.CheckBox();
             this.HideMRobloxCB = new System.Windows.Forms.CheckBox();
             this.StartOnPCStartup = new System.Windows.Forms.CheckBox();
+            this.ShuffleLowestServerCB = new System.Windows.Forms.CheckBox();
             this.RegionFormatLabel = new System.Windows.Forms.Label();
             this.RegionFormatTB = new System.Windows.Forms.TextBox();
             this.MRGLabel = new System.Windows.Forms.Label();
@@ -64,7 +65,6 @@ namespace RBX_Alt_Manager.Forms
             this.AllowLACB = new System.Windows.Forms.CheckBox();
             this.AllowAECB = new System.Windows.Forms.CheckBox();
             this.DisableImagesCB = new System.Windows.Forms.CheckBox();
-            this.ShuffleLowestServerCB = new System.Windows.Forms.CheckBox();
             this.SettingsLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.LaunchDelayNumber)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MaxRecentGamesNumber)).BeginInit();
@@ -96,7 +96,7 @@ namespace RBX_Alt_Manager.Forms
             this.SettingsLayoutPanel.Location = new System.Drawing.Point(3, 3);
             this.SettingsLayoutPanel.Name = "SettingsLayoutPanel";
             this.SettingsLayoutPanel.Padding = new System.Windows.Forms.Padding(12);
-            this.SettingsLayoutPanel.Size = new System.Drawing.Size(305, 292);
+            this.SettingsLayoutPanel.Size = new System.Drawing.Size(302, 292);
             this.SettingsLayoutPanel.TabIndex = 0;
             // 
             // AutoUpdateCB
@@ -207,6 +207,18 @@ namespace RBX_Alt_Manager.Forms
             this.StartOnPCStartup.UseVisualStyleBackColor = true;
             this.StartOnPCStartup.CheckedChanged += new System.EventHandler(this.StartOnPCStartup_CheckedChanged);
             // 
+            // ShuffleLowestServerCB
+            // 
+            this.ShuffleLowestServerCB.AutoSize = true;
+            this.SettingsLayoutPanel.SetFlowBreak(this.ShuffleLowestServerCB, true);
+            this.ShuffleLowestServerCB.Location = new System.Drawing.Point(15, 153);
+            this.ShuffleLowestServerCB.Name = "ShuffleLowestServerCB";
+            this.ShuffleLowestServerCB.Size = new System.Drawing.Size(174, 17);
+            this.ShuffleLowestServerCB.TabIndex = 22;
+            this.ShuffleLowestServerCB.Text = "Shuffle Chooses Lowest Server";
+            this.ShuffleLowestServerCB.UseVisualStyleBackColor = true;
+            this.ShuffleLowestServerCB.CheckedChanged += new System.EventHandler(this.ShuffleLowestServerCB_CheckedChanged);
+            // 
             // RegionFormatLabel
             // 
             this.RegionFormatLabel.AutoSize = true;
@@ -315,7 +327,7 @@ namespace RBX_Alt_Manager.Forms
             this.SettingsTC.Location = new System.Drawing.Point(0, 0);
             this.SettingsTC.Name = "SettingsTC";
             this.SettingsTC.SelectedIndex = 0;
-            this.SettingsTC.Size = new System.Drawing.Size(319, 327);
+            this.SettingsTC.Size = new System.Drawing.Size(316, 327);
             this.SettingsTC.TabIndex = 18;
             // 
             // GeneralTab
@@ -324,7 +336,7 @@ namespace RBX_Alt_Manager.Forms
             this.GeneralTab.Location = new System.Drawing.Point(4, 25);
             this.GeneralTab.Name = "GeneralTab";
             this.GeneralTab.Padding = new System.Windows.Forms.Padding(3);
-            this.GeneralTab.Size = new System.Drawing.Size(311, 298);
+            this.GeneralTab.Size = new System.Drawing.Size(308, 298);
             this.GeneralTab.TabIndex = 0;
             this.GeneralTab.Text = "General";
             this.GeneralTab.UseVisualStyleBackColor = true;
@@ -336,7 +348,7 @@ namespace RBX_Alt_Manager.Forms
             this.DeveloperTab.Location = new System.Drawing.Point(4, 25);
             this.DeveloperTab.Name = "DeveloperTab";
             this.DeveloperTab.Padding = new System.Windows.Forms.Padding(3);
-            this.DeveloperTab.Size = new System.Drawing.Size(308, 275);
+            this.DeveloperTab.Size = new System.Drawing.Size(308, 298);
             this.DeveloperTab.TabIndex = 1;
             this.DeveloperTab.Text = "Developer";
             // 
@@ -360,7 +372,7 @@ namespace RBX_Alt_Manager.Forms
             this.DevSettingsLayoutPanel.Location = new System.Drawing.Point(3, 3);
             this.DevSettingsLayoutPanel.Name = "DevSettingsLayoutPanel";
             this.DevSettingsLayoutPanel.Padding = new System.Windows.Forms.Padding(12);
-            this.DevSettingsLayoutPanel.Size = new System.Drawing.Size(302, 269);
+            this.DevSettingsLayoutPanel.Size = new System.Drawing.Size(302, 292);
             this.DevSettingsLayoutPanel.TabIndex = 2;
             // 
             // EnableDMCB
@@ -494,18 +506,6 @@ namespace RBX_Alt_Manager.Forms
             this.DisableImagesCB.Text = "Disable Image Loading [Less Ram %]";
             this.DisableImagesCB.UseVisualStyleBackColor = true;
             this.DisableImagesCB.CheckedChanged += new System.EventHandler(this.DisableImagesCB_CheckedChanged);
-            // 
-            // ShuffleLowestServerCB
-            // 
-            this.ShuffleLowestServerCB.AutoSize = true;
-            this.SettingsLayoutPanel.SetFlowBreak(this.ShuffleLowestServerCB, true);
-            this.ShuffleLowestServerCB.Location = new System.Drawing.Point(15, 153);
-            this.ShuffleLowestServerCB.Name = "ShuffleLowestServerCB";
-            this.ShuffleLowestServerCB.Size = new System.Drawing.Size(174, 17);
-            this.ShuffleLowestServerCB.TabIndex = 22;
-            this.ShuffleLowestServerCB.Text = "Shuffle Chooses Lowest Server";
-            this.ShuffleLowestServerCB.UseVisualStyleBackColor = true;
-            this.ShuffleLowestServerCB.CheckedChanged += new System.EventHandler(this.ShuffleLowestServerCB_CheckedChanged);
             // 
             // SettingsForm
             // 

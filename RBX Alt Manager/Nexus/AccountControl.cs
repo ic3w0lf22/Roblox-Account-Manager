@@ -43,9 +43,6 @@ namespace RBX_Alt_Manager.Forms
         [DllImport("user32", EntryPoint = "SendMessageA", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
         private static extern int SendMessage(int hwnd, int wMsg, int wParam, int lParam);
 
-        [DllImport("user32.dll")]
-        static extern bool PostMessage(IntPtr hWnd, UInt32 Msg, int wParam, int lParam);
-
         public AccountControl()
         {
             Instance = this;
@@ -54,8 +51,6 @@ namespace RBX_Alt_Manager.Forms
 
             InitializeComponent();
             this.Rescale();
-
-            LoadAccounts();
         }
 
         #region Save File
@@ -320,12 +315,15 @@ namespace RBX_Alt_Manager.Forms
             PortNumber.Value = AccountManager.AccountControl.Get<decimal>("NexusPort");
             RelaunchDelayNumber.Value = AccountManager.AccountControl.Get<decimal>("RelaunchDelay");
             LauncherDelayNumber.Value = AccountManager.AccountControl.Get<decimal>("LauncherDelayNumber");
+            AutoMinimizeCB.Checked = AccountManager.AccountControl.Get<bool>("AutoMinimizeEnabled");
             AutoCloseCB.Checked = AccountManager.AccountControl.Get<bool>("AutoCloseEnabled");
             AutoMinIntervalNum.Value = Math.Max(Math.Min(AccountManager.AccountControl.Get<decimal>("AutoMinimizeInterval"), AutoMinIntervalNum.Minimum), AutoMinIntervalNum.Maximum);
             AutoCloseIntervalNum.Value = Math.Max(Math.Min(AccountManager.AccountControl.Get<decimal>("AutoCloseInterval"), AutoCloseIntervalNum.Maximum), AutoCloseIntervalNum.Minimum);
             AutoCloseType.SelectedIndex = AccountManager.AccountControl.Get<int>("AutoCloseType");
 
             SettingsLoaded = true;
+
+            LoadAccounts();
         }
 
         private void AccountsView_DragOver(object sender, DragEventArgs e)
@@ -375,7 +373,15 @@ namespace RBX_Alt_Manager.Forms
 
         private void ExecuteButton_Click(object sender, EventArgs e) => EmitMessage($"execute {ScriptBox.Text}");
 
-        private void AutoMinimizeCB_CheckedChanged(object sender, EventArgs e) => MinimzeTimer.Enabled = AutoMinimizeCB.Checked;
+        private void AutoMinimizeCB_CheckedChanged(object sender, EventArgs e)
+        {
+            MinimzeTimer.Enabled = AutoMinimizeCB.Checked;
+
+            if (!SettingsLoaded) return;
+
+            AccountManager.AccountControl.Set("AutoMinimizeEnabled", AutoMinimizeCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
 
         private void AutoRelaunchCheckBox_CheckedChanged(object sender, EventArgs e)
         {
@@ -564,19 +570,19 @@ namespace RBX_Alt_Manager.Forms
         private void MinimizeRoblox_Click(object sender, EventArgs e)
         {
             foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
-                PostMessage(p.MainWindowHandle, 0x0112, 0xF020, 0);
+                Utilities.PostMessage(p.MainWindowHandle, 0x0112, 0xF020, 0);
         }
 
         private void CloseRoblox_Click(object sender, EventArgs e)
         {
             foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
-                p.Kill();
+                try { p.Kill(); } catch { }
         }
 
         private void MinimzeTimer_Tick(object sender, EventArgs e)
         {
             foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
-                PostMessage(p.MainWindowHandle, 0x0112, 0xF020, 0);
+                Utilities.PostMessage(p.MainWindowHandle, 0x0112, 0xF020, 0);
         }
 
         private void CloseTimer_Tick(object sender, EventArgs e)

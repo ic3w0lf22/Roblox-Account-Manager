@@ -28,6 +28,7 @@ namespace RBX_Alt_Manager.Forms
             SavePasswordCB.Checked = AccountManager.General.Get<bool>("SavePasswords");
             DisableAgingAlertCB.Checked = AccountManager.General.Get<bool>("DisableAgingAlert");
             HideMRobloxCB.Checked = AccountManager.General.Get<bool>("HideRbxAlert");
+            DisableImagesCB.Checked = AccountManager.General.Get<bool>("DisableImages");
             ShuffleLowestServerCB.Checked = AccountManager.General.Get<bool>("ShuffleChoosesLowestServer");
             RegionFormatTB.Text = AccountManager.General.Get<string>("ServerRegionFormat");
             MaxRecentGamesNumber.Value = AccountManager.General.Get<int>("MaxRecentGames");
