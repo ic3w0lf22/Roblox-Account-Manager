@@ -16,6 +16,10 @@ namespace RBX_Alt_Manager.Classes
         public static int ReadInterval = 250;
         public static bool VerifyDataModel = true;
         public static bool IgnoreExistingProcesses = true;
+        public static bool CloseIfMemoryLow = false;
+        public static bool CloseIfWindowTitle = false;
+        public static int MemoryLowValue = 200;
+        public static string ExpectedWindowTitle = "Roblox";
         private static bool ReadLoopActive;
 
         public static event EventHandler<EventArgs> LogFileRead;
@@ -24,13 +28,29 @@ namespace RBX_Alt_Manager.Classes
         {
             foreach (var process in Process.GetProcessesByName("RobloxPlayerBeta"))
             {
-                if (Seen.Contains(process.Id)) continue;
+                void Kill(string Reason) { Program.Logger.Info($"Attempting to kill process {process.Id}, reason: {Reason}"); try { process.Kill(); } catch { } }
 
                 string CommandLine = process.GetCommandLine();
 
+                // This ignores the second roblox process which would cause 268 (Unexpected client behavior) kicks if it were closed.
                 if (string.IsNullOrEmpty(CommandLine)) continue; // Roblox's second process
                 if (CommandLine.StartsWith("\\??\\")) continue; // Roblox's second process
                 if (!CommandLine.Contains("-t ") && !CommandLine.Contains("-j ")) continue; // Check if this process was ran with an authentcation token and a joinScript
+
+                try
+                {
+                    if ((DateTime.Now - process.StartTime).TotalSeconds > 30) // Roblox shouldn't take that long to startup, right? Surely nobody will be using a potato with these settings.
+                    {
+                        if (CloseIfMemoryLow && process.WorkingSet64 / 1024 / 1024 < MemoryLowValue)
+                            Kill($"Low Memory ({process.WorkingSet64 / 1024 / 1024} < {MemoryLowValue})");
+
+                        if (CloseIfWindowTitle && process.MainWindowTitle != ExpectedWindowTitle)
+                            Kill($"Window Title isn't {ExpectedWindowTitle}, got {process.MainWindowTitle}");
+                    }
+                }
+                catch (Exception x){ Program.Logger.Error($"Error with checking for Memory & Window Title: {x.Message}\n{x.StackTrace}"); }
+
+                if (Seen.Contains(process.Id)) continue;
 
                 try
                 {

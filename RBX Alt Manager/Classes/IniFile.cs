@@ -169,7 +169,7 @@ namespace RBX_Alt_Manager
         /// <param name="path">Path to the INI file.</param>
         public IniFile(string path) : this()
         {
-            Load(Path.Combine(Environment.CurrentDirectory, path));
+            Load(path);
         }
 
         /// <summary>

@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Management;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -98,6 +99,9 @@ public static class Utilities
             return objects.Cast<ManagementBaseObject>().SingleOrDefault()?["CommandLine"]?.ToString();
     }
 
+    [DllImport("user32.dll")]
+    public static extern bool PostMessage(IntPtr hWnd, UInt32 Msg, int wParam, int lParam);
+
     public static async Task<string> GetRandomJobId(long PlaceId, bool ChooseLowestServer = false)
     {
         Random RNG = new Random();
@@ -123,7 +127,7 @@ public static class Utilities
             Cursor = Servers["nextPageCursor"]?.Value<string>() ?? string.Empty;
 
             foreach (JToken a in Servers["data"])
-                if (a["playing"]?.Value<int>() != a["maxPlayers"]?.Value<int>())
+                if (a["playing"]?.Value<int>() != a["maxPlayers"]?.Value<int>() && a["playing"]?.Value<int>() > 0 && a["maxPlayers"]?.Value<int>() > 1)
                     ValidServers.Add(a["id"].Value<string>());
 
             if (!string.IsNullOrEmpty(Cursor) && !ChooseLowestServer)
