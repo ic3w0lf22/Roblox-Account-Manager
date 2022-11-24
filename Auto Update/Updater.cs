@@ -34,7 +34,9 @@ namespace Auto_Update
             else
                 ShouldUpdate = MessageBox.Show($"Auto Update?", "Alt Manager Auto Updater", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
 
-            if (Directory.Exists(UpdatePath)) Directory.Delete(UpdatePath, true);
+            DirectoryInfo UpdateDir = new DirectoryInfo(UpdatePath);
+
+            if (UpdateDir.Exists) UpdateDir.RecursiveDelete();
 
             FileName = Path.Combine(Directory.GetCurrentDirectory(), FileName);
 
@@ -124,8 +126,10 @@ namespace Auto_Update
             }
             catch { }
 
+#if RELEASE
             try
             {
+#endif
                 using (ZipArchive archive = ZipFile.OpenRead(FileName))
                 {
                     archive.ExtractToDirectory(UpdatePath);
@@ -169,7 +173,8 @@ namespace Auto_Update
 
                     UpdateDir.RecursiveDelete();
                 }
-            }
+#if RELEASE
+        }
             catch (Exception x)
             {
                 ErorrOccured = true;
@@ -186,6 +191,7 @@ namespace Auto_Update
                         Environment.Exit(0);
                 }));
             }
+#endif
 
             if (ErorrOccured)
                 return;
@@ -295,7 +301,7 @@ namespace Auto_Update
             }
         }
 
-        #region Interop
+#region Interop
 
         private struct TOKEN_PRIVILEGES
         {
@@ -414,7 +420,7 @@ namespace Auto_Update
         [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern bool CreateProcessWithTokenW(IntPtr hToken, int dwLogonFlags, string lpApplicationName, string lpCommandLine, int dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory, [In] ref STARTUPINFO lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation);
 
-        #endregion
+#endregion
     }
 
     public class nWebClient : WebClient

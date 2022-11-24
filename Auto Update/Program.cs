@@ -22,6 +22,8 @@ namespace Auto_Update
             if (!baseDir.Exists)
                 return;
 
+            baseDir.Attributes = FileAttributes.Normal;
+
             foreach (var dir in baseDir.EnumerateDirectories())
                 RecursiveDelete(dir);
 
