@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Reflection;
@@ -169,9 +170,6 @@ namespace RBX_Alt_Manager
                 try
                 {
                     Favorites = JsonConvert.DeserializeObject<List<FavoriteGame>>(File.ReadAllText(FavGamesFN));
-
-                    foreach (var a in Favorites)
-                        Console.WriteLine($"{a.Details?.placeId}: {a.Name}");
 
                     FavoritesListView.SetObjects(Favorites);
 
@@ -468,9 +466,11 @@ namespace RBX_Alt_Manager
 
         private void SaveFavorites()
         {
+            Logger.Info($"Removing {Favorites.Where(x => x.Details == null).Count()} favorite games because they have no GameDetails available!");
+
             if (Favorites.Count == 0) return;
 
-            Favorites.RemoveAll(f => f.Details == null);
+            Favorites.RemoveAll(f => f.Details == null); // Past favorite games' GameDetails are cached anyways so no need to worry about this
 
             lock (SaveLock)
                 File.WriteAllText(FavGamesFN, JsonConvert.SerializeObject(Favorites));
@@ -523,10 +523,7 @@ namespace RBX_Alt_Manager
         private void addToFavoritesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (GamesListView.SelectedObject is PageGame game)
-            {
-                AddFavoriteToList(new FavoriteGame(game.name, game.placeId));
-                SaveFavorites();
-            }
+                AddFavoriteToList(new FavoriteGame(game.name, game.placeId, SaveFavorites));
         }
 
         private async void toolStripMenuItem1_Click(object sender, EventArgs e)
@@ -572,7 +569,7 @@ namespace RBX_Alt_Manager
 
                 if (res == DialogResult.Yes)
                 {
-                    FavoritesListView.RemoveObject(game); // Remove(FavoritesListView.SelectedItem);
+                    FavoritesListView.RemoveObject(game);
                     Favorites.Remove(game);
                     SaveFavorites();
 
@@ -585,7 +582,7 @@ namespace RBX_Alt_Manager
             }
         }
 
-        private void Favorite_Click(object sender, EventArgs e)
+        private async void Favorite_Click(object sender, EventArgs e)
         {
             string PlaceId = AccountManager.CurrentPlaceId;
 
@@ -594,19 +591,21 @@ namespace RBX_Alt_Manager
 
             RestRequest request = new RestRequest("Marketplace/ProductInfo?assetId=" + PlaceId, Method.GET);
             request.AddHeader("Accept", "application/json");
-            IRestResponse response = AccountManager.APIClient.Execute(request);
+            IRestResponse response = await AccountManager.APIClient.ExecuteAsync(request);
+
+            Logger.Info($"MarketResponse for {PlaceId}: [{response.StatusCode}] {response.Content}");
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
                 ProductInfo placeInfo = JsonConvert.DeserializeObject<ProductInfo>(response.Content);
 
                 if (!string.IsNullOrEmpty(AccountManager.CurrentJobId) && AccountManager.CurrentJobId.Contains("privateServerLinkCode"))
-                    AddFavoriteToList(new FavoriteGame(placeInfo.Name + " (VIP)", Convert.ToInt64(AccountManager.CurrentPlaceId), AccountManager.CurrentJobId));
+                    AddFavoriteToList(new FavoriteGame($"{placeInfo.Name} (VIP)", Convert.ToInt64(AccountManager.CurrentPlaceId), AccountManager.CurrentJobId, SaveFavorites));
                 else
-                    AddFavoriteToList(new FavoriteGame(placeInfo.Name, Convert.ToInt64(AccountManager.CurrentPlaceId)));
-
-                SaveFavorites();
+                    AddFavoriteToList(new FavoriteGame(placeInfo.Name, Convert.ToInt64(AccountManager.CurrentPlaceId), SaveFavorites));
             }
+            else
+                MessageBox.Show($"{response.Content}", $"Can't add {PlaceId} to favorites! [{response.StatusCode} {response.StatusDescription}]", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private void copyPlaceIDToolStripMenuItem_Click(object sender, EventArgs e)

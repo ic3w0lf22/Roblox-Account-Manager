@@ -11,6 +11,7 @@ namespace RBX_Alt_Manager
     {
         public GameDetails Details;
         public string ImageUrl;
+        [JsonIgnore] public Action Callback;
 
         public Game() { } // Default Constructor so that Details isn't overriden with Unknown when deserializing
 
@@ -33,6 +34,8 @@ namespace RBX_Alt_Manager
         {
             while (Details == null)
                 await Task.Delay(Delay);
+
+            Callback?.Invoke();
         }
     }
 
@@ -103,18 +106,18 @@ namespace RBX_Alt_Manager
         public long PlaceID;
 
         [JsonConstructor]
-        public FavoriteGame(long PlaceID) : base(PlaceID)
+        public FavoriteGame(long PlaceID, Action Callback = null) : base(PlaceID)
         {
             Name = "???";
             PrivateServer = "";
             this.PlaceID = PlaceID;
+            this.Callback = Callback;
         }
 
-        public FavoriteGame(string Name, long PlaceID) : this(PlaceID) =>
-            this.Name = Name;
-
-        public FavoriteGame(string Name, long PlaceID, string PrivateServer) : this(Name, PlaceID) =>
-            this.PrivateServer = PrivateServer;
+        public FavoriteGame(string Name, long PlaceID) : this(PlaceID) => this.Name = Name;
+        public FavoriteGame(string Name, long PlaceID, Action Callback) : this(PlaceID, Callback) => this.Name = Name;
+        public FavoriteGame(string Name, long PlaceID, string PrivateServer) : this(Name, PlaceID) => this.PrivateServer = PrivateServer;
+        public FavoriteGame(string Name, long PlaceID, string PrivateServer, Action Callback) : this(Name, PlaceID, Callback) => this.PrivateServer = PrivateServer;
     }
 
     public class GameArgs : EventArgs
