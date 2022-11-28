@@ -185,8 +185,8 @@ namespace RBX_Alt_Manager
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
                 JObject pinInfo = JObject.Parse(response.Content);
-
-                if (!pinInfo["isEnabled"].Value<bool>() || pinInfo["unlockedUntil"].Value<int>() > 0) return true;
+                
+                if (!pinInfo["isEnabled"].Value<bool>() || (pinInfo["unlockedUntil"].Type == JTokenType.Null && pinInfo["unlockedUntil"].Value<int>() > 0)) return true;
             }
 
             if (!Internal) MessageBox.Show("Pin required!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -643,7 +643,7 @@ namespace RBX_Alt_Manager
                         }
                         catch (Exception x)
                         {
-                            Utilities.InvokeIfRequired(AccountManager.Instance, () => MessageBox.Show("ERROR: Failed to launch roblox.\nTry reinstalling roblox\n\n" + x.Message + " " + x.StackTrace, "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error));
+                            Utilities.InvokeIfRequired(AccountManager.Instance, () => MessageBox.Show($"ERROR: Failed to launch roblox! Try re-installing Roblox.\n\n{x.Message} {x.StackTrace}", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error));
                             AccountManager.Instance.CancelLaunching();
                             AccountManager.Instance.NextAccount();
                         }

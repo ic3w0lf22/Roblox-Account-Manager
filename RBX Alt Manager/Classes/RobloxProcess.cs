@@ -18,6 +18,7 @@ namespace RBX_Alt_Manager.Classes
         private long LastPosition = 0;
         private long CurrentDataModel;
         private bool IsDMPaused;
+        private bool StreamDisposed;
         private string LastLine;
 
         private static readonly Dictionary<string, string> Matches = new Dictionary<string, string>{
@@ -44,94 +45,100 @@ namespace RBX_Alt_Manager.Classes
 
         private void ReadLogFile(object s, EventArgs e)
         {
-            if (LogStream == null || !LogStream.CanRead) return;
+            if (StreamDisposed || LogStream == null || !LogStream.CanRead) return;
 
-            if (LogStream.Length > LastPosition)
-            {
-                int Length = (int)(LogStream.Length - LastPosition);
-
-                if (Length == 0 || Length > LogStream.Length) return;
-
-                LogStream.Seek(-Length, SeekOrigin.End);
-                byte[] Bytes = new byte[Length];
-                LogStream.Read(Bytes, 0, Length);
-                string String = Encoding.Default.GetString(Bytes);
-
-                string[] Lines = String.Split('\n');
-
-                for (int i = 0; i < Lines.Length; i++)
+            try
+            { // didn't wanna do this :[
+                if (LogStream.Length > LastPosition)
                 {
-                    string Line = Lines[i];
+                    int Length = (int)(LogStream.Length - LastPosition);
 
-                    Match DMI = Regex.Match(Line, Matches["DataModelInit"]);
+                    if (Length == 0 || Length > LogStream.Length) return;
 
-                    if (!DMI.Success || DMI.Groups.Count != 2)
-                        DMI = Regex.Match(Line, Matches["DataModelInit2"]);
+                    LogStream.Seek(-Length, SeekOrigin.End);
+                    byte[] Bytes = new byte[Length];
+                    LogStream.Read(Bytes, 0, Length);
+                    string String = Encoding.Default.GetString(Bytes);
 
-                    if (CurrentDataModel <= 0 && DMI.Success && DMI.Groups.Count == 2 && long.TryParse(DMI.Groups[1].Value, System.Globalization.NumberStyles.HexNumber, null, out CurrentDataModel))
+                    string[] Lines = String.Split('\n');
+
+                    for (int i = 0; i < Lines.Length; i++)
                     {
-                        IsDMPaused = false;
+                        string Line = Lines[i];
 
-                        Program.Logger.Info($"CurrentDataModel set to {CurrentDataModel} ({DMI})");
+                        Match DMI = Regex.Match(Line, Matches["DataModelInit"]);
 
-                        continue;
-                    }
+                        if (!DMI.Success || DMI.Groups.Count != 2)
+                            DMI = Regex.Match(Line, Matches["DataModelInit2"]);
 
-                    long MatchedDataModel = -2;
-
-                    Match PDM = Regex.Match(Line, Matches["DataModelPause"]);
-
-                    if (PDM.Success && PDM.Groups.Count == 2 && long.TryParse(PDM.Groups[1].Value, System.Globalization.NumberStyles.HexNumber, null, out MatchedDataModel) && MatchedDataModel == CurrentDataModel)
-                    {
-                        IsDMPaused = true;
-
-                        continue;
-                    }
-
-                    Match RTA1 = Regex.Match(Line, Matches["ReturnToApp1"]);
-                    Match RTA2 = Regex.Match(Line, Matches["ReturnToApp2"]);
-
-                    if (RTA1.Success || RTA2.Success)
-                    {
-                        Program.Logger.Info($"RTA1: {RTA1}");
-                        Program.Logger.Info($"RTA2: {RTA2}");
-                        Program.Logger.Info($"Was Paused: {IsDMPaused}");
-                        Program.Logger.Info($"Current Line: {i}");
-
-                        if (RobloxWatcher.VerifyDataModel && !string.IsNullOrEmpty(LastLine))
+                        if (CurrentDataModel <= 0 && DMI.Success && DMI.Groups.Count == 2 && long.TryParse(DMI.Groups[1].Value, System.Globalization.NumberStyles.HexNumber, null, out CurrentDataModel))
                         {
-                            Match DMS = Regex.Match(LastLine, Matches["DataModelStop"]); // should always have lines[i-1] unless someone somehow manages to mess this up by 1 nanosecond
+                            IsDMPaused = false;
 
-                            if (IsDMPaused || (DMS.Success && DMS.Groups.Count == 2 && long.TryParse(DMS.Groups[1].Value, System.Globalization.NumberStyles.HexNumber, null, out MatchedDataModel) && MatchedDataModel == CurrentDataModel))
+                            Program.Logger.Info($"CurrentDataModel set to {CurrentDataModel} ({DMI})");
+
+                            continue;
+                        }
+
+                        long MatchedDataModel = -2;
+
+                        Match PDM = Regex.Match(Line, Matches["DataModelPause"]);
+
+                        if (PDM.Success && PDM.Groups.Count == 2 && long.TryParse(PDM.Groups[1].Value, System.Globalization.NumberStyles.HexNumber, null, out MatchedDataModel) && MatchedDataModel == CurrentDataModel)
+                        {
+                            IsDMPaused = true;
+
+                            continue;
+                        }
+
+                        Match RTA1 = Regex.Match(Line, Matches["ReturnToApp1"]);
+                        Match RTA2 = Regex.Match(Line, Matches["ReturnToApp2"]);
+
+                        if (RTA1.Success || RTA2.Success)
+                        {
+                            Program.Logger.Info($"RTA1: {RTA1}");
+                            Program.Logger.Info($"RTA2: {RTA2}");
+                            Program.Logger.Info($"Was Paused: {IsDMPaused}");
+                            Program.Logger.Info($"Current Line: {i}");
+
+                            if (RobloxWatcher.VerifyDataModel && !string.IsNullOrEmpty(LastLine))
                             {
-                                CurrentDataModel = -1;
-                                Program.Logger.Info($"CurrentDataModel set to {CurrentDataModel} ({DMS}) | Position: {LastPosition}");
+                                Match DMS = Regex.Match(LastLine, Matches["DataModelStop"]);
 
+                                if (IsDMPaused || (DMS.Success && DMS.Groups.Count == 2 && long.TryParse(DMS.Groups[1].Value, System.Globalization.NumberStyles.HexNumber, null, out MatchedDataModel) && MatchedDataModel == CurrentDataModel))
+                                {
+                                    CurrentDataModel = -1;
+                                    Program.Logger.Info($"CurrentDataModel set to {CurrentDataModel} ({DMS}) | Position: {LastPosition}");
+
+                                    if (KillProcess())
+                                        return;
+                                }
+                            }
+                            else
+                            {
                                 if (KillProcess())
                                     return;
                             }
                         }
-                        else
-                        {
-                            if (KillProcess())
-                                return;
-                        }
+
+                        if (RobloxWatcher.VerifyDataModel && IsDMPaused && Regex.IsMatch(Line, Matches["DataModelStop2"]))
+                            CurrentDataModel = -1;
+
+                        LastLine = Line;
                     }
 
-                    if (RobloxWatcher.VerifyDataModel && IsDMPaused && Regex.IsMatch(Line, Matches["DataModelStop2"]))
-                        CurrentDataModel = -1;
-
-                    LastLine = Line;
+                    LastPosition = LogStream.Length;
                 }
-
-                LastPosition = LogStream.Length;
             }
+            catch (Exception x) { Program.Logger.Error($"An error occured while trying to read LogFile of {RbxProcess.Id}: {x.Message} | {x.StackTrace} | {x.Source}"); }
         }
 
         private bool KillProcess()
         {
             if (AccountManager.Watcher.Get<bool>("ExitOnBeta") && (RobloxWatcher.IgnoreExistingProcesses || (!RobloxWatcher.IgnoreExistingProcesses && LastPosition > 0))) // Ignore processes that were already in Beta App state
             {
+                StreamDisposed = true;
+
                 LogStream.Dispose();
                 RbxProcess.Kill();
 

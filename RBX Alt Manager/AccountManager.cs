@@ -1,5 +1,4 @@
 ﻿using BrightIdeasSoftware;
-using FastColoredTextBoxNS;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RBX_Alt_Manager.Classes;
@@ -13,7 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Principal;
@@ -1098,6 +1096,9 @@ namespace RBX_Alt_Manager
 
         private void ServerList_Click(object sender, EventArgs e)
         {
+            if (AccountsList.Count == 0 || LastValidAccount == null)
+                MessageBox.Show("Some features may not work unless there is a valid account", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
             if (ServerListForm.Visible)
             {
                 ServerListForm.WindowState = FormWindowState.Normal;
