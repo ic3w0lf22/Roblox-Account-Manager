@@ -455,8 +455,7 @@ namespace RBX_Alt_Manager
             else
             {
                 ImportByCookie.Visible = true;
-                OpenApp.Location = new Point((int)(398 * Program.Scale), (int)(266 * Program.Scale));
-                OpenApp.Size = new Size((int)(70 * Program.Scale), (int)(23 * Program.Scale));
+                OpenApp.Size = ImportByCookie.Size;
                 ArgumentsB.Visible = true;
             }
 

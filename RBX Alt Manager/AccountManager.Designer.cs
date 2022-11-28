@@ -455,7 +455,7 @@
             // ImportByCookie
             // 
             this.ImportByCookie.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.ImportByCookie.Location = new System.Drawing.Point(325, 266);
+            this.ImportByCookie.Location = new System.Drawing.Point(398, 266);
             this.ImportByCookie.Name = "ImportByCookie";
             this.ImportByCookie.Size = new System.Drawing.Size(70, 23);
             this.ImportByCookie.TabIndex = 17;
