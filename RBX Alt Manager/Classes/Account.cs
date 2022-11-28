@@ -186,7 +186,7 @@ namespace RBX_Alt_Manager
             {
                 JObject pinInfo = JObject.Parse(response.Content);
                 
-                if (!pinInfo["isEnabled"].Value<bool>() || (pinInfo["unlockedUntil"].Type == JTokenType.Null && pinInfo["unlockedUntil"].Value<int>() > 0)) return true;
+                if (!pinInfo["isEnabled"].Value<bool>() || (pinInfo["unlockedUntil"].Type != JTokenType.Null && pinInfo["unlockedUntil"].Value<int>() > 0)) return true;
             }
 
             if (!Internal) MessageBox.Show("Pin required!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
