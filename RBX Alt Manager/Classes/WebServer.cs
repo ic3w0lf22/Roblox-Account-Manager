@@ -45,22 +45,18 @@ namespace RBX_Alt_Manager
                                 string rstr = _responderMethod(ctx);
                                 byte[] buf = Encoding.UTF8.GetBytes(rstr);
 
-                                if (ctx.Response.StatusCode > 299)
-                                    ctx.Response.Headers.Add("ws-error", rstr);
-
-                                ctx.Response.ContentType = "text/plain";
-                                ctx.Response.OutputStream.Write(buf, 0, buf.Length);
+                                if (ctx.Response.OutputStream.CanWrite)
+                                {
+                                    if (ctx.Response.StatusCode > 299)
+                                        ctx.Response.Headers.Add("ws-error", rstr);
+                                    ctx.Response.ContentType = "text/plain";
+                                    ctx.Response.OutputStream.Write(buf, 0, buf.Length);
+                                }
                             }
-                            catch (Exception x)
-                            {
-                                Console.BackgroundColor = ConsoleColor.Red;
-                                Console.ForegroundColor = ConsoleColor.Black;
-                                Console.WriteLine(x);
-                                Console.ResetColor();
-                            }
+                            catch (Exception x) { Program.Logger.Error($"WebServer error: {x.Message}{x.StackTrace}"); }
                             finally
                             {
-                                ctx.Response.OutputStream.Close();
+                                try { ctx.Response.OutputStream.Close(); } catch { } // couldn't find any good solution :( so i just wrapped it in a try-catch block ):
                             }
                         }, _listener.GetContext());
                     }

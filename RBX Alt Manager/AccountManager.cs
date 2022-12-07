@@ -667,6 +667,7 @@ namespace RBX_Alt_Manager
 
             if (request.Url.AbsolutePath == "/Running") return "true";
 
+            string Body = new StreamReader(request.InputStream).ReadToEnd();
             string Method = request.Url.AbsolutePath.Substring(1);
             string Account = request.QueryString["Account"];
             string Password = request.QueryString["Password"];
@@ -869,8 +870,6 @@ namespace RBX_Alt_Manager
 
                 return $"Removed Field {request.QueryString["Field"]} from {account.Username}";
             }
-
-            string Body = new StreamReader(request.InputStream).ReadToEnd();
 
             if (Method == "SetAvatar" && Body.TryParseJson(out object _))
             {

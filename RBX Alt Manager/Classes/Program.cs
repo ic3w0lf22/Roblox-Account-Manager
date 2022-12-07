@@ -23,7 +23,9 @@ namespace RBX_Alt_Manager
         {
             get
             {
-                if (AccountManager.General != null && AccountManager.General.Exists("WindowScale"))
+                float _Scale = (AccountManager.General != null && AccountManager.General.Exists("WindowScale")) ? AccountManager.General.Get<float>("WindowScale") : 0f;
+
+                if (_Scale > 0)
                     return AccountManager.General.Get<float>("WindowScale");
 
                 return 1f;
