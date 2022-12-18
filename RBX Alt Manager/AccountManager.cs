@@ -684,7 +684,7 @@ namespace RBX_Alt_Manager
 
             if (!request.IsLocal || request.Url.AbsolutePath == "/favicon.ico") return WebServerResponse("", true);
 
-            if (request.Url.AbsolutePath == "/Running") return WebServerResponse("true", true);
+            if (request.Url.AbsolutePath == "/Running") return WebServerResponse("Roblox Account Manager is running", true);
 
             string Body = new StreamReader(request.InputStream).ReadToEnd();
             string Method = request.Url.AbsolutePath.Substring(1);
