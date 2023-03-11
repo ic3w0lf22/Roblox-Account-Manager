@@ -257,7 +257,7 @@ local Success, Error, Function
 
 for i=1, 10 do
 	Success, Error = pcall(function()
-		local Response = (http_request or (syn and syn.request)) { Method = 'GET', Url = 'https://raw.githubusercontent.com/ic3w0lf22/Roblox-Account-Manager/master/RBX%20Alt%20Manager/Nexus/AccountControl.cs' }
+		local Response = (http_request or (syn and syn.request)) { Method = 'GET', Url = 'https://raw.githubusercontent.com/ic3w0lf22/Roblox-Account-Manager/master/RBX%20Alt%20Manager/Nexus/Nexus.lua' }
 
 		if not Response.Success then error(('HTTP Error %s'):format(Response.StatusCode)) end
 
