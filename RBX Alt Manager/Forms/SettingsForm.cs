@@ -40,6 +40,7 @@ namespace RBX_Alt_Manager.Forms
             AllowGACB.Checked = AccountManager.WebServer.Get<bool>("AllowGetAccounts");
             AllowLACB.Checked = AccountManager.WebServer.Get<bool>("AllowLaunchAccount");
             AllowAECB.Checked = AccountManager.WebServer.Get<bool>("AllowAccountEditing");
+            AllowExternalConnectionsCB.Checked = AccountManager.WebServer.Get<bool>("AllowExternalConnections");
             PasswordTextBox.Text = AccountManager.WebServer.Get("Password");
             PortNumber.Value = AccountManager.WebServer.Get<decimal>("WebServerPort");
 
@@ -172,6 +173,8 @@ namespace RBX_Alt_Manager.Forms
 
             AccountManager.Developer.Set("EnableWebServer", EnableWSCB.Checked ? "true" : "false");
             AccountManager.IniSettings.Save("RAMSettings.ini");
+
+            MessageBox.Show("Roblox Account Manager must be restarted to enable this setting", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void ERRPCB_CheckedChanged(object sender, EventArgs e)
@@ -212,6 +215,16 @@ namespace RBX_Alt_Manager.Forms
 
             AccountManager.WebServer.Set("AllowAccountEditing", AllowAECB.Checked ? "true" : "false");
             AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void AllowExternalConnectionsCB_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!SettingsLoaded) return;
+
+            AccountManager.WebServer.Set("AllowExternalConnections", AllowExternalConnectionsCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+
+            MessageBox.Show("Roblox Account Manager must be restarted to enable this setting\n\nThis setting requires admin privileges", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void PortNumber_ValueChanged(object sender, EventArgs e)

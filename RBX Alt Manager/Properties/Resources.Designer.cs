@@ -178,6 +178,29 @@ namespace RBX_Alt_Manager.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nexus_Version = 102
+        ///
+        ///local Success, Error, Function
+        ///
+        ///for i=1, 10 do
+        ///	Success, Error = pcall(function()
+        ///		local Response = (http_request or (syn and syn.request)) { Method = &apos;GET&apos;, Url = &apos;https://raw.githubusercontent.com/ic3w0lf22/Roblox-Account-Manager/master/RBX%20Alt%20Manager/Nexus/AccountControl.cs&apos; }
+        ///
+        ///		if not Response.Success then error((&apos;HTTP Error %s&apos;):format(Response.StatusCode)) end
+        ///
+        ///		Function, Error = loadstring(Response.Body, &apos;Nexus&apos;)
+        ///
+        ///		if not Function then error(Error) end
+        ///
+        ///		F [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string NexusLoader {
+            get {
+                return ResourceManager.GetString("NexusLoader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap offline {

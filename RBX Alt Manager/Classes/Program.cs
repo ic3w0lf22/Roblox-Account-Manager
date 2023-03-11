@@ -19,6 +19,7 @@ namespace RBX_Alt_Manager
         /// </summary>
 
         public static readonly ILog Logger = LogManager.GetLogger("Account Manager");
+        public static bool Closed = false; // RobloxProcess.cs would cause the program to chill in the background as long roblox was also running
         public static float Scale
         {
             get
@@ -122,9 +123,19 @@ namespace RBX_Alt_Manager
 
                 try
                 {
-                    Application.EnableVisualStyles();
-                    Application.SetCompatibleTextRenderingDefault(false);
-                    Application.Run(new AccountManager());
+                    string CookiesFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Roblox\LocalStorage\RobloxCookies.dat");
+                    bool Apply773Fix = !(string.IsNullOrEmpty(CookiesFile) || !File.Exists(CookiesFile) || File.Exists(Path.Combine(Environment.CurrentDirectory, "no773fix.txt")));
+
+                    if (!Apply773Fix) Logger.Error($"Not applying 773 error fix | Cookies File Exists: {File.Exists(CookiesFile)} | User No Fix File Exists: {File.Exists(Path.Combine(Environment.CurrentDirectory, "no773fix.txt"))}");
+
+                    if (Apply773Fix) try { using (new FileStream(CookiesFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { } } catch { Apply773Fix = false; } // Check if the file is already locked by another program
+
+                    using (Apply773Fix ? new FileStream(CookiesFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None) : null)
+                    {
+                        Application.EnableVisualStyles();
+                        Application.SetCompatibleTextRenderingDefault(false);
+                        Application.Run(new AccountManager());
+                    }
                 }
                 finally
                 {

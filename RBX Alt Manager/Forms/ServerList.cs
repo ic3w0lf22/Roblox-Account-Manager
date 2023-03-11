@@ -588,10 +588,10 @@ namespace RBX_Alt_Manager
 
             if (!string.IsNullOrEmpty(AccountManager.CurrentJobId) && AccountManager.CurrentJobId.Contains("privateServerLinkCode") && Regex.IsMatch(AccountManager.CurrentJobId, @"\/games\/(\d+)\/"))
                 PlaceId = Regex.Match(AccountManager.CurrentJobId, @"\/games\/(\d+)\/").Groups[1].Value;
-
-            RestRequest request = new RestRequest("Marketplace/ProductInfo?assetId=" + PlaceId, Method.GET);
+            
+            RestRequest request = new RestRequest($"v2/assets/{PlaceId}/details", Method.GET);
             request.AddHeader("Accept", "application/json");
-            IRestResponse response = await AccountManager.APIClient.ExecuteAsync(request);
+            IRestResponse response = await AccountManager.EconClient.ExecuteAsync(request);
 
             Logger.Info($"MarketResponse for {PlaceId}: [{response.StatusCode}] {response.Content}");
 
@@ -605,7 +605,7 @@ namespace RBX_Alt_Manager
                     AddFavoriteToList(new FavoriteGame(placeInfo.Name, Convert.ToInt64(AccountManager.CurrentPlaceId), SaveFavorites));
             }
             else
-                MessageBox.Show($"{response.Content}", $"Can't add {PlaceId} to favorites! [{response.StatusCode} {response.StatusDescription}]", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"[{response.StatusCode} {response.StatusDescription}]\n{response.Content}", $"Can't add {PlaceId} to favorites!", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private void copyPlaceIDToolStripMenuItem_Click(object sender, EventArgs e)

@@ -67,11 +67,11 @@ namespace RBX_Alt_Manager.Classes
             {
                 Attempts++;
 
-                var Request = new RestRequest($"marketplace/productinfo?assetId={AssetId}");
+                var Request = new RestRequest($"v2/assets/{AssetId}/details");
 
-                Request.AddCookie(".ROBLOSECURITY", (AccountManager.SelectedAccount?.SecurityToken ?? AccountManager.LastValidAccount?.SecurityToken ?? ""));
+                Request.AddCookie(".ROBLOSECURITY", AccountManager.SelectedAccount?.SecurityToken ?? AccountManager.LastValidAccount?.SecurityToken ?? "");
 
-                var Response = await AccountManager.APIClient.ExecuteAsync(Request);
+                var Response = await AccountManager.EconClient.ExecuteAsync(Request);
 
                 if (Response.IsSuccessful)
                 {

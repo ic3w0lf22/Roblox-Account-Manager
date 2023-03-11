@@ -191,7 +191,7 @@ namespace RBX_Alt_Manager.Classes
 
         private void WaitForExit()
         {
-            while (!RbxProcess.HasExited) // Process.WaitForExit errors with `Access is denied` for roblox's second process so we just check if it exists in a loop
+            while (!RbxProcess.HasExited && !Program.Closed) // Process.WaitForExit errors with `Access is denied` for roblox's second process so we just check if it exists in a loop
                 Thread.Sleep(200);
 
             Program.Logger.Info($"{RbxProcess.Id} has exited");

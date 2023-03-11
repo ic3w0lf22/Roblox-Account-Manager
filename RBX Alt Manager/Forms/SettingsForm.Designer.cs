@@ -65,6 +65,7 @@ namespace RBX_Alt_Manager.Forms
             this.AllowLACB = new System.Windows.Forms.CheckBox();
             this.AllowAECB = new System.Windows.Forms.CheckBox();
             this.DisableImagesCB = new System.Windows.Forms.CheckBox();
+            this.AllowExternalConnectionsCB = new System.Windows.Forms.CheckBox();
             this.SettingsLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.LaunchDelayNumber)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MaxRecentGamesNumber)).BeginInit();
@@ -301,7 +302,7 @@ namespace RBX_Alt_Manager.Forms
             // WSPWLabel
             // 
             this.WSPWLabel.AutoSize = true;
-            this.WSPWLabel.Location = new System.Drawing.Point(15, 200);
+            this.WSPWLabel.Location = new System.Drawing.Point(15, 223);
             this.WSPWLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
             this.WSPWLabel.Name = "WSPWLabel";
             this.WSPWLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
@@ -312,7 +313,7 @@ namespace RBX_Alt_Manager.Forms
             // 
             // PasswordTextBox
             // 
-            this.PasswordTextBox.Location = new System.Drawing.Point(129, 199);
+            this.PasswordTextBox.Location = new System.Drawing.Point(129, 222);
             this.PasswordTextBox.Name = "PasswordTextBox";
             this.PasswordTextBox.Size = new System.Drawing.Size(152, 20);
             this.PasswordTextBox.TabIndex = 16;
@@ -365,6 +366,7 @@ namespace RBX_Alt_Manager.Forms
             this.DevSettingsLayoutPanel.Controls.Add(this.AllowLACB);
             this.DevSettingsLayoutPanel.Controls.Add(this.AllowAECB);
             this.DevSettingsLayoutPanel.Controls.Add(this.DisableImagesCB);
+            this.DevSettingsLayoutPanel.Controls.Add(this.AllowExternalConnectionsCB);
             this.DevSettingsLayoutPanel.Controls.Add(this.WSPWLabel);
             this.DevSettingsLayoutPanel.Controls.Add(this.PasswordTextBox);
             this.DevSettingsLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -391,7 +393,7 @@ namespace RBX_Alt_Manager.Forms
             // 
             this.EnableWSCB.AutoSize = true;
             this.EnableWSCB.Location = new System.Drawing.Point(15, 38);
-            this.EnableWSCB.Margin = new System.Windows.Forms.Padding(3, 3, 56, 3);
+            this.EnableWSCB.Margin = new System.Windows.Forms.Padding(3, 3, 35, 3);
             this.EnableWSCB.Name = "EnableWSCB";
             this.EnableWSCB.Size = new System.Drawing.Size(119, 17);
             this.EnableWSCB.TabIndex = 6;
@@ -402,7 +404,7 @@ namespace RBX_Alt_Manager.Forms
             // PortLabel
             // 
             this.PortLabel.AutoSize = true;
-            this.PortLabel.Location = new System.Drawing.Point(193, 39);
+            this.PortLabel.Location = new System.Drawing.Point(172, 39);
             this.PortLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
             this.PortLabel.Name = "PortLabel";
             this.PortLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
@@ -413,7 +415,7 @@ namespace RBX_Alt_Manager.Forms
             // PortNumber
             // 
             this.DevSettingsLayoutPanel.SetFlowBreak(this.PortNumber, true);
-            this.PortNumber.Location = new System.Drawing.Point(225, 36);
+            this.PortNumber.Location = new System.Drawing.Point(204, 36);
             this.PortNumber.Margin = new System.Windows.Forms.Padding(3, 1, 3, 0);
             this.PortNumber.Maximum = new decimal(new int[] {
             65535,
@@ -507,6 +509,18 @@ namespace RBX_Alt_Manager.Forms
             this.DisableImagesCB.UseVisualStyleBackColor = true;
             this.DisableImagesCB.CheckedChanged += new System.EventHandler(this.DisableImagesCB_CheckedChanged);
             // 
+            // AllowExternalConnectionsCB
+            // 
+            this.AllowExternalConnectionsCB.AutoSize = true;
+            this.DevSettingsLayoutPanel.SetFlowBreak(this.AllowExternalConnectionsCB, true);
+            this.AllowExternalConnectionsCB.Location = new System.Drawing.Point(15, 199);
+            this.AllowExternalConnectionsCB.Name = "AllowExternalConnectionsCB";
+            this.AllowExternalConnectionsCB.Size = new System.Drawing.Size(154, 17);
+            this.AllowExternalConnectionsCB.TabIndex = 19;
+            this.AllowExternalConnectionsCB.Text = "Allow External Connections";
+            this.AllowExternalConnectionsCB.UseVisualStyleBackColor = true;
+            this.AllowExternalConnectionsCB.CheckedChanged += new System.EventHandler(this.AllowExternalConnectionsCB_CheckedChanged);
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -567,5 +581,6 @@ namespace RBX_Alt_Manager.Forms
         private System.Windows.Forms.CheckBox DisableImagesCB;
         private System.Windows.Forms.CheckBox ShuffleLowestServerCB;
         private NBTabControl SettingsTC;
+        private System.Windows.Forms.CheckBox AllowExternalConnectionsCB;
     }
 }
