@@ -184,7 +184,7 @@ namespace RBX_Alt_Manager.Properties {
         ///
         ///for i=1, 10 do
         ///	Success, Error = pcall(function()
-        ///		local Response = (http_request or (syn and syn.request)) { Method = &apos;GET&apos;, Url = &apos;https://raw.githubusercontent.com/ic3w0lf22/Roblox-Account-Manager/master/RBX%20Alt%20Manager/Nexus/AccountControl.cs&apos; }
+        ///		local Response = (http_request or (syn and syn.request)) { Method = &apos;GET&apos;, Url = &apos;https://raw.githubusercontent.com/ic3w0lf22/Roblox-Account-Manager/master/RBX%20Alt%20Manager/Nexus/Nexus.lua&apos; }
         ///
         ///		if not Response.Success then error((&apos;HTTP Error %s&apos;):format(Response.StatusCode)) end
         ///
@@ -192,7 +192,7 @@ namespace RBX_Alt_Manager.Properties {
         ///
         ///		if not Function then error(Error) end
         ///
-        ///		F [rest of string was truncated]&quot;;.
+        ///		Function( [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string NexusLoader {
             get {
