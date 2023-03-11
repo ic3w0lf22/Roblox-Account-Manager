@@ -1,4 +1,7 @@
-﻿namespace RBX_Alt_Manager.Forms
+﻿using RBX_Alt_Manager.Classes;
+using System.Windows.Forms;
+
+namespace RBX_Alt_Manager.Forms
 {
     partial class AccountControl
     {
@@ -22,6 +25,8 @@
 
         #region Windows Form Designer generated code
 
+        
+
         /// <summary>
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
@@ -33,15 +38,15 @@
             this.ControlsPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.AutoRelaunchCheckBox = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.PlaceIdText = new System.Windows.Forms.TextBox();
+            this.PlaceIdText = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.JobIdText = new System.Windows.Forms.TextBox();
+            this.JobIdText = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.CommandText = new System.Windows.Forms.TextBox();
+            this.CommandText = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.SendCommand = new System.Windows.Forms.Button();
             this.ScriptLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.ShowScriptBox = new System.Windows.Forms.Button();
-            this.ScriptTabs = new System.Windows.Forms.TabControl();
+            this.ScriptTabs = new RBX_Alt_Manager.Classes.NBTabControl();
             this.ExecutionPage = new System.Windows.Forms.TabPage();
             this.ScriptBox = new FastColoredTextBoxNS.FastColoredTextBox();
             this.ClearButton = new System.Windows.Forms.Button();
@@ -54,7 +59,7 @@
             this.OutputPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.ClearOutputButton = new System.Windows.Forms.Button();
             this.SaveOutputToFileCheck = new System.Windows.Forms.CheckBox();
-            this.ACTabs = new System.Windows.Forms.TabControl();
+            this.ACTabs = new RBX_Alt_Manager.Classes.NBTabControl();
             this.ControlPage = new System.Windows.Forms.TabPage();
             this.CPanel = new System.Windows.Forms.Panel();
             this.AccountsView = new BrightIdeasSoftware.ObjectListView();
@@ -68,13 +73,23 @@
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SettingsTab = new System.Windows.Forms.TabPage();
             this.flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
+            this.StartOnLaunch = new System.Windows.Forms.CheckBox();
             this.AllowExternalConnectionsCB = new System.Windows.Forms.CheckBox();
             this.RLLabel = new System.Windows.Forms.Label();
             this.RelaunchDelayNumber = new System.Windows.Forms.NumericUpDown();
+            this.LDLabel = new System.Windows.Forms.Label();
+            this.LauncherDelayNumber = new System.Windows.Forms.NumericUpDown();
             this.PortLabel = new System.Windows.Forms.Label();
             this.PortNumber = new System.Windows.Forms.NumericUpDown();
             this.MinimizeRoblox = new System.Windows.Forms.Button();
+            this.AutoMinimizeCB = new System.Windows.Forms.CheckBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.AutoMinIntervalNum = new System.Windows.Forms.NumericUpDown();
             this.CloseRoblox = new System.Windows.Forms.Button();
+            this.AutoCloseCB = new System.Windows.Forms.CheckBox();
+            this.ACLabel = new System.Windows.Forms.Label();
+            this.AutoCloseIntervalNum = new System.Windows.Forms.NumericUpDown();
+            this.AutoCloseType = new System.Windows.Forms.ComboBox();
             this.HelpPage = new System.Windows.Forms.TabPage();
             this.label7 = new System.Windows.Forms.Label();
             this.NexusDocsButton = new System.Windows.Forms.Button();
@@ -83,8 +98,8 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.AutoRelaunchTimer = new System.Windows.Forms.Timer(this.components);
-            this.AutoMinimizeCB = new System.Windows.Forms.CheckBox();
             this.MinimzeTimer = new System.Windows.Forms.Timer(this.components);
+            this.CloseTimer = new System.Windows.Forms.Timer(this.components);
             this.ControlsPanel.SuspendLayout();
             this.ScriptLayoutPanel.SuspendLayout();
             this.ScriptTabs.SuspendLayout();
@@ -101,7 +116,10 @@
             this.SettingsTab.SuspendLayout();
             this.flowLayoutPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RelaunchDelayNumber)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.LauncherDelayNumber)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PortNumber)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.AutoMinIntervalNum)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.AutoCloseIntervalNum)).BeginInit();
             this.HelpPage.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -151,6 +169,7 @@
             // 
             // PlaceIdText
             // 
+            this.PlaceIdText.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
             this.PlaceIdText.Location = new System.Drawing.Point(68, 31);
             this.PlaceIdText.Name = "PlaceIdText";
             this.PlaceIdText.Size = new System.Drawing.Size(207, 20);
@@ -169,6 +188,7 @@
             // 
             // JobIdText
             // 
+            this.JobIdText.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
             this.JobIdText.Location = new System.Drawing.Point(68, 57);
             this.JobIdText.Name = "JobIdText";
             this.JobIdText.Size = new System.Drawing.Size(207, 20);
@@ -187,6 +207,7 @@
             // 
             // CommandText
             // 
+            this.CommandText.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
             this.CommandText.Location = new System.Drawing.Point(68, 83);
             this.CommandText.Name = "CommandText";
             this.CommandText.Size = new System.Drawing.Size(153, 20);
@@ -230,8 +251,8 @@
             this.ScriptTabs.Controls.Add(this.ExecutionPage);
             this.ScriptTabs.Controls.Add(this.AutoexecPage);
             this.ScriptTabs.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.ScriptTabs.Location = new System.Drawing.Point(3, 12);
-            this.ScriptTabs.Margin = new System.Windows.Forms.Padding(3, 1, 3, 3);
+            this.ScriptTabs.Location = new System.Drawing.Point(3, 13);
+            this.ScriptTabs.Margin = new System.Windows.Forms.Padding(3, 2, 3, 3);
             this.ScriptTabs.Name = "ScriptTabs";
             this.ScriptTabs.SelectedIndex = 0;
             this.ScriptTabs.Size = new System.Drawing.Size(262, 200);
@@ -242,10 +263,10 @@
             this.ExecutionPage.Controls.Add(this.ScriptBox);
             this.ExecutionPage.Controls.Add(this.ClearButton);
             this.ExecutionPage.Controls.Add(this.ExecuteButton);
-            this.ExecutionPage.Location = new System.Drawing.Point(4, 22);
+            this.ExecutionPage.Location = new System.Drawing.Point(4, 25);
             this.ExecutionPage.Name = "ExecutionPage";
             this.ExecutionPage.Padding = new System.Windows.Forms.Padding(3);
-            this.ExecutionPage.Size = new System.Drawing.Size(254, 174);
+            this.ExecutionPage.Size = new System.Drawing.Size(254, 171);
             this.ExecutionPage.TabIndex = 0;
             this.ExecutionPage.Text = "Executor";
             this.ExecutionPage.UseVisualStyleBackColor = true;
@@ -287,13 +308,14 @@
             this.ScriptBox.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("ScriptBox.ServiceColors")));
             this.ScriptBox.Size = new System.Drawing.Size(248, 136);
             this.ScriptBox.TabIndex = 8;
+            this.ScriptBox.Tag = "UseControlFont";
             this.ScriptBox.Text = "print(\"Hello World!\")";
             this.ScriptBox.Zoom = 100;
             // 
             // ClearButton
             // 
             this.ClearButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.ClearButton.Location = new System.Drawing.Point(173, 145);
+            this.ClearButton.Location = new System.Drawing.Point(173, 142);
             this.ClearButton.Name = "ClearButton";
             this.ClearButton.Size = new System.Drawing.Size(75, 23);
             this.ClearButton.TabIndex = 11;
@@ -304,7 +326,7 @@
             // ExecuteButton
             // 
             this.ExecuteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.ExecuteButton.Location = new System.Drawing.Point(6, 145);
+            this.ExecuteButton.Location = new System.Drawing.Point(6, 142);
             this.ExecuteButton.Name = "ExecuteButton";
             this.ExecuteButton.Size = new System.Drawing.Size(75, 23);
             this.ExecuteButton.TabIndex = 10;
@@ -316,10 +338,10 @@
             // 
             this.AutoexecPage.Controls.Add(this.AutoExecuteScriptBox);
             this.AutoexecPage.Controls.Add(this.ClearAutoExecScript);
-            this.AutoexecPage.Location = new System.Drawing.Point(4, 22);
+            this.AutoexecPage.Location = new System.Drawing.Point(4, 25);
             this.AutoexecPage.Name = "AutoexecPage";
             this.AutoexecPage.Padding = new System.Windows.Forms.Padding(3);
-            this.AutoexecPage.Size = new System.Drawing.Size(254, 174);
+            this.AutoexecPage.Size = new System.Drawing.Size(254, 171);
             this.AutoexecPage.TabIndex = 1;
             this.AutoexecPage.Text = "Auto Execute";
             this.AutoexecPage.UseVisualStyleBackColor = true;
@@ -368,7 +390,7 @@
             // ClearAutoExecScript
             // 
             this.ClearAutoExecScript.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.ClearAutoExecScript.Location = new System.Drawing.Point(173, 145);
+            this.ClearAutoExecScript.Location = new System.Drawing.Point(173, 142);
             this.ClearAutoExecScript.Name = "ClearAutoExecScript";
             this.ClearAutoExecScript.Size = new System.Drawing.Size(75, 23);
             this.ClearAutoExecScript.TabIndex = 13;
@@ -450,10 +472,10 @@
             // 
             this.ControlPage.Controls.Add(this.CPanel);
             this.ControlPage.Controls.Add(this.AccountsView);
-            this.ControlPage.Location = new System.Drawing.Point(4, 22);
+            this.ControlPage.Location = new System.Drawing.Point(4, 25);
             this.ControlPage.Name = "ControlPage";
             this.ControlPage.Padding = new System.Windows.Forms.Padding(3);
-            this.ControlPage.Size = new System.Drawing.Size(585, 368);
+            this.ControlPage.Size = new System.Drawing.Size(585, 365);
             this.ControlPage.TabIndex = 0;
             this.ControlPage.Text = "Control Panel";
             this.ControlPage.UseVisualStyleBackColor = true;
@@ -563,36 +585,57 @@
             // SettingsTab
             // 
             this.SettingsTab.Controls.Add(this.flowLayoutPanel2);
-            this.SettingsTab.Location = new System.Drawing.Point(4, 22);
+            this.SettingsTab.Location = new System.Drawing.Point(4, 25);
             this.SettingsTab.Name = "SettingsTab";
             this.SettingsTab.Padding = new System.Windows.Forms.Padding(3);
-            this.SettingsTab.Size = new System.Drawing.Size(585, 368);
+            this.SettingsTab.Size = new System.Drawing.Size(585, 365);
             this.SettingsTab.TabIndex = 3;
             this.SettingsTab.Text = "Settings";
             this.SettingsTab.UseVisualStyleBackColor = true;
             // 
             // flowLayoutPanel2
             // 
+            this.flowLayoutPanel2.Controls.Add(this.StartOnLaunch);
             this.flowLayoutPanel2.Controls.Add(this.AllowExternalConnectionsCB);
             this.flowLayoutPanel2.Controls.Add(this.RLLabel);
             this.flowLayoutPanel2.Controls.Add(this.RelaunchDelayNumber);
+            this.flowLayoutPanel2.Controls.Add(this.LDLabel);
+            this.flowLayoutPanel2.Controls.Add(this.LauncherDelayNumber);
             this.flowLayoutPanel2.Controls.Add(this.PortLabel);
             this.flowLayoutPanel2.Controls.Add(this.PortNumber);
             this.flowLayoutPanel2.Controls.Add(this.MinimizeRoblox);
             this.flowLayoutPanel2.Controls.Add(this.AutoMinimizeCB);
+            this.flowLayoutPanel2.Controls.Add(this.label8);
+            this.flowLayoutPanel2.Controls.Add(this.AutoMinIntervalNum);
             this.flowLayoutPanel2.Controls.Add(this.CloseRoblox);
+            this.flowLayoutPanel2.Controls.Add(this.AutoCloseCB);
+            this.flowLayoutPanel2.Controls.Add(this.ACLabel);
+            this.flowLayoutPanel2.Controls.Add(this.AutoCloseIntervalNum);
+            this.flowLayoutPanel2.Controls.Add(this.AutoCloseType);
             this.flowLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel2.Location = new System.Drawing.Point(3, 3);
             this.flowLayoutPanel2.Name = "flowLayoutPanel2";
             this.flowLayoutPanel2.Padding = new System.Windows.Forms.Padding(12);
-            this.flowLayoutPanel2.Size = new System.Drawing.Size(579, 362);
+            this.flowLayoutPanel2.Size = new System.Drawing.Size(579, 359);
             this.flowLayoutPanel2.TabIndex = 2;
+            // 
+            // StartOnLaunch
+            // 
+            this.StartOnLaunch.AutoSize = true;
+            this.flowLayoutPanel2.SetFlowBreak(this.StartOnLaunch, true);
+            this.StartOnLaunch.Location = new System.Drawing.Point(15, 15);
+            this.StartOnLaunch.Name = "StartOnLaunch";
+            this.StartOnLaunch.Size = new System.Drawing.Size(223, 17);
+            this.StartOnLaunch.TabIndex = 15;
+            this.StartOnLaunch.Text = "Start Nexus on Account Manager Launch";
+            this.StartOnLaunch.UseVisualStyleBackColor = true;
+            this.StartOnLaunch.CheckedChanged += new System.EventHandler(this.StartOnLaunch_CheckedChanged);
             // 
             // AllowExternalConnectionsCB
             // 
             this.AllowExternalConnectionsCB.AutoSize = true;
             this.flowLayoutPanel2.SetFlowBreak(this.AllowExternalConnectionsCB, true);
-            this.AllowExternalConnectionsCB.Location = new System.Drawing.Point(15, 15);
+            this.AllowExternalConnectionsCB.Location = new System.Drawing.Point(15, 38);
             this.AllowExternalConnectionsCB.Name = "AllowExternalConnectionsCB";
             this.AllowExternalConnectionsCB.Size = new System.Drawing.Size(154, 17);
             this.AllowExternalConnectionsCB.TabIndex = 7;
@@ -603,18 +646,18 @@
             // RLLabel
             // 
             this.RLLabel.AutoSize = true;
-            this.RLLabel.Location = new System.Drawing.Point(15, 39);
+            this.RLLabel.Location = new System.Drawing.Point(15, 62);
             this.RLLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
             this.RLLabel.Name = "RLLabel";
             this.RLLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.RLLabel.Size = new System.Drawing.Size(83, 13);
+            this.RLLabel.Size = new System.Drawing.Size(171, 13);
             this.RLLabel.TabIndex = 11;
-            this.RLLabel.Text = "Relaunch Delay";
+            this.RLLabel.Text = "Relaunch Delay Per Account (sec)";
             // 
             // RelaunchDelayNumber
             // 
             this.flowLayoutPanel2.SetFlowBreak(this.RelaunchDelayNumber, true);
-            this.RelaunchDelayNumber.Location = new System.Drawing.Point(104, 36);
+            this.RelaunchDelayNumber.Location = new System.Drawing.Point(192, 59);
             this.RelaunchDelayNumber.Margin = new System.Windows.Forms.Padding(3, 1, 3, 0);
             this.RelaunchDelayNumber.Maximum = new decimal(new int[] {
             3600,
@@ -636,21 +679,55 @@
             0});
             this.RelaunchDelayNumber.ValueChanged += new System.EventHandler(this.RelaunchDelayNumber_ValueChanged);
             // 
+            // LDLabel
+            // 
+            this.LDLabel.Location = new System.Drawing.Point(15, 83);
+            this.LDLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
+            this.LDLabel.Name = "LDLabel";
+            this.LDLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.LDLabel.Size = new System.Drawing.Size(171, 13);
+            this.LDLabel.TabIndex = 23;
+            this.LDLabel.Text = "Launcher Delay (sec)";
+            // 
+            // LauncherDelayNumber
+            // 
+            this.flowLayoutPanel2.SetFlowBreak(this.LauncherDelayNumber, true);
+            this.LauncherDelayNumber.Location = new System.Drawing.Point(192, 80);
+            this.LauncherDelayNumber.Margin = new System.Windows.Forms.Padding(3, 1, 3, 0);
+            this.LauncherDelayNumber.Maximum = new decimal(new int[] {
+            3600,
+            0,
+            0,
+            0});
+            this.LauncherDelayNumber.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.LauncherDelayNumber.Name = "LauncherDelayNumber";
+            this.LauncherDelayNumber.Size = new System.Drawing.Size(56, 20);
+            this.LauncherDelayNumber.TabIndex = 22;
+            this.LauncherDelayNumber.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.LauncherDelayNumber.ValueChanged += new System.EventHandler(this.LauncherDelayNumber_ValueChanged);
+            // 
             // PortLabel
             // 
-            this.PortLabel.AutoSize = true;
-            this.PortLabel.Location = new System.Drawing.Point(15, 60);
-            this.PortLabel.Margin = new System.Windows.Forms.Padding(3, 4, 60, 0);
+            this.PortLabel.Location = new System.Drawing.Point(15, 104);
+            this.PortLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
             this.PortLabel.Name = "PortLabel";
             this.PortLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.PortLabel.Size = new System.Drawing.Size(26, 13);
+            this.PortLabel.Size = new System.Drawing.Size(171, 13);
             this.PortLabel.TabIndex = 9;
             this.PortLabel.Text = "Port";
             // 
             // PortNumber
             // 
             this.flowLayoutPanel2.SetFlowBreak(this.PortNumber, true);
-            this.PortNumber.Location = new System.Drawing.Point(104, 57);
+            this.PortNumber.Location = new System.Drawing.Point(192, 101);
             this.PortNumber.Margin = new System.Windows.Forms.Padding(3, 1, 3, 0);
             this.PortNumber.Maximum = new decimal(new int[] {
             65535,
@@ -674,7 +751,7 @@
             // 
             // MinimizeRoblox
             // 
-            this.MinimizeRoblox.Location = new System.Drawing.Point(15, 80);
+            this.MinimizeRoblox.Location = new System.Drawing.Point(15, 124);
             this.MinimizeRoblox.Name = "MinimizeRoblox";
             this.MinimizeRoblox.Size = new System.Drawing.Size(145, 23);
             this.MinimizeRoblox.TabIndex = 12;
@@ -682,15 +759,118 @@
             this.MinimizeRoblox.UseVisualStyleBackColor = true;
             this.MinimizeRoblox.Click += new System.EventHandler(this.MinimizeRoblox_Click);
             // 
+            // AutoMinimizeCB
+            // 
+            this.AutoMinimizeCB.Location = new System.Drawing.Point(166, 128);
+            this.AutoMinimizeCB.Margin = new System.Windows.Forms.Padding(3, 7, 3, 3);
+            this.AutoMinimizeCB.Name = "AutoMinimizeCB";
+            this.AutoMinimizeCB.Size = new System.Drawing.Size(91, 17);
+            this.AutoMinimizeCB.TabIndex = 14;
+            this.AutoMinimizeCB.Text = "Auto Minimize";
+            this.AutoMinimizeCB.UseVisualStyleBackColor = true;
+            this.AutoMinimizeCB.CheckedChanged += new System.EventHandler(this.AutoMinimizeCB_CheckedChanged);
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(263, 121);
+            this.label8.Name = "label8";
+            this.label8.Padding = new System.Windows.Forms.Padding(0, 8, 0, 0);
+            this.label8.Size = new System.Drawing.Size(68, 21);
+            this.label8.TabIndex = 19;
+            this.label8.Text = "Interval (sec)";
+            // 
+            // AutoMinIntervalNum
+            // 
+            this.flowLayoutPanel2.SetFlowBreak(this.AutoMinIntervalNum, true);
+            this.AutoMinIntervalNum.Location = new System.Drawing.Point(337, 124);
+            this.AutoMinIntervalNum.Maximum = new decimal(new int[] {
+            120,
+            0,
+            0,
+            0});
+            this.AutoMinIntervalNum.Minimum = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.AutoMinIntervalNum.Name = "AutoMinIntervalNum";
+            this.AutoMinIntervalNum.Size = new System.Drawing.Size(69, 20);
+            this.AutoMinIntervalNum.TabIndex = 20;
+            this.AutoMinIntervalNum.Value = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.AutoMinIntervalNum.ValueChanged += new System.EventHandler(this.AutoMinIntervalNum_ValueChanged);
+            // 
             // CloseRoblox
             // 
-            this.CloseRoblox.Location = new System.Drawing.Point(15, 109);
+            this.CloseRoblox.Location = new System.Drawing.Point(15, 153);
             this.CloseRoblox.Name = "CloseRoblox";
             this.CloseRoblox.Size = new System.Drawing.Size(145, 23);
             this.CloseRoblox.TabIndex = 13;
             this.CloseRoblox.Text = "Close Roblox";
             this.CloseRoblox.UseVisualStyleBackColor = true;
             this.CloseRoblox.Click += new System.EventHandler(this.CloseRoblox_Click);
+            // 
+            // AutoCloseCB
+            // 
+            this.AutoCloseCB.Location = new System.Drawing.Point(166, 157);
+            this.AutoCloseCB.Margin = new System.Windows.Forms.Padding(3, 7, 3, 3);
+            this.AutoCloseCB.Name = "AutoCloseCB";
+            this.AutoCloseCB.Size = new System.Drawing.Size(91, 17);
+            this.AutoCloseCB.TabIndex = 16;
+            this.AutoCloseCB.Text = "Auto Close";
+            this.AutoCloseCB.UseVisualStyleBackColor = true;
+            this.AutoCloseCB.CheckedChanged += new System.EventHandler(this.AutoCloseCB_CheckedChanged);
+            // 
+            // ACLabel
+            // 
+            this.ACLabel.AutoSize = true;
+            this.ACLabel.Location = new System.Drawing.Point(263, 150);
+            this.ACLabel.Name = "ACLabel";
+            this.ACLabel.Padding = new System.Windows.Forms.Padding(0, 8, 0, 0);
+            this.ACLabel.Size = new System.Drawing.Size(67, 21);
+            this.ACLabel.TabIndex = 17;
+            this.ACLabel.Text = "Interval (min)";
+            // 
+            // AutoCloseIntervalNum
+            // 
+            this.AutoCloseIntervalNum.Location = new System.Drawing.Point(336, 153);
+            this.AutoCloseIntervalNum.Maximum = new decimal(new int[] {
+            1440,
+            0,
+            0,
+            0});
+            this.AutoCloseIntervalNum.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.AutoCloseIntervalNum.Name = "AutoCloseIntervalNum";
+            this.AutoCloseIntervalNum.Size = new System.Drawing.Size(69, 20);
+            this.AutoCloseIntervalNum.TabIndex = 18;
+            this.AutoCloseIntervalNum.Value = new decimal(new int[] {
+            20,
+            0,
+            0,
+            0});
+            this.AutoCloseIntervalNum.ValueChanged += new System.EventHandler(this.AutoCloseIntervalNum_ValueChanged);
+            // 
+            // AutoCloseType
+            // 
+            this.flowLayoutPanel2.SetFlowBreak(this.AutoCloseType, true);
+            this.AutoCloseType.FormattingEnabled = true;
+            this.AutoCloseType.Items.AddRange(new object[] {
+            "Per Instance",
+            "Global"});
+            this.AutoCloseType.Location = new System.Drawing.Point(411, 153);
+            this.AutoCloseType.Name = "AutoCloseType";
+            this.AutoCloseType.Size = new System.Drawing.Size(90, 21);
+            this.AutoCloseType.TabIndex = 21;
+            this.AutoCloseType.Text = "Per Instance";
+            this.AutoCloseType.SelectedIndexChanged += new System.EventHandler(this.AutoCloseType_SelectedIndexChanged);
             // 
             // HelpPage
             // 
@@ -700,9 +880,9 @@
             this.HelpPage.Controls.Add(this.NexusDL);
             this.HelpPage.Controls.Add(this.label5);
             this.HelpPage.Controls.Add(this.label4);
-            this.HelpPage.Location = new System.Drawing.Point(4, 22);
+            this.HelpPage.Location = new System.Drawing.Point(4, 25);
             this.HelpPage.Name = "HelpPage";
-            this.HelpPage.Size = new System.Drawing.Size(585, 368);
+            this.HelpPage.Size = new System.Drawing.Size(585, 365);
             this.HelpPage.TabIndex = 2;
             this.HelpPage.Text = "Help";
             this.HelpPage.UseVisualStyleBackColor = true;
@@ -721,7 +901,7 @@
             this.NexusDocsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.NexusDocsButton.Location = new System.Drawing.Point(92, 337);
             this.NexusDocsButton.Name = "NexusDocsButton";
-            this.NexusDocsButton.Size = new System.Drawing.Size(87, 23);
+            this.NexusDocsButton.Size = new System.Drawing.Size(94, 23);
             this.NexusDocsButton.TabIndex = 4;
             this.NexusDocsButton.Text = "Documentation";
             this.NexusDocsButton.UseVisualStyleBackColor = true;
@@ -773,23 +953,15 @@
             this.AutoRelaunchTimer.Interval = 9000;
             this.AutoRelaunchTimer.Tick += new System.EventHandler(this.AutoRelaunchTimer_Tick);
             // 
-            // AutoMinimizeCB
-            // 
-            this.AutoMinimizeCB.AutoSize = true;
-            this.flowLayoutPanel2.SetFlowBreak(this.AutoMinimizeCB, true);
-            this.AutoMinimizeCB.Location = new System.Drawing.Point(166, 84);
-            this.AutoMinimizeCB.Margin = new System.Windows.Forms.Padding(3, 7, 3, 3);
-            this.AutoMinimizeCB.Name = "AutoMinimizeCB";
-            this.AutoMinimizeCB.Size = new System.Drawing.Size(91, 17);
-            this.AutoMinimizeCB.TabIndex = 15;
-            this.AutoMinimizeCB.Text = "Auto Minimize";
-            this.AutoMinimizeCB.UseVisualStyleBackColor = true;
-            this.AutoMinimizeCB.CheckedChanged += new System.EventHandler(this.AutoMinimizeCB_CheckedChanged);
-            // 
             // MinimzeTimer
             // 
-            this.MinimzeTimer.Interval = 3000;
+            this.MinimzeTimer.Interval = 5000;
             this.MinimzeTimer.Tick += new System.EventHandler(this.MinimzeTimer_Tick);
+            // 
+            // CloseTimer
+            // 
+            this.CloseTimer.Interval = 1200000;
+            this.CloseTimer.Tick += new System.EventHandler(this.CloseTimer_Tick);
             // 
             // AccountControl
             // 
@@ -823,16 +995,19 @@
             this.flowLayoutPanel2.ResumeLayout(false);
             this.flowLayoutPanel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RelaunchDelayNumber)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.LauncherDelayNumber)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PortNumber)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.AutoMinIntervalNum)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.AutoCloseIntervalNum)).EndInit();
             this.HelpPage.ResumeLayout(false);
             this.HelpPage.PerformLayout();
             this.ResumeLayout(false);
+
         }
 
         #endregion
 
         private System.Windows.Forms.FlowLayoutPanel ControlsPanel;
-        private System.Windows.Forms.TabControl ACTabs;
         private System.Windows.Forms.TabPage ControlPage;
         public BrightIdeasSoftware.ObjectListView AccountsView;
         private BrightIdeasSoftware.OLVColumn cStatus;
@@ -842,11 +1017,8 @@
         private BrightIdeasSoftware.OLVColumn cCheckBoxes;
         private System.Windows.Forms.CheckBox AutoRelaunchCheckBox;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox PlaceIdText;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox JobIdText;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox CommandText;
         private FastColoredTextBoxNS.FastColoredTextBox ScriptBox;
         private System.Windows.Forms.Button SendCommand;
         private System.Windows.Forms.Button ExecuteButton;
@@ -859,7 +1031,6 @@
         private System.Windows.Forms.FlowLayoutPanel OutputPanel;
         private System.Windows.Forms.Button ClearOutputButton;
         private System.Windows.Forms.CheckBox SaveOutputToFileCheck;
-        private System.Windows.Forms.TabControl ScriptTabs;
         private System.Windows.Forms.TabPage ExecutionPage;
         private System.Windows.Forms.TabPage AutoexecPage;
         private FastColoredTextBoxNS.FastColoredTextBox AutoExecuteScriptBox;
@@ -886,5 +1057,20 @@
         private System.Windows.Forms.Button CloseRoblox;
         private System.Windows.Forms.CheckBox AutoMinimizeCB;
         private System.Windows.Forms.Timer MinimzeTimer;
+        private BorderedTextBox PlaceIdText;
+        private BorderedTextBox JobIdText;
+        private BorderedTextBox CommandText;
+        private System.Windows.Forms.CheckBox StartOnLaunch;
+        private NBTabControl ACTabs;
+        private NBTabControl ScriptTabs;
+        private CheckBox AutoCloseCB;
+        private Label ACLabel;
+        private Label label8;
+        private NumericUpDown AutoMinIntervalNum;
+        private NumericUpDown AutoCloseIntervalNum;
+        private ComboBox AutoCloseType;
+        private Timer CloseTimer;
+        private Label LDLabel;
+        private NumericUpDown LauncherDelayNumber;
     }
 }

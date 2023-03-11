@@ -36,6 +36,7 @@
             this.ChangeStyle = new System.Windows.Forms.Button();
             this.HideHeaders = new System.Windows.Forms.Button();
             this.ToggleDarkTopBar = new System.Windows.Forms.Button();
+            this.ToggleTransparentBG = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // SetBG
@@ -59,11 +60,13 @@
             "Accounts",
             "Buttons",
             "Forms",
-            "Text Boxes"});
+            "Text Boxes",
+            "Labels"});
             this.Selection.Location = new System.Drawing.Point(13, 13);
             this.Selection.Name = "Selection";
             this.Selection.Size = new System.Drawing.Size(120, 130);
             this.Selection.TabIndex = 1;
+            this.Selection.Tag = "UseControlFont";
             this.Selection.SelectedIndexChanged += new System.EventHandler(this.Selection_SelectedIndexChanged);
             // 
             // SetFG
@@ -120,11 +123,23 @@
             this.ToggleDarkTopBar.Visible = false;
             this.ToggleDarkTopBar.Click += new System.EventHandler(this.ToggleDarkTopBar_Click);
             // 
+            // ToggleTransparentBG
+            // 
+            this.ToggleTransparentBG.Location = new System.Drawing.Point(139, 71);
+            this.ToggleTransparentBG.Name = "ToggleTransparentBG";
+            this.ToggleTransparentBG.Size = new System.Drawing.Size(108, 23);
+            this.ToggleTransparentBG.TabIndex = 7;
+            this.ToggleTransparentBG.Text = "Transparent BG";
+            this.ToggleTransparentBG.UseVisualStyleBackColor = true;
+            this.ToggleTransparentBG.Visible = false;
+            this.ToggleTransparentBG.Click += new System.EventHandler(this.ToggleTransparentBG_Click);
+            // 
             // ThemeEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(259, 155);
+            this.Controls.Add(this.ToggleTransparentBG);
             this.Controls.Add(this.ToggleDarkTopBar);
             this.Controls.Add(this.HideHeaders);
             this.Controls.Add(this.ChangeStyle);
@@ -151,5 +166,6 @@
         private System.Windows.Forms.Button ChangeStyle;
         private System.Windows.Forms.Button HideHeaders;
         private System.Windows.Forms.Button ToggleDarkTopBar;
+        private System.Windows.Forms.Button ToggleTransparentBG;
     }
 }

@@ -25,6 +25,13 @@ namespace RBX_Alt_Manager.Forms
         public static Color TextBoxesForeground = SystemColors.ControlText;
         public static Color TextBoxesBorder = Color.FromArgb(0x7A7A7A);
 
+        public static Color LabelBackground = SystemColors.Control;
+        public static Color LabelForeground = SystemColors.ControlText;
+        public static bool LabelTransparent = true;
+        
+        public static bool LightImages = false;
+        // public static bool UseNormalTabControls = false;
+
         public static string ToHexString(Color c) => $"#{c.R:X2}{c.G:X2}{c.B:X2}";
 
         private static IniFile ThemeIni;
@@ -57,7 +64,7 @@ namespace RBX_Alt_Manager.Forms
                     if (!(control is CheckBox)) control.BackColor = ButtonsBackground;
                     control.ForeColor = ButtonsForeground;
                 }
-                else if (control is TextBox || control is RichTextBox || control is Label)
+                else if (control is TextBox || control is RichTextBox)
                 {
                     if (control is Classes.BorderedTextBox)
                     {
@@ -74,6 +81,11 @@ namespace RBX_Alt_Manager.Forms
                     control.BackColor = TextBoxesBackground;
                     control.ForeColor = TextBoxesForeground;
                 }
+                else if (control is Label)
+                {
+                    control.BackColor = LabelTransparent ? Color.Transparent : LabelBackground;
+                    control.ForeColor = LabelForeground;
+                }
                 else if (control is ListBox)
                 {
                     control.BackColor = ButtonsBackground;
@@ -84,9 +96,13 @@ namespace RBX_Alt_Manager.Forms
 
         public static void LoadTheme()
         {
-            if (ThemeIni == null) ThemeIni = File.Exists(Path.Combine(Environment.CurrentDirectory, "RAMTheme.ini")) ? new IniFile("RAMTheme.ini") : new IniFile();
+            ThemeIni ??= File.Exists(Path.Combine(Environment.CurrentDirectory, "RAMTheme.ini")) ? new IniFile("RAMTheme.ini") : new IniFile();
 
             Theme = ThemeIni.Section(Assembly.GetExecutingAssembly().GetName().Name);
+
+            // bool.TryParse(Theme.Get("DisableCustomTabs"), out UseNormalTabControls);
+
+            // if (!Theme.Exists("DisableCustomTabs")) { Theme.Set("DisableCustomTabs", "false"); ThemeIni.Save("RAMTheme.ini"); }
 
             if (Theme.Exists("AccountsBG")) AccountBackground = ColorTranslator.FromHtml(Theme.Get("AccountsBG"));
             if (Theme.Exists("AccountsFG")) AccountForeground = ColorTranslator.FromHtml(Theme.Get("AccountsFG"));
@@ -104,12 +120,20 @@ namespace RBX_Alt_Manager.Forms
             if (Theme.Exists("TextBoxesBG")) TextBoxesBackground = ColorTranslator.FromHtml(Theme.Get("TextBoxesBG"));
             if (Theme.Exists("TextBoxesFG")) TextBoxesForeground = ColorTranslator.FromHtml(Theme.Get("TextBoxesFG"));
             if (Theme.Exists("TextBoxesBC")) TextBoxesBorder = ColorTranslator.FromHtml(Theme.Get("TextBoxesBC"));
+
+            if (Theme.Exists("TextBoxesBG") && !Theme.Exists("LabelsTransparent")) LabelTransparent = false; // support old themes
+            if (Theme.Exists("LabelsBC")) LabelBackground = ColorTranslator.FromHtml(Theme.Get("LabelsBC")); else LabelBackground = TextBoxesBackground;
+            if (Theme.Exists("LabelsFC")) LabelForeground = ColorTranslator.FromHtml(Theme.Get("LabelsFC")); else LabelForeground = TextBoxesForeground;
+            if (Theme.Exists("LabelsTransparent") && bool.TryParse(Theme.Get("LabelsTransparent"), out bool bLabelTransparent)) LabelTransparent = bLabelTransparent;
+
+            if (!Theme.Exists("LightImages")) Theme.Set("LightImages", FormsBackground.GetBrightness() < 0.5 ? "true" : "false");
+            if (bool.TryParse(Theme.Get("LightImages"), out bool bLightImages)) LightImages = bLightImages;
         }
 
         public static void SaveTheme()
         {
-            if (ThemeIni == null) ThemeIni = File.Exists(Path.Combine(Environment.CurrentDirectory, "RAMTheme.ini")) ? new IniFile("RAMTheme.ini") : new IniFile();
-            if (Theme == null) Theme = ThemeIni.Section(Assembly.GetExecutingAssembly().GetName().Name);
+            ThemeIni ??= File.Exists(Path.Combine(Environment.CurrentDirectory, "RAMTheme.ini")) ? new IniFile("RAMTheme.ini") : new IniFile();
+            Theme ??= ThemeIni.Section(Assembly.GetExecutingAssembly().GetName().Name);
 
             Theme.Set("AccountsBG", ToHexString(AccountBackground));
             Theme.Set("AccountsFG", ToHexString(AccountForeground));
@@ -127,6 +151,12 @@ namespace RBX_Alt_Manager.Forms
             Theme.Set("TextBoxesBG", ToHexString(TextBoxesBackground));
             Theme.Set("TextBoxesFG", ToHexString(TextBoxesForeground));
             Theme.Set("TextBoxesBC", ToHexString(TextBoxesBorder));
+
+            Theme.Set("LabelsBC", ToHexString(LabelBackground));
+            Theme.Set("LabelsFC", ToHexString(LabelForeground));
+            Theme.Set("LabelsTransparent", LabelTransparent.ToString());
+
+            Theme.Set("LightImages", LightImages.ToString());
 
             ThemeIni.Save("RAMTheme.ini");
         }
@@ -151,10 +181,15 @@ namespace RBX_Alt_Manager.Forms
 
                     case "Forms":
                         FormsBackground = SelectColor.Color;
+                        LightImages = FormsBackground.GetBrightness() < 0.5;
                         break;
 
                     case "Text Boxes":
                         TextBoxesBackground = SelectColor.Color;
+                        break;
+
+                    case "Labels":
+                        LabelBackground = SelectColor.Color;
                         break;
                 }
 
@@ -188,6 +223,10 @@ namespace RBX_Alt_Manager.Forms
                     case "Text Boxes":
                         TextBoxesForeground = SelectColor.Color;
                         break;
+
+                    case "Labels":
+                        LabelForeground = SelectColor.Color;
+                        break;
                 }
 
                 AccountManager.Instance.ApplyTheme();
@@ -201,6 +240,18 @@ namespace RBX_Alt_Manager.Forms
             e.Cancel = true;
         }
 
+        private void ShowControls(params Control[] controls)
+        {
+            SetBorder.Visible = false;
+            ChangeStyle.Visible = false;
+            HideHeaders.Visible = false;
+            ToggleDarkTopBar.Visible = false;
+            ToggleTransparentBG.Visible = false;
+
+            foreach (Control control in controls)
+                control.Visible = true;
+        }
+
         private void Selection_SelectedIndexChanged(object sender, EventArgs e)
         {
             string Selected = Selection.SelectedItem as string;
@@ -208,40 +259,17 @@ namespace RBX_Alt_Manager.Forms
             if (string.IsNullOrEmpty(Selected)) return;
 
             if (Selected == "Buttons")
-            {
-                SetBorder.Visible = true;
-                ChangeStyle.Visible = true;
-                HideHeaders.Visible = false;
-                ToggleDarkTopBar.Visible = false;
-            }
+                ShowControls(SetBorder, ChangeStyle);
             else if (Selected == "Text Boxes")
-            {
-                SetBorder.Visible = true;
-                ChangeStyle.Visible = false;
-                HideHeaders.Visible = false;
-                ToggleDarkTopBar.Visible = false;
-            }
+                ShowControls(SetBorder);
             else if (Selected == "Accounts")
-            {
-                SetBorder.Visible = false;
-                ChangeStyle.Visible = false;
-                HideHeaders.Visible = true;
-                ToggleDarkTopBar.Visible = false;
-            }
+                ShowControls(HideHeaders);
             else if (Selected == "Forms")
-            {
-                SetBorder.Visible = false;
-                ChangeStyle.Visible = false;
-                HideHeaders.Visible = false;
-                ToggleDarkTopBar.Visible = true;
-            }
+                ShowControls(ToggleDarkTopBar);
+            else if (Selected == "Labels")
+                ShowControls(ToggleTransparentBG);
             else
-            {
-                SetBorder.Visible = false;
-                ChangeStyle.Visible = false;
-                HideHeaders.Visible = false;
-                ToggleDarkTopBar.Visible = false;
-            }
+                ShowControls();
         }
 
         private void SetBorder_Click(object sender, EventArgs e)
@@ -282,11 +310,18 @@ namespace RBX_Alt_Manager.Forms
             SaveTheme();
         }
 
+        private void ToggleTransparentBG_Click(object sender, EventArgs e)
+        {
+            LabelTransparent = !LabelTransparent;
+            AccountManager.Instance.ApplyTheme();
+            SaveTheme();
+        }
+
         private void ToggleDarkTopBar_Click(object sender, EventArgs e)
         {
             UseDarkTopBar = !UseDarkTopBar;
             SaveTheme();
-            MessageBox.Show("This option requires RAM to be restarted.\nThis way not work on older versions of windows.\nEnabled: " + (UseDarkTopBar ? "True" : "false"), "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("This option requires RAM to be restarted.\nThis may not work on older versions of windows.\nEnabled: " + (UseDarkTopBar ? "True" : "false"), "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

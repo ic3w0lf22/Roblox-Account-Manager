@@ -169,7 +169,7 @@ namespace RBX_Alt_Manager
         /// <param name="path">Path to the INI file.</param>
         public IniFile(string path) : this()
         {
-            Load(Path.Combine(Environment.CurrentDirectory, path));
+            Load(path);
         }
 
         /// <summary>
@@ -259,6 +259,13 @@ namespace RBX_Alt_Manager
         /// <param name="path">Path to the INI file to create.</param>
         public void Save(string path)
         {
+            if (string.IsNullOrEmpty(Environment.CurrentDirectory))
+            {
+                Program.Logger.Error($"Can not save {path}, CurrentDirectory does not exist");
+
+                return;
+            }
+
             lock (SaveObject)
             {
                 using (var file = new StreamWriter(Path.Combine(Environment.CurrentDirectory, path)))

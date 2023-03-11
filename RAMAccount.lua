@@ -18,6 +18,8 @@ local function GET(Method, Account, ...)
     local Url = 'http://localhost:' .. WebserverSettings.Port .. '/' .. Method .. '?Account=' .. Account
 
     for Index, Parameter in pairs(Arguments) do
+        if typeof(Parameter) == 'boolean' then continue end
+        
         Url = Url .. '&' .. Parameter
     end
 

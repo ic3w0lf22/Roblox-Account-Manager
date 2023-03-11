@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WebSocketSharp.Net.WebSockets;
+using static RBX_Alt_Manager.Program;
 
 namespace RBX_Alt_Manager.Nexus
 {
@@ -43,7 +44,7 @@ namespace RBX_Alt_Manager.Nexus
         {
             if (Status == AccountStatus.Online)
             {
-                Program.Logger.Warn($"{Username} was already connected, disconnecting...");
+                Logger.Warn($"{Username} was already connected, disconnecting...");
                 Disconnect();
             }
 
@@ -54,7 +55,7 @@ namespace RBX_Alt_Manager.Nexus
             AccountControl.Instance.ContextList.Add(Context, this);
             AccountControl.Instance.AccountsView.RefreshObject(this);
 
-            Program.Logger.Info($"{Username} has connected");
+            Logger.Info($"{Username} has connected");
 
             new Task(() =>
             {
@@ -70,13 +71,13 @@ namespace RBX_Alt_Manager.Nexus
 
         public void Disconnect()
         {
-            Program.Logger.Info($"{Username} has disconnected");
+            Logger.Info($"{Username} has disconnected");
 
             Status = AccountStatus.Offline;
             ClientCanReceive = false;
 
             if (Context != null) AccountControl.Instance.ContextList.Remove(Context);
-
+            
             AccountControl.Instance.AccountsView.RefreshObject(this);
         }
 
@@ -102,7 +103,7 @@ namespace RBX_Alt_Manager.Nexus
                     SendMessage($"ElementText:{AccountControl.Instance.GetTextFromElement(command.Payload["Name"])}");
                 else if (command.Name == "SetRelaunch" && double.TryParse(command.Payload["Seconds"], out double Delay))
                 {
-                    Program.Logger.Info($"Relaunch Delay for {Username} has been set to {Delay} through Nexus");
+                    Logger.Info($"Relaunch Delay for {Username} has been set to {Delay} through Nexus");
                     RelaunchDelay = Delay;
                 }
                 else if (command.Name == "SetAutoRelaunch" && !string.IsNullOrEmpty(command.Payload["Content"]) && bool.TryParse(command.Payload["Content"], out bool bRelaunch))

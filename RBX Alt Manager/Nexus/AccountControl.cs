@@ -18,12 +18,15 @@ using WebSocketSharp;
 using WebSocketSharp.Net.WebSockets;
 using WebSocketSharp.Server;
 
+//this.ScriptTabs = ThemeEditor.UseNormalTabControls ? new System.Windows.Forms.TabControl() : new RBX_Alt_Manager.Classes.NBTabControl();
+//this.ACTabs = ThemeEditor.UseNormalTabControls ? new System.Windows.Forms.TabControl() : new RBX_Alt_Manager.Classes.NBTabControl();
+
 namespace RBX_Alt_Manager.Forms
 {
     public partial class AccountControl : Form
     {
-        private static string ACFile = Path.Combine(Environment.CurrentDirectory, "AccountControlData.json");
-        private static object SaveLock = new object();
+        private static readonly string ACFile = Path.Combine(Environment.CurrentDirectory, "AccountControlData.json");
+        private static readonly object SaveLock = new object();
 
         public static AccountControl Instance;
         public static WebSocketServer Server;
@@ -40,9 +43,6 @@ namespace RBX_Alt_Manager.Forms
         [DllImport("user32", EntryPoint = "SendMessageA", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
         private static extern int SendMessage(int hwnd, int wMsg, int wParam, int lParam);
 
-        [DllImport("user32.dll")]
-        static extern bool PostMessage(IntPtr hWnd, UInt32 Msg, int wParam, int lParam);
-
         public AccountControl()
         {
             Instance = this;
@@ -51,8 +51,6 @@ namespace RBX_Alt_Manager.Forms
 
             InitializeComponent();
             this.Rescale();
-
-            LoadAccounts();
         }
 
         #region Save File
@@ -60,9 +58,7 @@ namespace RBX_Alt_Manager.Forms
         private void SaveAccounts()
         {
             lock (SaveLock)
-            {
                 File.WriteAllText(ACFile, JsonConvert.SerializeObject(Accounts));
-            }
         }
 
         private void LoadAccounts()
@@ -83,9 +79,9 @@ namespace RBX_Alt_Manager.Forms
 
                         if (account != null)
                             cAccount.LinkedAccount = account;
-                        else
-                            Accounts.Remove(cAccount);
                     }
+
+                    Accounts.RemoveAll(x => x.LinkedAccount == null);
                 }
                 catch { }
             }
@@ -144,20 +140,22 @@ namespace RBX_Alt_Manager.Forms
                 OutputWriter.WriteLine(Message);
             }
 
-            TextBox l = new TextBox();
-            l.Text = Message;
-            l.ReadOnly = true;
-            l.Multiline = true;
-            l.WordWrap = true;
-            l.TabStop = false;
-            l.BorderStyle = 0;
+            TextBox l = new TextBox
+            {
+                Text = Message,
+                ReadOnly = true,
+                Multiline = true,
+                WordWrap = true,
+                TabStop = false,
+                BorderStyle = 0,
 
-            l.Margin = new Padding(1);
+                Margin = new Padding(1),
 
-            l.MinimumSize = new Size(240, 13);
-            l.MaximumSize = new Size(240, 120);
-            l.BackColor = ThemeEditor.AccountBackground;
-            l.ForeColor = ThemeEditor.FormsForeground;
+                MinimumSize = new Size(240, 13),
+                MaximumSize = new Size(240, 120),
+                BackColor = ThemeEditor.AccountBackground,
+                ForeColor = ThemeEditor.FormsForeground
+            };
 
             int numberOfLines = SendMessage(l.Handle.ToInt32(), 0xBA, 0, 0);
             l.Height = ((l.Font.Height + 2) * numberOfLines) - 6;
@@ -174,12 +172,14 @@ namespace RBX_Alt_Manager.Forms
             if (CustomElements.ContainsKey(Name))
                 return;
 
-            Button button = new Button();
-            button.Name = Name;
-            button.Size = size;
-            button.Margin = margin;
-            button.Text = Text;
-            button.UseVisualStyleBackColor = true;
+            Button button = new Button
+            {
+                Name = Name,
+                Size = size,
+                Margin = margin,
+                Text = Text,
+                UseVisualStyleBackColor = true
+            };
 
             button.Click += CustomButton_Click;
 
@@ -197,11 +197,13 @@ namespace RBX_Alt_Manager.Forms
             if (CustomElements.ContainsKey(Name))
                 return;
 
-            TextBox textBox = new TextBox();
-            textBox.Name = Name;
-            textBox.Size = size;
-            textBox.Margin = margin;
-            textBox.Text = Text;
+            TextBox textBox = new TextBox
+            {
+                Name = Name,
+                Size = size,
+                Margin = margin,
+                Text = Text
+            };
 
             LastControl = textBox;
 
@@ -217,16 +219,17 @@ namespace RBX_Alt_Manager.Forms
             if (CustomElements.ContainsKey(Name))
                 return;
 
-            NumericUpDown control = new NumericUpDown();
-
-            control.DecimalPlaces = DecimalPlaces;
-            control.Increment = Increment;
-            control.Name = Name;
-            control.Margin = margin;
-            control.Size = size;
-            control.Value = DefaultValue;
-            control.Minimum = decimal.MinValue;
-            control.Maximum = decimal.MaxValue;
+            NumericUpDown control = new NumericUpDown
+            {
+                DecimalPlaces = DecimalPlaces,
+                Increment = Increment,
+                Name = Name,
+                Margin = margin,
+                Size = size,
+                Value = DefaultValue,
+                Minimum = decimal.MinValue,
+                Maximum = decimal.MaxValue
+            };
 
             LastControl = control;
 
@@ -242,10 +245,12 @@ namespace RBX_Alt_Manager.Forms
             if (CustomElements.ContainsKey(Name))
                 return;
 
-            Label label = new Label();
-            label.Name = Name;
-            label.Margin = margin;
-            label.Text = Text;
+            Label label = new Label
+            {
+                Name = Name,
+                Margin = margin,
+                Text = Text
+            };
 
             LastControl = label;
 
@@ -306,10 +311,19 @@ namespace RBX_Alt_Manager.Forms
 
             SaveOutputToFileCheck.Checked = AccountManager.AccountControl.Get<bool>("SaveOutput");
             AllowExternalConnectionsCB.Checked = AccountManager.AccountControl.Get<bool>("AllowExternalConnections");
+            StartOnLaunch.Checked = AccountManager.AccountControl.Get<bool>("StartOnLaunch");
             PortNumber.Value = AccountManager.AccountControl.Get<decimal>("NexusPort");
             RelaunchDelayNumber.Value = AccountManager.AccountControl.Get<decimal>("RelaunchDelay");
+            LauncherDelayNumber.Value = AccountManager.AccountControl.Get<decimal>("LauncherDelayNumber");
+            AutoMinimizeCB.Checked = AccountManager.AccountControl.Get<bool>("AutoMinimizeEnabled");
+            AutoCloseCB.Checked = AccountManager.AccountControl.Get<bool>("AutoCloseEnabled");
+            AutoMinIntervalNum.Value = Math.Max(Math.Min(AccountManager.AccountControl.Get<decimal>("AutoMinimizeInterval"), AutoMinIntervalNum.Minimum), AutoMinIntervalNum.Maximum);
+            AutoCloseIntervalNum.Value = Math.Max(Math.Min(AccountManager.AccountControl.Get<decimal>("AutoCloseInterval"), AutoCloseIntervalNum.Maximum), AutoCloseIntervalNum.Minimum);
+            AutoCloseType.SelectedIndex = AccountManager.AccountControl.Get<int>("AutoCloseType");
 
             SettingsLoaded = true;
+
+            LoadAccounts();
         }
 
         private void AccountsView_DragOver(object sender, DragEventArgs e)
@@ -359,7 +373,15 @@ namespace RBX_Alt_Manager.Forms
 
         private void ExecuteButton_Click(object sender, EventArgs e) => EmitMessage($"execute {ScriptBox.Text}");
 
-        private void AutoMinimizeCB_CheckedChanged(object sender, EventArgs e) => MinimzeTimer.Enabled = AutoMinimizeCB.Checked;
+        private void AutoMinimizeCB_CheckedChanged(object sender, EventArgs e)
+        {
+            MinimzeTimer.Enabled = AutoMinimizeCB.Checked;
+
+            if (!SettingsLoaded) return;
+
+            AccountManager.AccountControl.Set("AutoMinimizeEnabled", AutoMinimizeCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
 
         private void AutoRelaunchCheckBox_CheckedChanged(object sender, EventArgs e)
         {
@@ -452,27 +474,31 @@ namespace RBX_Alt_Manager.Forms
 
         private void NexusDocsButton_Click(object sender, EventArgs e) => Process.Start("https://github.com/ic3w0lf22/Roblox-Account-Manager/blob/master/RBX%20Alt%20Manager/Nexus/NexusDocs.md");
 
-        private void AutoRelaunchTimer_Tick(object sender, EventArgs e)
+        private async void AutoRelaunchTimer_Tick(object sender, EventArgs e)
         {
             if (!double.TryParse(AccountManager.AccountControl.Get("RelaunchDelay"), out double RelaunchDelay)) return;
 
-            foreach (ControlledAccount account in Accounts)
+            try
             {
-                if (account.AutoRelaunch && (DateTime.Now - account.LastPing).TotalSeconds > account.RelaunchDelay)
+                foreach (ControlledAccount account in Accounts)
                 {
-                    Program.Logger.Info($"Relaunch Delay: {RelaunchDelay} | Current Time: {DateTime.Now}");
-                    Program.Logger.Info($"Relaunching {account.Username} to {account.PlaceId}, time since last relaunch: {(DateTime.Now - account.LastPing).TotalSeconds} seconds [{account.LastPing}]");
+                    if (account.AutoRelaunch && (DateTime.Now - account.LastPing).TotalSeconds > account.RelaunchDelay)
+                    {
+                        Program.Logger.Info($"Relaunch Delay: {RelaunchDelay} | Current Time: {DateTime.Now}");
+                        Program.Logger.Info($"Relaunching {account.Username} to {account.PlaceId}, time since last relaunch: {(DateTime.Now - account.LastPing).TotalSeconds} seconds [{account.LastPing}] | Linked: {account.LinkedAccount}");
 
-                    account.LastPing = DateTime.Now;
-                    account.RelaunchDelay = RelaunchDelay;
+                        account.LastPing = DateTime.Now;
+                        account.RelaunchDelay = RelaunchDelay;
 
-                    account.LinkedAccount.JoinServer(account.PlaceId, account.JobId);
+                        await account.LinkedAccount.JoinServer(account.PlaceId, account.JobId);
 
-                    break;
+                        break;
+                    }
                 }
-            }
 
-            ClearDeadProcesses();
+                ClearDeadProcesses();
+            }
+            catch (Exception x) { Program.Logger.Error($"An error occured launching an account from auto relaunch: {x.Message} Trace: {x.StackTrace}"); }
         }
 
         private void AccountControl_FormClosing(object sender, FormClosingEventArgs e)
@@ -507,11 +533,29 @@ namespace RBX_Alt_Manager.Forms
             AccountManager.IniSettings.Save("RAMSettings.ini");
         }
 
+        private void StartOnLaunch_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!SettingsLoaded) return;
+
+            AccountManager.AccountControl.Set("StartOnLaunch", StartOnLaunch.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
         private void RelaunchDelayNumber_ValueChanged(object sender, EventArgs e)
         {
             if (!SettingsLoaded) return;
 
             AccountManager.AccountControl.Set("RelaunchDelay", RelaunchDelayNumber.Value.ToString());
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void LauncherDelayNumber_ValueChanged(object sender, EventArgs e)
+        {
+            AutoRelaunchTimer.Interval = (int)LauncherDelayNumber.Value * 1000;
+
+            if (!SettingsLoaded) return;
+
+            AccountManager.AccountControl.Set("LauncherDelay", LauncherDelayNumber.Value.ToString());
             AccountManager.IniSettings.Save("RAMSettings.ini");
         }
 
@@ -526,19 +570,72 @@ namespace RBX_Alt_Manager.Forms
         private void MinimizeRoblox_Click(object sender, EventArgs e)
         {
             foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
-                PostMessage(p.MainWindowHandle, 0x0112, 0xF020, 0);
-        }
-
-        private void MinimzeTimer_Tick(object sender, EventArgs e)
-        {
-            foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
-                PostMessage(p.MainWindowHandle, 0x0112, 0xF020, 0);
+                Utilities.PostMessage(p.MainWindowHandle, 0x0112, 0xF020, 0);
         }
 
         private void CloseRoblox_Click(object sender, EventArgs e)
         {
             foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
-                p.Kill();
+                try { p.Kill(); } catch { }
+        }
+
+        private void MinimzeTimer_Tick(object sender, EventArgs e)
+        {
+            foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
+                Utilities.PostMessage(p.MainWindowHandle, 0x0112, 0xF020, 0);
+        }
+
+        private void CloseTimer_Tick(object sender, EventArgs e)
+        {
+            foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
+                try
+                { // Roblox's second process has elevated permissions meaning we won't be able to kill the second process unless we also have elevated permissions.
+                    if (AutoCloseType.SelectedIndex == 0 && (DateTime.Now - p.StartTime).TotalMinutes > (int)AutoCloseIntervalNum.Value) // Per Instance
+                        p.Kill();
+                    else if (AutoCloseType.SelectedIndex == 1) // Global
+                        p.Kill();
+                }
+                catch (Exception x) { Program.Logger.Error($"AutoClose: Cannot access Roblox process ({p.Id}): {x.Message}"); }
+        }
+
+        private void AutoCloseCB_CheckedChanged(object sender, EventArgs e)
+        {
+            CloseTimer.Enabled = AutoCloseCB.Checked;
+
+            if (!SettingsLoaded) return;
+
+            AccountManager.AccountControl.Set("AutoCloseEnabled", AutoCloseCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void AutoMinIntervalNum_ValueChanged(object sender, EventArgs e)
+        {
+            MinimzeTimer.Interval = (int)AutoMinIntervalNum.Value * 1000;
+
+            if (!SettingsLoaded) return;
+
+            AccountManager.AccountControl.Set("AutoMinimizeInterval", AutoMinIntervalNum.Value.ToString());
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void AutoCloseIntervalNum_ValueChanged(object sender, EventArgs e)
+        {
+            CloseTimer.Interval = AutoCloseType.SelectedIndex == 0 ? 3000 : (int)AutoCloseIntervalNum.Value * 60 * 1000;
+
+            if (!SettingsLoaded) return;
+
+            AccountManager.AccountControl.Set("AutoCloseInterval", AutoCloseIntervalNum.Value.ToString());
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void AutoCloseType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CloseTimer.Interval = AutoCloseType.SelectedIndex == 0 ? 3000 : (int)AutoCloseIntervalNum.Value * 60 * 1000; // Per Instance = 0 | Global = 1
+
+            if (!SettingsLoaded) return;
+
+            AccountManager.AccountControl.Set("AutoCloseType", AutoCloseType.SelectedIndex.ToString());
+            AccountManager.IniSettings.Save("RAMSettings.ini");
         }
 
         #endregion
@@ -578,7 +675,7 @@ namespace RBX_Alt_Manager.Forms
                     if (!(control is CheckBox)) control.BackColor = ThemeEditor.ButtonsBackground;
                     control.ForeColor = ThemeEditor.ButtonsForeground;
                 }
-                else if (control is TextBox || control is RichTextBox || control is Label)
+                else if (control is TextBox || control is RichTextBox)
                 {
                     if (control is Classes.BorderedTextBox)
                     {
@@ -595,8 +692,14 @@ namespace RBX_Alt_Manager.Forms
                     control.BackColor = ThemeEditor.TextBoxesBackground;
                     control.ForeColor = ThemeEditor.TextBoxesForeground;
                 }
-                else if (control is ListBox)
+                else if (control is Label)
                 {
+                    control.BackColor = ThemeEditor.LabelTransparent ? Color.Transparent : ThemeEditor.LabelBackground;
+                    control.ForeColor = ThemeEditor.LabelForeground;
+                }
+                else if (control is ListBox || control is ObjectListView)
+                {
+                    if (control is ObjectListView view) view.HeaderStyle = ThemeEditor.ShowHeaders ? ColumnHeaderStyle.Clickable : ColumnHeaderStyle.None;
                     control.BackColor = ThemeEditor.ButtonsBackground;
                     control.ForeColor = ThemeEditor.ButtonsForeground;
                 }

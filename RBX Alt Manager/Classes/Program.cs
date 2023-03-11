@@ -1,5 +1,4 @@
 ﻿using CefSharp;
-using CefSharp.DevTools.Browser;
 using CefSharp.WinForms;
 using log4net;
 using Microsoft.Win32;
@@ -8,7 +7,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -25,12 +23,26 @@ namespace RBX_Alt_Manager
         {
             get
             {
-                if (AccountManager.General != null && AccountManager.General.Exists("WindowScale"))
+                float _Scale = (AccountManager.General != null && AccountManager.General.Exists("WindowScale")) ? AccountManager.General.Get<float>("WindowScale") : 0f;
+
+                if (_Scale > 0)
                     return AccountManager.General.Get<float>("WindowScale");
 
                 return 1f;
             }
         }
+
+        public static bool ScaleFonts
+        {
+            get
+            {
+                if (AccountManager.General != null && AccountManager.General.Exists("ScaleFonts"))
+                    return AccountManager.General.Get<bool>("ScaleFonts");
+
+                return true;
+            }
+        }
+
         private static Mutex mutex = new Mutex(true, "{93b3858f-3dac-4dc0-99cb-0476efc5adce}");
 
         [STAThread]
@@ -48,7 +60,7 @@ namespace RBX_Alt_Manager
 
             const string subkey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
 
-            using (var ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(subkey))
+            using (var ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32)?.OpenSubKey(subkey))
             {
                 if (ndpKey == null || ndpKey.GetValue("Release") == null || (int)ndpKey.GetValue("Release") < 528040)
                 {
@@ -110,9 +122,6 @@ namespace RBX_Alt_Manager
 
                 try
                 {
-                    if (Environment.OSVersion.Version.Major >= 6)
-                        SetProcessDPIAware();
-
                     Application.EnableVisualStyles();
                     Application.SetCompatibleTextRenderingDefault(false);
                     Application.Run(new AccountManager());
@@ -125,8 +134,5 @@ namespace RBX_Alt_Manager
             else
                 MessageBox.Show("Roblox Account Manager is already running!", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
-
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern bool SetProcessDPIAware();
     }
 }

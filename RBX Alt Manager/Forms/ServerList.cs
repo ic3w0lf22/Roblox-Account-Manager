@@ -3,18 +3,23 @@
 using BrightIdeasSoftware;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RBX_Alt_Manager.Classes;
 using RBX_Alt_Manager.Forms;
+using RBX_Alt_Manager.Properties;
 using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Diagnostics;
+using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static RBX_Alt_Manager.Program;
 
 namespace RBX_Alt_Manager
 {
@@ -28,78 +33,125 @@ namespace RBX_Alt_Manager
             this.Rescale();
 
             if (ThemeEditor.UseDarkTopBar) Icon = Properties.Resources.server_icon_white;
+
+            RobloxClient = new RestClient("https://roblox.com/");
+            ThumbClient = new RestClient("https://thumbnails.roblox.com/");
+            GamesClient = new RestClient("https://games.roblox.com/");
+            DevelopClient = new RestClient("https://develop.roblox.com/");
+
+            foreach (var Client in new RestClient[] { RobloxClient, ThumbClient, GamesClient, DevelopClient })
+                Client.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
+
+            if (!AccountManager.Watcher.Exists("VerifyDataModel")) AccountManager.Watcher.Set("VerifyDataModel", "true");
+            if (!AccountManager.Watcher.Exists("IgnoreExistingProcesses")) AccountManager.Watcher.Set("IgnoreExistingProcesses", "true");
+            if (!AccountManager.Watcher.Exists("ExpectedWindowTitle")) AccountManager.Watcher.Set("ExpectedWindowTitle", "Roblox");
+
+            RobloxScannerCB.Checked = AccountManager.Watcher.Get<bool>("Enabled");
+            ExitIfBetaDetectedCB.Checked = AccountManager.Watcher.Get<bool>("ExitOnBeta");
+            VerifyDataModelCB.Checked = AccountManager.Watcher.Get<bool>("VerifyDataModel");
+            IgnoreExistingProcesses.Checked = AccountManager.Watcher.Get<bool>("IgnoreExistingProcesses");
+            CloseRbxWindowTitleCB.Checked = AccountManager.Watcher.Get<bool>("CloseRbxWindowTitle");
+            RbxMemoryCB.Checked = AccountManager.Watcher.Get<bool>("CloseRbxMemory");
+
+            RbxWindowNameTB.Text = AccountManager.Watcher.Get<string>("ExpectedWindowTitle");
+
+            RbxMemoryLTNum.Value = AccountManager.Watcher.Exists("MemoryLowValue") ? Utilities.Clamp(AccountManager.Watcher.Get<decimal>("MemoryLowValue"), RbxMemoryLTNum.Minimum, RbxMemoryLTNum.Maximum) : 200;
+
+            ScanIntervalN.Value = AccountManager.Watcher.Exists("ScanInterval") ? AccountManager.Watcher.Get<int>("ScanInterval") : 6;
+            ReadIntervalN.Value = AccountManager.Watcher.Exists("ReadInterval") ? AccountManager.Watcher.Get<int>("ReadInterval") : 250;
         }
+
+        #region Themes
 
         public void ApplyTheme()
         {
             BackColor = ThemeEditor.FormsBackground;
             ForeColor = ThemeEditor.FormsForeground;
 
-            foreach (TabPage tab in Tabs.TabPages)
+            ApplyTheme(Controls);
+            //ApplyTheme(Tabs.TabPages);
+        }
+
+        public void ApplyTheme(Control.ControlCollection _Controls)
+        {
+            foreach (Control control in _Controls)
             {
-                tab.BackColor = ThemeEditor.FormsBackground;
-                tab.ForeColor = ThemeEditor.FormsForeground;
-
-                foreach (Control control in tab.Controls)
+                if (control is Button || control is CheckBox)
                 {
-                    if (control is Button || control is CheckBox)
+                    if (control is Button)
                     {
-                        if (control is Button)
-                        {
-                            Button b = control as Button;
-                            b.FlatStyle = ThemeEditor.ButtonStyle;
-                            b.FlatAppearance.BorderColor = ThemeEditor.ButtonsBorder;
-                        }
-
-                        if (!(control is CheckBox)) control.BackColor = ThemeEditor.ButtonsBackground;
-                        control.ForeColor = ThemeEditor.ButtonsForeground;
+                        Button b = control as Button;
+                        b.FlatStyle = ThemeEditor.ButtonStyle;
+                        b.FlatAppearance.BorderColor = ThemeEditor.ButtonsBorder;
                     }
-                    else if (control is TextBox || control is RichTextBox || control is Label)
-                    {
-                        if (control is Classes.BorderedTextBox)
-                        {
-                            Classes.BorderedTextBox b = control as Classes.BorderedTextBox;
-                            b.BorderColor = ThemeEditor.TextBoxesBorder;
-                        }
 
-                        if (control is Classes.BorderedRichTextBox)
-                        {
-                            Classes.BorderedRichTextBox b = control as Classes.BorderedRichTextBox;
-                            b.BorderColor = ThemeEditor.TextBoxesBorder;
-                        }
-
-                        control.BackColor = ThemeEditor.TextBoxesBackground;
-                        control.ForeColor = ThemeEditor.TextBoxesForeground;
-                    }
-                    else if (control is ListBox || control is ObjectListView)
-                    {
-                        if (control is ObjectListView) ((ObjectListView)control).HeaderStyle = ThemeEditor.ShowHeaders ? ColumnHeaderStyle.Clickable : ColumnHeaderStyle.None;
-                        control.BackColor = ThemeEditor.ButtonsBackground;
-                        control.ForeColor = ThemeEditor.ButtonsForeground;
-                    }
+                    if (!(control is CheckBox)) control.BackColor = ThemeEditor.ButtonsBackground;
+                    control.ForeColor = ThemeEditor.ButtonsForeground;
                 }
+                else if (control is TextBox || control is RichTextBox)
+                {
+                    if (control is Classes.BorderedTextBox)
+                    {
+                        Classes.BorderedTextBox b = control as Classes.BorderedTextBox;
+                        b.BorderColor = ThemeEditor.TextBoxesBorder;
+                    }
+
+                    if (control is Classes.BorderedRichTextBox)
+                    {
+                        Classes.BorderedRichTextBox b = control as Classes.BorderedRichTextBox;
+                        b.BorderColor = ThemeEditor.TextBoxesBorder;
+                    }
+
+                    control.BackColor = ThemeEditor.TextBoxesBackground;
+                    control.ForeColor = ThemeEditor.TextBoxesForeground;
+                }
+                else if (control is Label)
+                {
+                    control.BackColor = ThemeEditor.LabelTransparent ? Color.Transparent : ThemeEditor.LabelBackground;
+                    control.ForeColor = ThemeEditor.LabelForeground;
+                }
+                else if (control is ListBox || control is ObjectListView)
+                {
+                    if (control is ObjectListView view) view.HeaderStyle = ThemeEditor.ShowHeaders ? ColumnHeaderStyle.Clickable : ColumnHeaderStyle.None;
+                    control.BackColor = ThemeEditor.ButtonsBackground;
+                    control.ForeColor = ThemeEditor.ButtonsForeground;
+                }
+                else if (control is TabPage)
+                {
+                    ApplyTheme(control.Controls);
+
+                    control.BackColor = ThemeEditor.ButtonsBackground;
+                    control.ForeColor = ThemeEditor.ButtonsForeground;
+                }
+                else if (control is FastColoredTextBoxNS.FastColoredTextBox)
+                    control.ForeColor = Color.Black;
+                else if (control is FlowLayoutPanel || control is Panel || control is TabControl)
+                    ApplyTheme(control.Controls);
             }
         }
 
-        public static RestClient rbxclient;
-        public static RestClient thumbclient;
-        public static RestClient gamesclient;
-        public static RestClient ipapiclient;
+        #endregion
+
+        public static RestClient RobloxClient;
+        public static RestClient ThumbClient;
+        public static RestClient DevelopClient;
+        public static RestClient GamesClient;
         private int Page = 0;
         private List<FavoriteGame> Favorites;
-        private DateTime startTime;
-        private string FavGamesFN = Path.Combine(Environment.CurrentDirectory, "FavoriteGames.json");
-        private delegate void SafeCallDelegateFavorite(FavoriteGame game);
+        private readonly string FavGamesFN = Path.Combine(Environment.CurrentDirectory, "FavoriteGames.json");
         public static List<ServerData> servers = new List<ServerData>();
         public static long CurrentPlaceID = 0;
+        private readonly object RLLock = new object();
+        private readonly object SaveLock = new object();
 
         private bool IsBusy;
-        private Dictionary<int, string> Errors = new Dictionary<int, string>
+        private readonly Dictionary<int, string> Errors = new Dictionary<int, string>
         {
             { 6, "Server Full" },
             { 11, "Server no longer available" },
             { 12, "No Access" }
         };
+        private Dictionary<FavoriteGame, GameControl> FavoriteControls = new Dictionary<FavoriteGame, GameControl>(); // NOTE: dont forget to remove from dict when a favorite is removed
 
         public bool Busy
         {
@@ -113,20 +165,6 @@ namespace RBX_Alt_Manager
 
         private void ServerList_Load(object sender, EventArgs e)
         {
-            rbxclient = new RestClient("https://roblox.com/");
-            rbxclient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
-
-            thumbclient = new RestClient("https://thumbnails.roblox.com/");
-            rbxclient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
-
-            gamesclient = new RestClient("https://games.roblox.com/");
-            gamesclient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
-
-            ipapiclient = new RestClient("http://ip-api.com/json/");
-            ipapiclient.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
-
-            startTime = DateTime.Now;
-
             if (File.Exists(FavGamesFN))
             {
                 try
@@ -134,6 +172,9 @@ namespace RBX_Alt_Manager
                     Favorites = JsonConvert.DeserializeObject<List<FavoriteGame>>(File.ReadAllText(FavGamesFN));
 
                     FavoritesListView.SetObjects(Favorites);
+
+                    foreach (FavoriteGame game in Favorites)
+                        AddFavoriteControl(game);
                 }
                 catch (Exception x)
                 {
@@ -143,7 +184,7 @@ namespace RBX_Alt_Manager
             else
                 Favorites = new List<FavoriteGame>();
 
-            foreach (PropertyInfo prop in typeof(Game).GetProperties()) // was 2lazy to add em all manually : |
+            foreach (PropertyInfo prop in typeof(PageGame).GetProperties()) // was 2lazy to add em all manually : |
             {
                 if (GamesListView.AllColumns.Find(x => x.AspectName == prop.Name) == null)
                     GamesListView.AllColumns.Add(new OLVColumn
@@ -158,12 +199,12 @@ namespace RBX_Alt_Manager
         private void ServerList_FormClosing(object sender, FormClosingEventArgs e)
         {
             e.Cancel = true;
-            this.Hide();
+            Hide();
         }
 
         private void RefreshServers_Click(object sender, EventArgs e)
         {
-            if (!Int64.TryParse(AccountManager.Instance.PlaceID.Text, out long PlaceId))
+            if (!long.TryParse(AccountManager.Instance.PlaceID.Text, out long PlaceId))
                 return;
 
             if (Busy)
@@ -192,7 +233,7 @@ namespace RBX_Alt_Manager
                 while (publicInfo.nextPageCursor != null && Busy)
                 {
                     RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?sortOrder=Asc&limit=100" + (publicInfo.nextPageCursor == "_" ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
-                    response = await gamesclient.ExecuteAsync(request);
+                    response = await GamesClient.ExecuteAsync(request);
 
                     if (response.StatusCode == HttpStatusCode.OK && Busy)
                     {
@@ -220,7 +261,7 @@ namespace RBX_Alt_Manager
                         RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/VIP?sortOrder=Asc&limit=25" + (vipInfo.nextPageCursor == "_" ? "" : "&cursor=" + vipInfo.nextPageCursor), Method.GET);
                         request.AddCookie(".ROBLOSECURITY", AccountManager.SelectedAccount.SecurityToken);
                         request.AddHeader("Accept", "application/json");
-                        response = gamesclient.Execute(request);
+                        response = GamesClient.Execute(request);
 
                         if (response.StatusCode == HttpStatusCode.OK)
                         {
@@ -240,13 +281,11 @@ namespace RBX_Alt_Manager
 
         private void ServerListView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            ServerData server = ServerListView.SelectedObject as ServerData;
-
-            if (server != null)
+            if (ServerListView.SelectedObject is ServerData server)
                 AccountManager.Instance.JobID.Text = server.type == "VIP" ? "VIP:" + server.accessCode : server.id;
         }
 
-        private void joinServerToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void joinServerToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (AccountManager.SelectedAccount == null) return;
 
@@ -261,7 +300,7 @@ namespace RBX_Alt_Manager
             }
             else
             {
-                string res = AccountManager.SelectedAccount.JoinServer(Convert.ToInt64(AccountManager.Instance.PlaceID.Text), ServerListView.SelectedItem.Text, false, false);
+                string res = await AccountManager.SelectedAccount.JoinServer(Convert.ToInt64(AccountManager.Instance.PlaceID.Text), ServerListView.SelectedItem.Text, false, false);
 
                 if (!res.Contains("Success"))
                     MessageBox.Show(res);
@@ -284,7 +323,7 @@ namespace RBX_Alt_Manager
 
             RestRequest avrequest = new RestRequest($"v1/users/avatar-headshot?size=48x48&format=png&userIds={UserID}", Method.GET);
 
-            IRestResponse avresponse = thumbclient.Execute(avrequest);
+            IRestResponse avresponse = ThumbClient.Execute(avrequest);
 
             if (avresponse.StatusCode != HttpStatusCode.OK)
             {
@@ -314,7 +353,7 @@ namespace RBX_Alt_Manager
                 {
                     RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?limit=100" + (publicInfo.nextPageCursor == "_" ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
 
-                    IRestResponse response = await gamesclient.ExecuteAsync(request);
+                    IRestResponse response = await GamesClient.ExecuteAsync(request);
 
                     if (response.StatusCode == HttpStatusCode.OK && Busy)
                     {
@@ -328,7 +367,7 @@ namespace RBX_Alt_Manager
 
                             batchRequest.AddJsonBody(server.playerTokens.ConvertAll(s => new TokenRequest(s)));
 
-                            IRestResponse batchResponse = await thumbclient.ExecuteAsync(batchRequest);
+                            IRestResponse batchResponse = await ThumbClient.ExecuteAsync(batchRequest);
 
                             TokenAvatarRoot avatars = JsonConvert.DeserializeObject<TokenAvatarRoot>(batchResponse.Content);
 
@@ -359,91 +398,122 @@ namespace RBX_Alt_Manager
             if (Busy || !Int32.TryParse(PageNum.Text, out Page)) return;
 
             IRestResponse response;
+
             GamesListView.ClearObjects();
+            GameListPanel.Controls.Clear();
 
             Task.Factory.StartNew(() =>
             {
-                RestRequest request = new RestRequest($"v1/games/list?model.keyword={Term.Text}&model.startRows={Page * 50}&model.maxRows=50", Method.GET);
-
-                response = gamesclient.Execute(request);
-
-                if (response.StatusCode == HttpStatusCode.OK)
+                lock (RLLock)
                 {
-                    GameList gamesList = JsonConvert.DeserializeObject<GameList>(response.Content);
+                    RestRequest request = new RestRequest($"v1/games/list?model.keyword={Term.Text}&model.startRows={Page * 50}&model.maxRows=50", Method.GET);
 
-                    foreach (Game game in gamesList.games)
+                    response = GamesClient.Execute(request);
+
+                    List<GameControl> GControls = new List<GameControl>();
+
+                    if (response.StatusCode == HttpStatusCode.OK)
                     {
-                        int LikeRatio = 0;
+                        GameList gamesList = JsonConvert.DeserializeObject<GameList>(response.Content);
 
-                        if (game.totalUpVotes > 0)
+                        foreach (PageGame game in gamesList.games)
                         {
-                            double totalVotes = game.totalUpVotes + game.totalDownVotes;
-                            LikeRatio = (int)((decimal)(game.totalUpVotes / totalVotes) * 100);
+                            int LikeRatio = 0;
+
+                            if (game.totalUpVotes > 0)
+                            {
+                                double totalVotes = game.totalUpVotes + game.totalDownVotes;
+                                LikeRatio = (int)((decimal)(game.totalUpVotes / totalVotes) * 100);
+                            }
+
+                            game.likeRatio = LikeRatio;
+
+                            GamesListView.AddObject(game);
+
+                            GameControl RControl = new GameControl(game);
+
+                            RControl.Selected += (s, args) => AccountManager.Instance.PlaceID.Text = $"{args.Game.Details?.placeId}";
+
+                            GControls.Add(RControl);
                         }
-
-                        game.likeRatio = LikeRatio;
-
-                        GamesListView.AddObject(game);
                     }
-                }
 
-                Busy = false;
+                    if (GControls != null && GControls.Count > 0)
+                        GameListPanel.InvokeIfRequired(() =>
+                        {
+                            GameListPanel.Controls.AddRange(GControls.ToArray());
+                        });
+
+                    Busy = false;
+                }
             });
         }
 
         private void GamesListView_MouseClick(object sender, MouseEventArgs e)
         {
-            Game game = GamesListView.SelectedObject as Game;
-
-            if (game != null)
+            if (GamesListView.SelectedObject is PageGame game)
                 AccountManager.Instance.PlaceID.Text = game.placeId.ToString();
         }
 
         private void FavoritesListView_MouseClick(object sender, MouseEventArgs e)
         {
-            FavoriteGame game = FavoritesListView.SelectedObject as FavoriteGame;
-
-            if (game != null)
+            if (FavoritesListView.SelectedObject is FavoriteGame game)
             {
-                AccountManager.Instance.PlaceID.Text = game.PlaceID.ToString();
+                AccountManager.Instance.PlaceID.Text = game.Details.placeId.ToString();
                 AccountManager.Instance.JobID.Text = !string.IsNullOrEmpty(game.PrivateServer) ? game.PrivateServer.ToString() : "";
             }
         }
 
         private void SaveFavorites()
         {
-            if ((DateTime.Now - startTime).Seconds < 5 || Favorites.Count == 0) return;
+            Logger.Info($"Removing {Favorites.Where(x => x.Details == null).Count()} favorite games because they have no GameDetails available!");
 
-            string SaveData = JsonConvert.SerializeObject(Favorites);
+            if (Favorites.Count == 0) return;
 
-            File.WriteAllText(FavGamesFN, SaveData);
+            Favorites.RemoveAll(f => f.Details == null); // Past favorite games' GameDetails are cached anyways so no need to worry about this
+
+            lock (SaveLock)
+                File.WriteAllText(FavGamesFN, JsonConvert.SerializeObject(Favorites));
         }
 
         public void AddFavoriteToList(FavoriteGame game)
         {
-            if (FavoritesListView.InvokeRequired)
+            this.InvokeIfRequired(() =>
             {
-                var addItem = new SafeCallDelegateFavorite(AddFavoriteToList);
-                FavoritesListView.Invoke(addItem, new object[] { game });
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(game.PrivateServer) && Favorites.Find(x => x.PlaceID == game.PlaceID) != null) return;
+                if (string.IsNullOrEmpty(game.PrivateServer) && Favorites.Find(x => x.Details?.placeId == game.Details?.placeId) != null) return;
 
                 Favorites.Add(game);
                 FavoritesListView.AddObject(game);
-            }
+
+                AddFavoriteControl(game);
+            });
         }
 
-        private void joinGameToolStripMenuItem_Click(object sender, EventArgs e)
+        private void AddFavoriteControl(FavoriteGame game)
         {
-            Game game = GamesListView.SelectedObject as Game;
+            GameControl RControl = new GameControl(game) { Favorite = game };
 
-            if (game != null)
+            if (game.Details != null) game.Details.name = game.Name;
+
+            RControl.Selected += (s, args) =>
+            {
+                AccountManager.Instance.PlaceID.Text = $"{args.Game.Details.placeId}";
+                AccountManager.Instance.JobID.Text = AccountManager.Instance.JobID.Text = !string.IsNullOrEmpty(RControl.Favorite?.PrivateServer) ? RControl.Favorite?.PrivateServer : string.Empty;
+            };
+
+            RControl.SetContext(FavoritesStrip);
+
+            FavoriteGamesPanel.Controls.Add(RControl);
+            FavoriteControls.Add(game, RControl);
+        }
+
+        private async void joinGameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (GamesListView.SelectedObject is PageGame game)
             {
                 if (AccountManager.SelectedAccount == null) return;
 
-                string res = AccountManager.SelectedAccount.JoinServer(game.placeId);
+                string res = await AccountManager.SelectedAccount.JoinServer(game.placeId);
 
                 if (!res.Contains("Success"))
                     MessageBox.Show(res);
@@ -452,29 +522,22 @@ namespace RBX_Alt_Manager
 
         private void addToFavoritesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Game game = GamesListView.SelectedObject as Game;
-
-            if (game != null)
-            {
-                AddFavoriteToList(new FavoriteGame(game.name, game.placeId));
-                SaveFavorites();
-            }
+            if (GamesListView.SelectedObject is PageGame game)
+                AddFavoriteToList(new FavoriteGame(game.name, game.placeId, SaveFavorites));
         }
 
-        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        private async void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            FavoriteGame game = FavoritesListView.SelectedObject as FavoriteGame;
-
-            if (game != null)
+            if (((ToolStripMenuItem)sender).GetSource()?.Parent is GameControl gc && (gc?.Favorite ?? FavoritesListView?.SelectedObject) is FavoriteGame game)
             {
                 if (AccountManager.SelectedAccount == null) return;
 
                 string res;
 
                 if (string.IsNullOrEmpty(game.PrivateServer))
-                    res = AccountManager.SelectedAccount.JoinServer(game.PlaceID);
+                    res = await AccountManager.SelectedAccount.JoinServer(game.Details.placeId);
                 else
-                    res = AccountManager.SelectedAccount.JoinServer(game.PlaceID, game.PrivateServer);
+                    res = await AccountManager.SelectedAccount.JoinServer(game.Details.placeId, game.PrivateServer);
 
                 if (res != "Success")
                     MessageBox.Show(res);
@@ -483,39 +546,43 @@ namespace RBX_Alt_Manager
 
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
-            FavoriteGame game = FavoritesListView.SelectedObject as FavoriteGame;
-
-            if (game != null)
+            if (((ToolStripMenuItem)sender).GetSource()?.Parent is GameControl gc && (gc?.Favorite ?? FavoritesListView?.SelectedObject) is FavoriteGame game)
             {
                 string Result = AccountManager.ShowDialog("Rename", "Name");
 
                 if (!string.IsNullOrEmpty(Result))
                 {
                     game.Name = Result;
-                    FavoritesListView.SelectedItem.SubItems[0].Text = Result;
+
                     SaveFavorites();
+
+                    if (FavoriteControls.TryGetValue(game, out GameControl GC)) GC.Rename(Result);
                 }
             }
         }
 
         private void removeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FavoriteGame game = FavoritesListView.SelectedObject as FavoriteGame;
-
-            if (game != null)
+            if (((ToolStripMenuItem)sender).GetSource()?.Parent is GameControl gc && (gc?.Favorite ?? FavoritesListView?.SelectedObject) is FavoriteGame game)
             {
                 DialogResult res = MessageBox.Show("Are you sure?", "Remove Favorite", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
                 if (res == DialogResult.Yes)
                 {
-                    FavoritesListView.Items.Remove(FavoritesListView.SelectedItem);
+                    FavoritesListView.RemoveObject(game);
                     Favorites.Remove(game);
                     SaveFavorites();
+
+                    if (FavoriteControls.TryGetValue(game, out GameControl GC))
+                    {
+                        FavoriteGamesPanel.Controls.Remove(GC);
+                        FavoriteControls.Remove(game);
+                    }
                 }
             }
         }
 
-        private void Favorite_Click(object sender, EventArgs e)
+        private async void Favorite_Click(object sender, EventArgs e)
         {
             string PlaceId = AccountManager.CurrentPlaceId;
 
@@ -524,42 +591,35 @@ namespace RBX_Alt_Manager
 
             RestRequest request = new RestRequest("Marketplace/ProductInfo?assetId=" + PlaceId, Method.GET);
             request.AddHeader("Accept", "application/json");
-            IRestResponse response = AccountManager.APIClient.Execute(request);
+            IRestResponse response = await AccountManager.APIClient.ExecuteAsync(request);
+
+            Logger.Info($"MarketResponse for {PlaceId}: [{response.StatusCode}] {response.Content}");
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
                 ProductInfo placeInfo = JsonConvert.DeserializeObject<ProductInfo>(response.Content);
 
                 if (!string.IsNullOrEmpty(AccountManager.CurrentJobId) && AccountManager.CurrentJobId.Contains("privateServerLinkCode"))
-                    AddFavoriteToList(new FavoriteGame(placeInfo.Name + " (VIP)", Convert.ToInt64(AccountManager.CurrentPlaceId), AccountManager.CurrentJobId));
+                    AddFavoriteToList(new FavoriteGame($"{placeInfo.Name} (VIP)", Convert.ToInt64(AccountManager.CurrentPlaceId), AccountManager.CurrentJobId, SaveFavorites));
                 else
-                    AddFavoriteToList(new FavoriteGame(placeInfo.Name, Convert.ToInt64(AccountManager.CurrentPlaceId)));
-
-                SaveFavorites();
+                    AddFavoriteToList(new FavoriteGame(placeInfo.Name, Convert.ToInt64(AccountManager.CurrentPlaceId), SaveFavorites));
             }
+            else
+                MessageBox.Show($"{response.Content}", $"Can't add {PlaceId} to favorites! [{response.StatusCode} {response.StatusDescription}]", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
-
-        private void ServerList_HelpButtonClicked(object sender, CancelEventArgs e) =>
-            MessageBox.Show("Some elements may have tooltips, hover over them for about 2 seconds to see instructions.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
         private void copyPlaceIDToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FavoriteGame game = FavoritesListView.SelectedObject as FavoriteGame;
-
-            if (game != null)
-                Clipboard.SetText(game.PlaceID.ToString());
+            if (((ToolStripMenuItem)sender).GetSource()?.Parent is GameControl gc && (gc?.Favorite ?? FavoritesListView?.SelectedObject) is FavoriteGame game)
+                Clipboard.SetText(game.Details.placeId.ToString());
         }
 
         private void loadRegionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Account acc = AccountManager.SelectedAccount;
+            Account acc = AccountManager.LastValidAccount ?? AccountManager.SelectedAccount;
 
             if (acc == null) return;
-
-            string Token = acc.GetCSRFToken();
-
-            if (string.IsNullOrEmpty(Token))
-                return;
+            if (!acc.GetCSRFToken(out string Token)) return;
 
             int Index = ServerListView.SelectedIndex;
             List<ServerData> Servers = new List<ServerData>();
@@ -581,6 +641,8 @@ namespace RBX_Alt_Manager
 
             Task.Run(async () =>
             {
+                var WC = new WebClient();
+                var RNG = new Random();
                 var pinger = new Ping();
                 int t = 0;
 
@@ -590,10 +652,11 @@ namespace RBX_Alt_Manager
                     if (t > 4)
                     {
                         if (!server.regionLoaded)
-                        {
                             server.region = "Failed";
-                            ServerListView.InvokeIfRequired(() => ServerListView.RefreshObject(server));
-                        }
+
+                        ServerListView.InvokeIfRequired(() => ServerListView.RefreshObject(server));
+
+                        t = 0;
 
                         continue;
                     }
@@ -642,16 +705,19 @@ namespace RBX_Alt_Manager
                             continue;
                         }
 
-                        request = new RestRequest(IP);
-                        response = await ipapiclient.ExecuteAsync(request);
+                        int N2 = RNG.Next(32, 50);
+                        WC.Headers["User-Agent"] = $"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.{N2} (KHTML, like Gecko) Chrome/{string.Format("{0}.{1}.{2}.{3}", RNG.Next(93, 110), 0, RNG.Next(4950, 5162), RNG.Next(80, 212))} Safari/537.{N2}";
 
-                        JObject IPJS = JObject.Parse(response.Content);
+                        string IpJSON = await WC.DownloadStringTaskAsync(AccountManager.General.Get<string>("IPApiLink").Replace("<ip>", IP));
+                        JObject IPJS = JObject.Parse(IpJSON);
                         string Format = AccountManager.General.Get<string>("ServerRegionFormat");
+
+                        Logger.Info($"IP API Response: {IPJS}");
 
                         IPJS.Add("address", IP);
                         IPJS.Add("port", JS?["joinScript"]?.Value<JObject>()?["ServerPort"]?.Value<string>() ?? string.Empty);
 
-                        if (string.IsNullOrEmpty(Format)) Format = "<city>, <countryCode>";
+                        if (string.IsNullOrEmpty(Format)) Format = "<city>, <region_code>";
 
                         string Region = Format;
 
@@ -662,13 +728,14 @@ namespace RBX_Alt_Manager
                         server.region = Region;
                         server.regionLoaded = true;
 
+                        ServerListView.InvokeIfRequired(() => ServerListView.RefreshObject(server));
+
                         goto pingServer;
                     }
                     else
-                    {
                         server.region = $"{response.StatusCode}";
-                        ServerListView.InvokeIfRequired(() => ServerListView.RefreshObject(server));
-                    }
+
+                    ServerListView.InvokeIfRequired(() => ServerListView.RefreshObject(server));
 
                     t = 0;
                 }
@@ -681,11 +748,225 @@ namespace RBX_Alt_Manager
         {
             List<long> Ids = new List<long>();
 
-            foreach (Game game in GamesListView.SelectedObjects)
+            foreach (PageGame game in GamesListView.SelectedObjects)
                 Ids.Add(game.placeId);
 
             if (Ids.Count > 0)
                 Clipboard.SetText(string.Join("\n", Ids));
+        }
+
+        private void GetUniverseID_Click(object sender, EventArgs e)
+        {
+            Account acc = AccountManager.LastValidAccount ?? AccountManager.SelectedAccount;
+
+            if (acc == null) return;
+
+            RestRequest DetailsReq = new RestRequest($"v1/games/multiget-place-details?placeIds={PlaceIDUniTB.Text}");
+
+            DetailsReq.AddCookie(".ROBLOSECURITY", acc.SecurityToken);
+
+            IRestResponse DetailsResp = GamesClient.Execute(DetailsReq);
+
+            if (DetailsResp.IsSuccessful)
+            {
+                var Details = JArray.Parse(DetailsResp.Content);
+
+                if (Details.HasValues)
+                    UniverseIDTB.Text = Details[0]?["universeId"]?.Value<string>() ?? UniverseIDTB.Text;
+            }
+        }
+
+        private void ViewUniverse_Click(object sender, EventArgs e)
+        {
+            UniverseGamesPanel.SuspendLayout();
+            UniverseGamesPanel.Controls.Clear();
+
+            GetUniversePlaces(UniverseIDTB.Text, (UniverseData) =>
+            {
+                foreach (var Place in UniverseData["data"])
+                {
+                    GameControl RControl = new GameControl(new Game(Place["id"].Value<long>(), Place["name"].Value<string>()));
+
+                    RControl.Selected += (s, args) => AccountManager.Instance.PlaceID.Text = $"{args.Game.Details.placeId}";
+
+                    UniverseGamesPanel.Controls.Add(RControl);
+                }
+
+                UniverseGamesPanel.ResumeLayout();
+            });
+        }
+
+        private async Task GetUniversePlaces(string UniverseId, Action<JObject> Callback, string Cursor = "")
+        {
+            RestRequest DetailsReq = new RestRequest($"v1/universes/{UniverseIDTB.Text}/places?sortOrder=Asc&limit=100&cursor={Cursor}");
+
+            IRestResponse DetailsResp = await DevelopClient.ExecuteAsync(DetailsReq);
+
+            if (DetailsResp.IsSuccessful)
+            {
+                var Details = JObject.Parse(DetailsResp.Content);
+
+                if (Details.ContainsKey("data"))
+                    Callback(Details);
+
+                if (Details.ContainsKey("nextPageCursor") && !string.IsNullOrEmpty(Details["nextPageCursor"].Value<string>()))
+                    GetUniversePlaces(UniverseId, Callback, Details["nextPageCursor"].Value<string>());
+            }
+        }
+
+        private void ListViewCB_CheckedChanged(object sender, EventArgs e)
+        {
+            GameListPanel.Visible = !ListViewCB.Checked;
+            GamesListView.Visible = ListViewCB.Checked;
+        }
+
+        private void FavoriteListViewCB_CheckedChanged(object sender, EventArgs e)
+        {
+            FavoriteGamesPanel.Visible = !FavoriteListViewCB.Checked;
+            FavoritesListView.Visible = FavoriteListViewCB.Checked;
+        }
+
+        private void RobloxScannerCB_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!RobloxScannerCB.Checked)
+            {
+                WatcherTimer.Enabled = false;
+
+                AccountManager.Watcher.Set("Enabled", "false");
+                AccountManager.IniSettings.Save("RAMSettings.ini");
+
+                return;
+            }
+
+            if (!File.Exists(RobloxWatcher.HandlePath))
+                File.WriteAllBytes(RobloxWatcher.HandlePath, Resources.handle);
+
+            if (!RobloxWatcher.IsHandleEulaAccepted() && Utilities.YesNoPrompt("Roblox Watcher", "This feature uses SysInternals Handle which requires you to accept a EULA.", "Do you want to continue?"))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = RobloxWatcher.HandlePath,
+                    Arguments = "-p 99999",
+                    UseShellExecute = false,
+                }).WaitForExit();
+            }
+
+            if (RobloxWatcher.IsHandleEulaAccepted())
+            {
+                WatcherTimer.Enabled = RobloxScannerCB.Checked;
+
+                RobloxWatcher.StartReadLoop();
+            }
+            else
+                RobloxScannerCB.Checked = false;
+
+            AccountManager.Watcher.Set("Enabled", RobloxScannerCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void ScanIntervalN_ValueChanged(object sender, EventArgs e)
+        {
+            WatcherTimer.Interval = (int)(ScanIntervalN.Value * 1000);
+
+            AccountManager.Watcher.Set("ScanInterval", ScanIntervalN.Value.ToString());
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void ReadIntervalN_ValueChanged(object sender, EventArgs e)
+        {
+            RobloxWatcher.ReadInterval = Math.Max((int)ReadIntervalN.Value, 50);
+
+            AccountManager.Watcher.Set("ReadInterval", ReadIntervalN.Value.ToString());
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void WatcherTimer_Tick(object sender, EventArgs e) => RobloxWatcher.CheckProcesses();
+
+        private void ExitIfBetaDetectedCB_CheckedChanged(object sender, EventArgs e)
+        {
+            AccountManager.Watcher.Set("ExitOnBeta", ExitIfBetaDetectedCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private async void ViewOutfits_Click(object sender, EventArgs e)
+        {
+            if (!AccountManager.GetUserID(OutfitUsernameTB.Text, out long UserId)) return;
+
+            OutfitsPanel.SuspendLayout();
+            OutfitsPanel.Controls.Clear();
+
+            RestRequest OutfitsRequest = new RestRequest($"v1/users/{UserId}/outfits?page=1&itemsPerPage=50"); // hoping the outfit limit is 50 so i dont have to go through multiple pages in the future
+
+            IRestResponse DetailsResp = await AccountManager.AvatarClient.ExecuteAsync(OutfitsRequest);
+
+            if (DetailsResp.IsSuccessful)
+            {
+                var Details = JObject.Parse(DetailsResp.Content);
+
+                if (Details.ContainsKey("data"))
+                    foreach (var Outfit in Details["data"])
+                        OutfitsPanel.Controls.Add(new AvatarControl(Outfit["name"].Value<string>(), Outfit["id"].Value<long>()));
+            }
+
+            OutfitsPanel.ResumeLayout();
+        }
+
+        private void WearCustomButton_Click(object sender, EventArgs e)
+        {
+            if (AccountManager.SelectedAccount == null) return;
+
+            string AvatarJSON = AccountManager.ShowDialog("Avatar JSON", "Wear Avatar");
+
+            if (AvatarJSON.TryParseJson(out object _))
+                AccountManager.SelectedAccount.SetAvatar(AvatarJSON);
+        }
+
+        private void VerifyDataModelCB_CheckedChanged(object sender, EventArgs e)
+        {
+            RobloxWatcher.VerifyDataModel = VerifyDataModelCB.Checked;
+
+            AccountManager.Watcher.Set("VerifyDataModel", VerifyDataModelCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void IgnoreExistingProcesses_CheckedChanged(object sender, EventArgs e)
+        {
+            RobloxWatcher.IgnoreExistingProcesses = IgnoreExistingProcesses.Checked;
+
+            AccountManager.Watcher.Set("IgnoreExistingProcesses", IgnoreExistingProcesses.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void RbxMemoryCB_CheckedChanged(object sender, EventArgs e)
+        {
+            RobloxWatcher.CloseIfMemoryLow = RbxMemoryCB.Checked;
+
+            AccountManager.Watcher.Set("CloseRbxMemory", RbxMemoryCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void RbxMemoryLTNum_ValueChanged(object sender, EventArgs e)
+        {
+            RobloxWatcher.MemoryLowValue = (int)RbxMemoryLTNum.Value;
+
+            AccountManager.Watcher.Set("MemoryLowValue", RbxMemoryLTNum.Value.ToString());
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void CloseRbxWindowTitleCB_CheckedChanged(object sender, EventArgs e)
+        {
+            RobloxWatcher.CloseIfWindowTitle = CloseRbxWindowTitleCB.Checked;
+
+            AccountManager.Watcher.Set("CloseRbxWindowTitle", CloseRbxWindowTitleCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void RbxWindowNameTB_TextChanged(object sender, EventArgs e)
+        {
+            RobloxWatcher.ExpectedWindowTitle = RbxWindowNameTB.Text;
+
+            AccountManager.Watcher.Set("ExpectedWindowTitle", RbxWindowNameTB.Text);
+            AccountManager.IniSettings.Save("RAMSettings.ini");
         }
     }
 }

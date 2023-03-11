@@ -1,0 +1,41 @@
+# Modified version of https://github.com/DenverCoder1/readme-download-button-action
+name: "Download Button Action"
+
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - published
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get Latest Release
+        id: get-latest-release
+        uses: InsonusK/get-latest-release@v1.0.1
+        with:
+          myToken: ${{ github.token }}
+          view_top: 1
+
+      - name: Readme Download Button Action
+        env:
+          GITHUB_USER: "ic3w0lf22"
+          REPO: "Roblox-Account-Manager"
+          FORMAT: "zip"
+          VERSION: "${{ steps.get-latest-release.outputs.tag_name }}"
+          COLOR: "blue"
+          BEGIN_TAG: "<!-- sDOWNLOAD -->"
+          END_TAG: "<!-- eDOWNLOAD -->"
+        run: |
+          DOWNLOAD=$(curl 'https://api.github.com/repos/${{ env.GITHUB_USER }}/${{ env.REPO }}/releases/latest' | jq '.assets[0].browser_download_url' -r)
+          UPDATE=$(cat README.md | perl -0777 -pe 's#(${{ env.BEGIN_TAG }})(?:.|\n)*?(${{ env.END_TAG }})#${1}\n[![Download ${{ env.FORMAT }}](https://custom-icon-badges.herokuapp.com/badge/-Download-${{ env.COLOR }}?style=for-the-badge&logo=download&logoColor=white "Download ${{ env.FORMAT }}")]('$DOWNLOAD')\n${2}#g')
+          echo "${UPDATE}" > README.md
+
+      - uses: EndBug/add-and-commit@v7
+        with:
+          message: "Bump download button version to ${{ steps.get-latest-release.outputs.tag_name }}"
+          default_author: github_actions
+          branch: master
