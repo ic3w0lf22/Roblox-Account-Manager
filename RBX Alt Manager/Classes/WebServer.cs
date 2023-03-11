@@ -49,7 +49,7 @@ namespace RBX_Alt_Manager
                                 {
                                     if (ctx.Response.StatusCode > 299)
                                         ctx.Response.Headers.Add("ws-error", rstr);
-                                    ctx.Response.ContentType = "text/plain";
+                                    ctx.Response.ContentType = "application/json";
                                     ctx.Response.OutputStream.Write(buf, 0, buf.Length);
                                 }
                             }
