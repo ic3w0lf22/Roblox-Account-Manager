@@ -185,7 +185,7 @@ namespace RBX_Alt_Manager
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
                 JObject pinInfo = JObject.Parse(response.Content);
-                
+
                 if (!pinInfo["isEnabled"].Value<bool>() || (pinInfo["unlockedUntil"].Type != JTokenType.Null && pinInfo["unlockedUntil"].Value<int>() > 0)) return true;
             }
 
@@ -229,13 +229,24 @@ namespace RBX_Alt_Manager
             return false;
         }
 
-        public JToken GetMobileInfo()
+        public async Task<string> GetEmailJSON()
+        {
+            RestRequest DataRequest = new RestRequest("v1/email", Method.GET);
+
+            DataRequest.AddCookie(".ROBLOSECURITY", SecurityToken);
+
+            IRestResponse response = await AccountManager.AccountClient.ExecuteAsync(DataRequest);
+
+            return response.Content;
+        }
+
+        public async Task<JToken> GetMobileInfo()
         {
             RestRequest DataRequest = new RestRequest("mobileapi/userinfo", Method.GET);
 
             DataRequest.AddCookie(".ROBLOSECURITY", SecurityToken);
 
-            IRestResponse response = AccountManager.MainClient.Execute(DataRequest);
+            IRestResponse response = await AccountManager.MainClient.ExecuteAsync(DataRequest);
 
             if (response.StatusCode == HttpStatusCode.OK && Utilities.TryParseJson(response.Content, out JToken Data))
                 return Data;
@@ -243,7 +254,21 @@ namespace RBX_Alt_Manager
             return null;
         }
 
-        public long GetRobux() => GetMobileInfo()?["RobuxBalance"]?.Value<long>() ?? 0;
+        public async Task<JToken> GetUserInfo()
+        {
+            RestRequest DataRequest = new RestRequest($"v1/users/{UserID}", Method.GET);
+
+            DataRequest.AddCookie(".ROBLOSECURITY", SecurityToken);
+
+            IRestResponse response = await AccountManager.UsersClient.ExecuteAsync(DataRequest);
+
+            if (response.StatusCode == HttpStatusCode.OK && Utilities.TryParseJson(response.Content, out JToken Data))
+                return Data;
+
+            return null;
+        }
+
+        public async Task<long> GetRobux() => (await GetMobileInfo())?["RobuxBalance"]?.Value<long>() ?? 0;
 
         public bool SetFollowPrivacy(int Privacy)
         {
@@ -492,7 +517,7 @@ namespace RBX_Alt_Manager
             Code = "";
 
             Match match = Regex.Match(response.Content, "Roblox.GameLauncher.joinPrivateGame\\(\\d+\\,\\s*'(\\w+\\-\\w+\\-\\w+\\-\\w+\\-\\w+)'");
-            
+
             if (match.Success && match.Groups.Count == 2)
             {
                 Code = match.Groups[1]?.Value ?? string.Empty;

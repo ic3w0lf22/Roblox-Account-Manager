@@ -57,6 +57,7 @@
             this.groupsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.infoToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.viewFieldsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ShowDetailsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.getAuthenticationTicketToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copySecurityTokenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyRbxplayerLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -205,12 +206,13 @@
             this.moveGroupUpToolStripMenuItem,
             this.infoToolStripMenuItem,
             this.viewFieldsToolStripMenuItem,
+            this.ShowDetailsToolStripMenuItem,
             this.getAuthenticationTicketToolStripMenuItem,
             this.copySecurityTokenToolStripMenuItem,
             this.copyRbxplayerLinkToolStripMenuItem,
             this.copyAppLinkToolStripMenuItem});
             this.AccountsStrip.Name = "contextMenuStrip1";
-            this.AccountsStrip.Size = new System.Drawing.Size(209, 246);
+            this.AccountsStrip.Size = new System.Drawing.Size(209, 290);
             // 
             // addAccountsToolStripMenuItem
             // 
@@ -340,6 +342,13 @@
             this.viewFieldsToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.viewFieldsToolStripMenuItem.Text = "View Fields";
             this.viewFieldsToolStripMenuItem.Click += new System.EventHandler(this.viewFieldsToolStripMenuItem_Click);
+            // 
+            // ShowDetailsToolStripMenuItem
+            // 
+            this.ShowDetailsToolStripMenuItem.Name = "ShowDetailsToolStripMenuItem";
+            this.ShowDetailsToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.ShowDetailsToolStripMenuItem.Text = "Dump Details";
+            this.ShowDetailsToolStripMenuItem.Click += new System.EventHandler(this.ShowDetailsToolStripMenuItem_Click);
             // 
             // getAuthenticationTicketToolStripMenuItem
             // 
@@ -798,5 +807,6 @@
         private System.Windows.Forms.ToolStripMenuItem copyGroupToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyUserPassComboToolStripMenuItem;
         private System.Windows.Forms.PictureBox ShuffleIcon;
+        private System.Windows.Forms.ToolStripMenuItem ShowDetailsToolStripMenuItem;
     }
 }

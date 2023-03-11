@@ -151,7 +151,7 @@ namespace RBX_Alt_Manager
                             chromeBrowser.Load("https://roblox.com/login");
                         }
 
-                        Password = string.Empty;
+                        Password = string.Empty; 
                     }
                 });
             }

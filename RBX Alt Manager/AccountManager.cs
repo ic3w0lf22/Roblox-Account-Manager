@@ -37,7 +37,6 @@ namespace RBX_Alt_Manager
         public static RestClient AvatarClient;
         public static RestClient FriendsClient;
         public static RestClient UsersClient;
-        public static RestClient APIClient;
         public static RestClient AuthClient;
         public static RestClient EconClient;
         public static RestClient AccountClient;
@@ -45,6 +44,7 @@ namespace RBX_Alt_Manager
         public static RestClient Web13Client;
         public static string CurrentPlaceId { get => Instance.PlaceID.Text; }
         public static string CurrentJobId { get => Instance.JobID.Text; }
+        public static bool Elevated;
         private AccountAdder aaform;
         private ArgumentsForm afform;
         private ServerList ServerListForm;
@@ -140,6 +140,7 @@ namespace RBX_Alt_Manager
             if (!WebServer.Exists("AllowAccountEditing")) WebServer.Set("AllowAccountEditing", "false");
             if (!WebServer.Exists("Password")) WebServer.Set("Password", ""); else WSPassword = WebServer.Get("Password");
             if (!WebServer.Exists("EveryRequestRequiresPassword")) WebServer.Set("EveryRequestRequiresPassword", "false");
+            if (!WebServer.Exists("AllowExternalConnections")) WebServer.Set("AllowExternalConnections", "false");
 
             if (!AccountControl.Exists("AllowExternalConnections")) AccountControl.Set("AllowExternalConnections", "false");
             if (!AccountControl.Exists("RelaunchDelay")) AccountControl.Set("RelaunchDelay", "60");
@@ -256,7 +257,7 @@ namespace RBX_Alt_Manager
                     catch
                     {
                         try { AccountsList = JsonConvert.DeserializeObject<List<Account>>(File.ReadAllText(SaveFilePath + ".backup")); }
-                        catch{ MessageBox.Show("Failed to load backup file!", "Roblox Account Manager", MessageBoxButtons.OKCancel, MessageBoxIcon.Error); }
+                        catch { MessageBox.Show("Failed to load backup file!", "Roblox Account Manager", MessageBoxButtons.OKCancel, MessageBoxIcon.Error); }
                     }
                 }
             }
@@ -337,12 +338,7 @@ namespace RBX_Alt_Manager
                     exists.Password = Password;
                     exists.LastUse = DateTime.Now;
 
-                    Utilities.InvokeIfRequired(Instance.AccountsView, () =>
-                    {
-                        Instance.AccountsView.RefreshObject(exists);
-
-                        Instance.RefreshView(exists);
-                    });
+                    Instance.RefreshView(exists);
                 }
                 else
                 {
@@ -392,7 +388,7 @@ namespace RBX_Alt_Manager
             {
                 if (Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName.Contains(Path.GetTempPath().Remove(Path.GetTempPath().Length - 1)))
                 {
-                    MessageBox.Show("bro extract the files, don't run it in winrar");
+                    MessageBox.Show("Roblox Account Manager must be extracted in order to function correctly!", "Roblox Account Manager", MessageBoxButtons.OK);
                     Environment.Exit(Stupid);
                 }
             }
@@ -426,7 +422,6 @@ namespace RBX_Alt_Manager
 
             MainClient = new RestClient("https://www.roblox.com/");
             AvatarClient = new RestClient("https://avatar.roblox.com/");
-            APIClient = new RestClient("https://api.roblox.com/");
             AuthClient = new RestClient("https://auth.roblox.com/");
             EconClient = new RestClient("https://economy.roblox.com/");
             AccountClient = new RestClient("https://accountsettings.roblox.com/");
@@ -435,7 +430,7 @@ namespace RBX_Alt_Manager
             FriendsClient = new RestClient("https://friends.roblox.com");
             Web13Client = new RestClient("https://web.roblox.com/");
 
-            foreach (var Client in new RestClient[] { MainClient, AvatarClient, APIClient, AuthClient, EconClient, AccountClient, GameJoinClient, UsersClient, FriendsClient, Web13Client })
+            foreach (var Client in new RestClient[] { MainClient, AvatarClient, AuthClient, EconClient, AccountClient, GameJoinClient, UsersClient, FriendsClient, Web13Client })
                 Client.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
 
             ApplyTheme();
@@ -511,15 +506,39 @@ namespace RBX_Alt_Manager
 
             try
             {
+                if (new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator))
+                    Elevated = true;
+
+                // MessageBox.Show("Some features may not work properly if you ran the account manager as admin!", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error); // I don't think this is an issue anymore
+            }
+            catch { }
+
+            try
+            {
                 if (Developer.Get<bool>("EnableWebServer"))
                 {
                     string Port = WebServer.Exists("WebServerPort") ? WebServer.Get("WebServerPort") : "7963";
 
-                    AltManagerWS = new WebServer(SendResponse, $"http://localhost:{Port}/");
+                    List<string> Prefixes = new List<string>() { $"http://localhost:{Port}/" };
+
+                    if (WebServer.Get<bool>("AllowExternalConnections"))
+                        if (Elevated)
+                            Prefixes.Add($"http://*:{Port}/");
+                        else
+                            using (Process proc = new Process() { StartInfo = new ProcessStartInfo(AppDomain.CurrentDomain.FriendlyName, "-adminRequested") { Verb = "runas" } })
+                                try
+                                {
+                                    proc.Start();
+                                    Environment.Exit(1);
+                                }
+                                catch { }
+
+
+                    AltManagerWS = new WebServer(SendResponse, Prefixes.ToArray());
                     AltManagerWS.Run();
                 }
             }
-            catch (Exception x) { MessageBox.Show("Failed to start webserver!\n\n" + x, "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+            catch (Exception x) { MessageBox.Show($"Failed to start webserver!\n\n{x}", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error); }
 
             Task.Run(() =>
             {
@@ -546,7 +565,7 @@ namespace RBX_Alt_Manager
         {
             BackColor = ThemeEditor.FormsBackground;
             ForeColor = ThemeEditor.FormsForeground;
-            
+
             if (AccountsView.BackColor != ThemeEditor.AccountBackground || AccountsView.ForeColor != ThemeEditor.AccountForeground)
             {
                 AccountsView.BackColor = ThemeEditor.AccountBackground;
@@ -659,30 +678,36 @@ namespace RBX_Alt_Manager
 
         private readonly List<ServerData> AttemptedJoins = new List<ServerData>();
 
+        private string WebServerResponse(object Message, bool Success) => JsonConvert.SerializeObject(new { Success, Message });
+
         private string SendResponse(HttpListenerContext Context)
         {
             HttpListenerRequest request = Context.Request;
 
-            if (!request.IsLocal || request.Url.AbsolutePath == "/favicon.ico") return "";
+            bool V2 = request.Url.AbsolutePath.StartsWith("/v2/");
+            string AbsolutePath = V2 ? request.Url.AbsolutePath.Substring(3) : request.Url.AbsolutePath;
 
-            if (request.Url.AbsolutePath == "/Running") return "true";
+            if (!request.IsLocal && !WebServer.Get<bool>("AllowExternalConnections")) return V2 ? WebServerResponse("External connections are not allowed", false) : "";
+            if (AbsolutePath == "/favicon.ico") return ""; // always return nothing
+
+            if (AbsolutePath == "/Running") return V2 ? WebServerResponse("Roblox Account Manager is running", true) : "true";
 
             string Body = new StreamReader(request.InputStream).ReadToEnd();
-            string Method = request.Url.AbsolutePath.Substring(1);
+            string Method = AbsolutePath.Substring(1);
             string Account = request.QueryString["Account"];
             string Password = request.QueryString["Password"];
 
             Context.Response.StatusCode = 401;
 
-            if (WebServer.Get<bool>("EveryRequestRequiresPassword") && (WSPassword.Length < 6 || Password != WSPassword)) return "Invalid Password";
+            if (WebServer.Get<bool>("EveryRequestRequiresPassword") && (WSPassword.Length < 6 || Password != WSPassword)) return V2 ? WebServerResponse("Invalid Password, make sure your password contains 6 or more characters", false) : "Invalid Password";
 
-            if ((Method == "GetCookie" || Method == "GetAccounts" || Method == "LaunchAccount") && (WSPassword.Length < 6 || Password != WSPassword)) return "Invalid Password";
+            if ((Method == "GetCookie" || Method == "GetAccounts" || Method == "LaunchAccount") && (WSPassword.Length < 6 || Password != WSPassword)) return V2 ? WebServerResponse("Invalid Password, make sure your password contains 6 or more characters", false) : "Invalid Password";
 
             Context.Response.StatusCode = 200;
 
             if (Method == "GetAccounts")
             {
-                if (!WebServer.Get<bool>("AllowGetAccounts")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowGetAccounts")) return V2 ? WebServerResponse("Method `GetAccounts` not allowed", false) : "Method not allowed";
 
                 string Names = "";
                 string GroupFilter = request.QueryString["Group"];
@@ -694,12 +719,12 @@ namespace RBX_Alt_Manager
                     Names += acc.Username + ",";
                 }
 
-                return Names.Remove(Names.Length - 1);
+                return V2 ? WebServerResponse(Names.Remove(Names.Length - 1), true) : Names.Remove(Names.Length - 1);
             }
 
             if (Method == "GetAccountsJson")
             {
-                if (!WebServer.Get<bool>("AllowGetAccounts")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowGetAccounts")) return V2 ? WebServerResponse("Method `GetAccountsJson` not allowed", false) : "Method not allowed";
 
                 string GroupFilter = request.QueryString["Group"];
                 bool ShowCookies = request.QueryString["IncludeCookies"] == "true" && WebServer.Get<bool>("AllowGetCookie");
@@ -726,7 +751,7 @@ namespace RBX_Alt_Manager
                     Objects.Add(AccountObject);
                 }
 
-                return JsonConvert.SerializeObject(Objects);
+                return V2 ? WebServerResponse(JsonConvert.SerializeObject(Objects), true) : JsonConvert.SerializeObject(Objects);
             }
 
             Context.Response.StatusCode = 400;
@@ -735,34 +760,36 @@ namespace RBX_Alt_Manager
             {
                 Account New = AddAccount(request.QueryString["Cookie"]);
 
-                if (New != null)
+                bool Success = New != null;
+
+                if (Success)
                     Context.Response.StatusCode = 200;
 
-                return New != null ? "true" : "false";
+                return V2 ? WebServerResponse(Success ? "Cookie successfully imported" : "An error occured importing the cookie", Success) : (Success ? "true" : "false");
             }
 
-            if (string.IsNullOrEmpty(Account)) return "Empty Account";
+            if (string.IsNullOrEmpty(Account)) return V2 ? WebServerResponse("Empty Account", false) : "Empty Account";
 
             Account account = AccountsList.FirstOrDefault(x => x.Username == Account || x.UserID.ToString() == Account);
 
-            if (account == null || !account.GetCSRFToken(out string Token)) return "Invalid Account";
+            if (account == null || !account.GetCSRFToken(out string Token)) return V2 ? WebServerResponse("Invalid Account, the account's cookie may have expired and resulted in the account being logged out", false) : "Invalid Account";
 
             Context.Response.StatusCode = 401;
 
             if (Method == "GetCookie")
             {
-                if (!WebServer.Get<bool>("AllowGetCookie")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowGetCookie")) return V2 ? WebServerResponse("Method `GetCookie` not allowed", false) : "Method not allowed";
 
                 Context.Response.StatusCode = 200;
 
-                return account.SecurityToken;
+                return V2 ? WebServerResponse(account.SecurityToken, true) : account.SecurityToken;
             }
 
             if (Method == "LaunchAccount")
             {
-                if (!WebServer.Get<bool>("AllowLaunchAccount")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowLaunchAccount")) return V2 ? WebServerResponse("Method `LaunchAccount` not allowed", false) : "Method not allowed";
 
-                bool ValidPlaceId = long.TryParse(request.QueryString["PlaceId"], out long PlaceId); if (!ValidPlaceId) return "Invalid PlaceId";
+                bool ValidPlaceId = long.TryParse(request.QueryString["PlaceId"], out long PlaceId); if (!ValidPlaceId) return V2 ? WebServerResponse("Invalid PlaceId provided", false) : "Invalid PlaceId";
 
                 string JobID = !string.IsNullOrEmpty(request.QueryString["JobId"]) ? request.QueryString["JobId"] : "";
                 string FollowUser = request.QueryString["FollowUser"];
@@ -772,35 +799,63 @@ namespace RBX_Alt_Manager
 
                 Context.Response.StatusCode = 200;
 
-                return JsonConvert.SerializeObject(new { Message = $"Launched {Account} to {PlaceId}", Result = Res });
+                return JsonConvert.SerializeObject(new { Message = $"Launched {Account} to {PlaceId}", Result = Res /* Support any old scripts that may use this value */, Success = true });
             }
 
             if (Method == "FollowUser") // https://github.com/ic3w0lf22/Roblox-Account-Manager/pull/52
             {
-                if (!WebServer.Get<bool>("AllowLaunchAccount")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowLaunchAccount")) return V2 ? WebServerResponse("Method `FollowUser` not allowed", false) : "Method not allowed";
 
-                string User = request.QueryString["Username"]; if (string.IsNullOrEmpty(User)) { Context.Response.StatusCode = 400; return "Invalid Username Parameter"; }
+                string User = request.QueryString["Username"]; if (string.IsNullOrEmpty(User)) { Context.Response.StatusCode = 400; return V2 ? WebServerResponse("Invalid Username Parameter", false) : "Invalid Username Parameter"; }
 
                 if (!GetUserID(User, out long UserId))
-                    return "Failed to get UserId";
+                    return V2 ? WebServerResponse("Failed to get UserId", false) : "Failed to get UserId";
 
-                string Res = string.Empty;  account.JoinServer(UserId, "", true).ContinueWith(result => Res = result.Result).Wait();
+                string Res = string.Empty; account.JoinServer(UserId, "", true).ContinueWith(result => Res = result.Result).Wait();
 
                 Context.Response.StatusCode = 200;
 
-                return JsonConvert.SerializeObject(new { Message = $"Joining {User}'s game on {Account}", Result = Res });
+                string Message = JsonConvert.SerializeObject(new { Message = $"Joining {User}'s game on {Account}", Result = Res });
+
+                return V2 ? WebServerResponse(Message, true) : Message;
             }
 
             Context.Response.StatusCode = 200;
 
-            if (Method == "GetCSRFToken") return Token;
-            if (Method == "GetAlias") return account.Alias;
-            if (Method == "GetDescription") return account.Description;
+            if (Method == "GetCSRFToken") return V2 ? WebServerResponse(Token, true) : Token;
+            if (Method == "GetAlias") return V2 ? WebServerResponse(account.Alias, true) : account.Alias;
+            if (Method == "GetDescription") return V2 ? WebServerResponse(account.Description, true) : account.Description;
 
-            if (Method == "BlockUser" && !string.IsNullOrEmpty(request.QueryString["UserId"])) try { return account.BlockUserId(request.QueryString["UserId"], Context: Context).Content; } catch (Exception x) { return x.Message; }
-            if (Method == "UnblockUser" && !string.IsNullOrEmpty(request.QueryString["UserId"])) try { return account.UnblockUserId(request.QueryString["UserId"], Context: Context).Content; } catch (Exception x) { return x.Message; }
-            if (Method == "UnblockEveryone") return account.UnblockEveryone(Context);
-            if (Method == "GetBlockedList") try { return account.GetBlockedList(Context).Content; } catch (Exception x) { return x.Message; }
+            if (Method == "BlockUser" && !string.IsNullOrEmpty(request.QueryString["UserId"]))
+                try
+                {
+                    var Res = account.BlockUserId(request.QueryString["UserId"], Context: Context);
+
+                    Context.Response.StatusCode = (int)Res.StatusCode;
+
+                    return V2 ? WebServerResponse(Res.Content, Res.IsSuccessful) : Res.Content;
+                }
+                catch (Exception x) { return V2 ? WebServerResponse(x.Message, false) : x.Message; }
+            if (Method == "UnblockUser" && !string.IsNullOrEmpty(request.QueryString["UserId"]))
+                try
+                {
+                    var Res = account.UnblockUserId(request.QueryString["UserId"], Context: Context);
+
+                    Context.Response.StatusCode = (int)Res.StatusCode;
+
+                    return V2 ? WebServerResponse(Res.Content, Res.IsSuccessful) : Res.Content;
+                }
+                catch (Exception x) { return V2 ? WebServerResponse(x.Message, false) : x.Message; }
+            if (Method == "GetBlockedList") try
+                {
+                    var Res = account.GetBlockedList(Context);
+
+                    Context.Response.StatusCode = (int)Res.StatusCode;
+
+                    return V2 ? WebServerResponse(Res.Content, Res.IsSuccessful) : Res.Content;
+                }
+                catch (Exception x) { return V2 ? WebServerResponse(x.Message, false) : x.Message; }
+            if (Method == "UnblockEveryone") return V2 ? WebServerResponse(account.UnblockEveryone(Context), true) : account.UnblockEveryone(Context);
 
             if (Method == "SetServer" && !string.IsNullOrEmpty(request.QueryString["PlaceId"]) && !string.IsNullOrEmpty(request.QueryString["JobId"]))
             {
@@ -809,7 +864,7 @@ namespace RBX_Alt_Manager
                 if (!Success)
                     Context.Response.StatusCode = 400;
 
-                return RSP;
+                return V2 ? WebServerResponse(RSP, Success) : RSP;
             }
 
             if (Method == "SetRecommendedServer")
@@ -823,7 +878,7 @@ namespace RBX_Alt_Manager
                     {
                         Context.Response.StatusCode = 400;
 
-                        return "Too many failed attempts";
+                        return V2 ? WebServerResponse("Too many failed attempts", false) : "Too many failed attempts";
                     }
 
                     ServerData server = RBX_Alt_Manager.ServerList.servers[i];
@@ -835,40 +890,46 @@ namespace RBX_Alt_Manager
 
                     attempts++;
 
-                    res = account.SetServer(RBX_Alt_Manager.ServerList.CurrentPlaceID, server.id, out bool Success);
+                    res = account.SetServer(RBX_Alt_Manager.ServerList.CurrentPlaceID, server.id, out bool iSuccess);
 
-                    if (Success)
-                        return res;
+                    if (iSuccess)
+                        return V2 ? WebServerResponse(res, iSuccess) : res;
                 }
 
-                if (string.IsNullOrEmpty(res)) Context.Response.StatusCode = 400;
+                bool Success = !string.IsNullOrEmpty(res);
 
-                return string.IsNullOrEmpty(res) ? "Failed" : res;
+                if (!Success) Context.Response.StatusCode = 400;
+
+                return V2 ? WebServerResponse(Success ? "Failed" : res, Success) : Success ? "Failed" : res;
             }
 
-            if (Method == "GetField" && !string.IsNullOrEmpty(request.QueryString["Field"])) return account.GetField(request.QueryString["Field"]);
+            if (Method == "GetField" && !string.IsNullOrEmpty(request.QueryString["Field"])) return V2 ? WebServerResponse(account.GetField(request.QueryString["Field"]), true) : account.GetField(request.QueryString["Field"]);
 
             Context.Response.StatusCode = 401;
 
             if (Method == "SetField" && !string.IsNullOrEmpty(request.QueryString["Field"]) && !string.IsNullOrEmpty(request.QueryString["Value"]))
             {
-                if (!WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return V2 ? WebServerResponse("Method `SetField` not allowed", false) : "Method not allowed";
 
                 account.SetField(request.QueryString["Field"], request.QueryString["Value"]);
 
                 Context.Response.StatusCode = 200;
 
-                return $"Set Field {request.QueryString["Field"]} to {request.QueryString["Value"]} for {account.Username}";
+                string Res = $"Set Field {request.QueryString["Field"]} to {request.QueryString["Value"]} for {account.Username}";
+
+                return V2 ? WebServerResponse(Res, true) : Res;
             }
             if (Method == "RemoveField" && !string.IsNullOrEmpty(request.QueryString["Field"]))
             {
-                if (!WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return V2 ? WebServerResponse("Method `RemoveField` not allowed", false) : "Method not allowed";
 
                 account.RemoveField(request.QueryString["Field"]);
 
                 Context.Response.StatusCode = 200;
 
-                return $"Removed Field {request.QueryString["Field"]} from {account.Username}";
+                string Res = $"Removed Field {request.QueryString["Field"]} from {account.Username}";
+
+                return V2 ? WebServerResponse(Res, true) : Res;
             }
 
             if (Method == "SetAvatar" && Body.TryParseJson(out object _))
@@ -877,57 +938,58 @@ namespace RBX_Alt_Manager
 
                 Context.Response.StatusCode = 200;
 
-                return $"Attempting to set avatar of {account.Username} to {Body}";
+                string Res = $"Attempting to set avatar of {account.Username} to {Body}";
+
+                return V2 ? WebServerResponse(Res, true) : Res;
             }
 
             if (Method == "SetAlias" && !string.IsNullOrEmpty(Body))
             {
-                if (!WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return V2 ? WebServerResponse("Method `SetAlias` not allowed", false) : "Method not allowed";
 
                 account.Alias = Body;
                 UpdateAccountView(account);
 
                 Context.Response.StatusCode = 200;
 
-                return $"Set Alias of {account.Username} to {Body}";
+                string Res = $"Set Alias of {account.Username} to {Body}";
+
+                return V2 ? WebServerResponse(Res, true) : Res;
             }
             if (Method == "SetDescription" && !string.IsNullOrEmpty(Body))
             {
-                if (!WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return V2 ? WebServerResponse("Method `SetDescription` not allowed", false) : "Method not allowed";
 
                 account.Description = Body;
                 UpdateAccountView(account);
 
                 Context.Response.StatusCode = 200;
 
-                return $"Set Description of {account.Username} to {Body}";
+                string Res = $"Set Description of {account.Username} to {Body}";
+
+                return V2 ? WebServerResponse(Res, true) : Res;
             }
             if (Method == "AppendDescription" && !string.IsNullOrEmpty(Body))
             {
-                if (!WebServer.Get<bool>("AllowAccountEditing")) return "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return V2 ? WebServerResponse("Method `AppendDescription` not allowed", false) : "Method not allowed";
 
                 account.Description += Body;
                 UpdateAccountView(account);
 
                 Context.Response.StatusCode = 200;
 
-                return $"Appended Description of {account.Username} with {Body}";
+                string Res = $"Appended Description of {account.Username} with {Body}";
+
+                return V2 ? WebServerResponse(Res, true) : Res;
             }
 
             Context.Response.StatusCode = 404;
 
-            return "";
+            return V2 ? WebServerResponse("404 not found", false) : "";
         }
 
         private void AccountManager_Shown(object sender, EventArgs e)
         {
-            try
-            {
-                if (new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator))
-                    MessageBox.Show("Some features may not work properly if you ran the account manager as admin!", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch { }
-
             LoadAccounts();
 
             if (!General.Get<bool>("DisableMultiRbx"))
@@ -1029,7 +1091,7 @@ namespace RBX_Alt_Manager
             RefreshView();
         }
 
-        private async void JoinServer_Click(object sender, EventArgs e)
+        private void JoinServer_Click(object sender, EventArgs e)
         {
             Match IDMatch = Regex.Match(PlaceID.Text, @"\/games\/(\d+)[\/|\?]?"); // idiotproofing
 
@@ -1048,23 +1110,28 @@ namespace RBX_Alt_Manager
             if (!long.TryParse(PlaceID.Text, out long PlaceId)) return;
 
             if (!PlaceTimer.Enabled)
-                _ = AddRecentGame(new Game(PlaceId));
+                _ = Task.Run(() => AddRecentGame(new Game(PlaceId)));
 
             CancelLaunching();
 
-            if (AccountsView.SelectedObjects.Count > 1)
-            {
-                LauncherToken = new CancellationTokenSource();
+            bool LaunchMultiple = AccountsView.SelectedObjects.Count > 1;
 
-                await LaunchAccounts(SelectedAccounts, PlaceId, VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer);
-            }
-            else if (SelectedAccount != null)
+            new Thread(async () => // finally fixing an ancient bug in a dumb way, p.s. i do not condone this.
             {
-                string res = await SelectedAccount.JoinServer(PlaceId, VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer);
+                if (LaunchMultiple)
+                {
+                    LauncherToken = new CancellationTokenSource();
 
-                if (!res.Contains("Success"))
-                    MessageBox.Show(res);
-            }
+                    await LaunchAccounts(SelectedAccounts, PlaceId, VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer);
+                }
+                else if (SelectedAccount != null)
+                {
+                    string res = await SelectedAccount.JoinServer(PlaceId, VIPServer ? JobID.Text.Substring(4) : JobID.Text, false, VIPServer);
+
+                    if (!res.Contains("Success"))
+                        MessageBox.Show(res);
+                }
+            }).Start();
         }
 
         private async void Follow_Click(object sender, EventArgs e)
@@ -1169,6 +1236,8 @@ namespace RBX_Alt_Manager
 
             General.Set("SavedPlaceId", PlaceID.Text);
             IniSettings.Save("RAMSettings.ini");
+
+            Program.Closed = true;
         }
 
         private void BrowserButton_Click(object sender, EventArgs e)
@@ -1300,25 +1369,22 @@ namespace RBX_Alt_Manager
             PlaceTimer.Start();
         }
 
-        private void PlaceTimer_Tick(object sender, EventArgs e)
+        private async void PlaceTimer_Tick(object sender, EventArgs e)
         {
-            if (APIClient == null) return;
+            if (EconClient == null) return;
 
             PlaceTimer.Stop();
 
-            Task.Run(() =>
+            RestRequest request = new RestRequest($"v2/assets/{PlaceID.Text}/details", Method.GET);
+            request.AddHeader("Accept", "application/json");
+            IRestResponse response = await EconClient.ExecuteAsync(request);
+
+            if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK && response.Content.StartsWith("{") && response.Content.EndsWith("}"))
             {
-                RestRequest request = new RestRequest("Marketplace/ProductInfo?assetId=" + PlaceID.Text, Method.GET);
-                request.AddHeader("Accept", "application/json");
-                IRestResponse response = APIClient.Execute(request);
+                ProductInfo placeInfo = JsonConvert.DeserializeObject<ProductInfo>(response.Content);
 
-                if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK && (response.Content.StartsWith("{") && response.Content.EndsWith("}")))
-                {
-                    ProductInfo placeInfo = JsonConvert.DeserializeObject<ProductInfo>(response.Content);
-
-                    Utilities.InvokeIfRequired(this, () => CurrentPlace.Text = placeInfo.Name);
-                }
-            });
+                Utilities.InvokeIfRequired(this, () => CurrentPlace.Text = placeInfo.Name);
+            }
         }
 
         private void moveToToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1575,6 +1641,41 @@ namespace RBX_Alt_Manager
                     ShuffleIcon.ColorImage(255, 255, 255);
                 else
                     ShuffleIcon.ColorImage(0, 0, 0);
+            }
+        }
+
+        private void ShowDetailsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!Directory.Exists(Path.Combine(Environment.CurrentDirectory, "AccountDumps")))
+                Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "AccountDumps"));
+
+            foreach (Account Account in AccountsView.SelectedObjects)
+            {
+                Task.Run(async () =>
+                {
+                    var UserInfo = await Account.GetUserInfo();
+                    double AccountAge = -1;
+
+                    if (DateTime.TryParse(UserInfo["created"].Value<string>(), out DateTime CreationTime))
+                        AccountAge = (DateTime.UtcNow - CreationTime).TotalDays;
+
+                    StringBuilder builder = new StringBuilder();
+
+                    builder.AppendLine($"Username: {Account.Username}");
+                    builder.AppendLine($"UserId: {Account.UserID}");
+                    builder.AppendLine($"Robux: {await Account.GetRobux()}");
+                    builder.AppendLine($"Account Age: {(AccountAge >= 0 ? $"{AccountAge:F1}" : "UNKNOWN")}");
+                    builder.AppendLine($"Email Status: {await Account.GetEmailJSON()}");
+                    builder.AppendLine($"User Info: {UserInfo}");
+                    builder.AppendLine($"Other: {await Account.GetMobileInfo()}");
+                    builder.AppendLine($"Fields: {JsonConvert.SerializeObject(Account.Fields)}");
+
+                    string FileName = Path.Combine(Environment.CurrentDirectory, "AccountDumps", Account.Username + ".txt");
+
+                    File.WriteAllText(FileName, builder.ToString());
+
+                    Process.Start(FileName);
+                });
             }
         }
     }
