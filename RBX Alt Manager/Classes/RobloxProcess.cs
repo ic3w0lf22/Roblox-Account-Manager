@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Deployment.Application;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace RBX_Alt_Manager.Classes
 {
@@ -39,8 +38,8 @@ namespace RBX_Alt_Manager.Classes
 
             RobloxWatcher.LogFileRead += ReadLogFile;
 
-            new Thread(WaitForLogPath).Start();
-            new Thread(WaitForExit).Start();
+            Task.Run(WaitForLogPath).ContinueWith(task => { if (task.IsFaulted) Program.Logger.Error($"WaitForLogPath Error: {task.Exception}"); });
+            Task.Run(WaitForExit).ContinueWith(task => { if (task.IsFaulted) Program.Logger.Error($"WaitForExit Error: {task.Exception}"); });
         }
 
         private void ReadLogFile(object s, EventArgs e)
@@ -48,7 +47,7 @@ namespace RBX_Alt_Manager.Classes
             if (StreamDisposed || LogStream == null || !LogStream.CanRead) return;
 
             try
-            { // didn't wanna do this :[
+            {
                 if (LogStream.Length > LastPosition)
                 {
                     int Length = (int)(LogStream.Length - LastPosition);
@@ -148,7 +147,7 @@ namespace RBX_Alt_Manager.Classes
             return false;
         }
 
-        private void WaitForLogPath()
+        private async Task WaitForLogPath()
         {
             if (LogFileRetries > 30) return;
             if (RbxProcess.HasExited) return;
@@ -176,23 +175,37 @@ namespace RBX_Alt_Manager.Classes
 
             if (LogMatch.Success && LogMatch.Groups.Count == 3)
             {
-                LogFile = new FileInfo(Path.Combine(LogMatch.Groups[1].Value, LogMatch.Groups[2].Value));
+                string ParentDirectory = LogMatch.Groups[1].Value;
+
+                Program.Logger.Info($"Parent Directory: {ParentDirectory}");
+
+                if (ParentDirectory.Contains("?")) // fix for handle returning file paths with question marks (caused by russian/etc usernames), attempts to find the logs folder manually
+                {
+                    string OldParentDirectory = ParentDirectory;
+
+                    ParentDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Roblox", "logs");
+
+                    if (!Directory.Exists(ParentDirectory))
+                        throw new DirectoryNotFoundException($"Couldn't find Roblox's logs folder [{OldParentDirectory}]");
+                }
+
+                LogFile = new FileInfo(Path.Combine(ParentDirectory, LogMatch.Groups[2].Value));
                 LogStream = File.Open(LogFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
                 Program.Logger.Info($"Found LogFile Path: {LogFile}");
             }
             else
             {
-                Thread.Sleep(1500);
+                await Task.Delay(1500);
 
-                new Thread(WaitForLogPath).Start();
+                await Task.Run(WaitForLogPath);
             }
         }
 
-        private void WaitForExit()
+        private async Task WaitForExit()
         {
             while (!RbxProcess.HasExited && !Program.Closed) // Process.WaitForExit errors with `Access is denied` for roblox's second process so we just check if it exists in a loop
-                Thread.Sleep(200);
+                await Task.Delay(200);
 
             Program.Logger.Info($"{RbxProcess.Id} has exited");
 

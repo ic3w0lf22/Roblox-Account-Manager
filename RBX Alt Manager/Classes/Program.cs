@@ -49,6 +49,8 @@ namespace RBX_Alt_Manager
         [STAThread]
         static void Main()
         {
+            Application.ApplicationExit += (s, e) => Closed = true;
+
             if (!File.Exists($"{Application.ExecutablePath}.config") || !File.Exists(Path.Combine(Environment.CurrentDirectory, "RAMTheme.ini")) || !File.Exists(Path.Combine(Environment.CurrentDirectory, "log4.config")))
             {
                 File.WriteAllText($"{Application.ExecutablePath}.config", Resources.AppConfig);

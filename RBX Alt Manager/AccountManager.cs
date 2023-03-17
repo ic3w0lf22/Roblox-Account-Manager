@@ -1236,8 +1236,6 @@ namespace RBX_Alt_Manager
 
             General.Set("SavedPlaceId", PlaceID.Text);
             IniSettings.Save("RAMSettings.ini");
-
-            Program.Closed = true;
         }
 
         private void BrowserButton_Click(object sender, EventArgs e)
