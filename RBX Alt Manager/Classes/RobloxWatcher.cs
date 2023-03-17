@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
+using System.Timers;
 
 namespace RBX_Alt_Manager.Classes
 {
@@ -13,14 +13,27 @@ namespace RBX_Alt_Manager.Classes
 
         public static HashSet<int> Seen = new HashSet<int>();
         public static List<RobloxProcess> Instances = new List<RobloxProcess>();
-        public static int ReadInterval = 250;
         public static bool VerifyDataModel = true;
         public static bool IgnoreExistingProcesses = true;
         public static bool CloseIfMemoryLow = false;
         public static bool CloseIfWindowTitle = false;
         public static int MemoryLowValue = 200;
         public static string ExpectedWindowTitle = "Roblox";
-        private static bool ReadLoopActive;
+
+        public static Timer ReadTimer
+        {
+            get
+            {
+                if (readTimer == null)
+                {
+                    readTimer = new Timer(250);
+                    readTimer.Elapsed += (s, e) => LogFileRead?.Invoke(null, new EventArgs());
+                }
+
+                return readTimer;
+            }
+        }
+        private static Timer readTimer;
 
         public static event EventHandler<EventArgs> LogFileRead;
 
@@ -60,25 +73,6 @@ namespace RBX_Alt_Manager.Classes
                     Seen.Add(process.Id);
                 }
                 catch (Exception x) { Program.Logger.Error($"Access to Process {process.Id} denied! This may be due to roblox being ran as admin or roblox's second process(This message can be ignored): {x.Message}"); }
-            }
-        }
-
-        public static void StartReadLoop()
-        {
-            if (ReadLoopActive) return;
-
-            Task.Run(ReadLoop);
-        }
-
-        private static async void ReadLoop()
-        {
-            ReadLoopActive = true;
-
-            while (true)
-            {
-                await Task.Delay(ReadInterval);
-
-                LogFileRead?.Invoke(null, new EventArgs());
             }
         }
 

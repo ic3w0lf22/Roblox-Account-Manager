@@ -831,6 +831,7 @@ namespace RBX_Alt_Manager
             if (!RobloxScannerCB.Checked)
             {
                 WatcherTimer.Enabled = false;
+                RobloxWatcher.ReadTimer.Enabled = false;
 
                 AccountManager.Watcher.Set("Enabled", "false");
                 AccountManager.IniSettings.Save("RAMSettings.ini");
@@ -855,7 +856,7 @@ namespace RBX_Alt_Manager
             {
                 WatcherTimer.Enabled = RobloxScannerCB.Checked;
 
-                RobloxWatcher.StartReadLoop();
+                RobloxWatcher.ReadTimer.Enabled = true;
             }
             else
                 RobloxScannerCB.Checked = false;
@@ -874,7 +875,7 @@ namespace RBX_Alt_Manager
 
         private void ReadIntervalN_ValueChanged(object sender, EventArgs e)
         {
-            RobloxWatcher.ReadInterval = Math.Max((int)ReadIntervalN.Value, 50);
+            RobloxWatcher.ReadTimer.Interval = (double)Math.Max(ReadIntervalN.Value, 50);
 
             AccountManager.Watcher.Set("ReadInterval", ReadIntervalN.Value.ToString());
             AccountManager.IniSettings.Save("RAMSettings.ini");
