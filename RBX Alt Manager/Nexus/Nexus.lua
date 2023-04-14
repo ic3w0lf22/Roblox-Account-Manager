@@ -312,6 +312,8 @@ do -- Default Commands
                 Nexus:Log(table.concat(T, ' '))
             end
 
+            if newcclosure then Env.print = newcclosure(Env.print) end
+
             local S, E = pcall(Function)
 
             if not S then
