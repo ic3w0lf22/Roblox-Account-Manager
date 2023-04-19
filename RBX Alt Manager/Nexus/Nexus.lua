@@ -199,7 +199,9 @@ do -- Nexus
         return Message:sub(#Header + 1)
     end
 
-    function Nexus:Connect(Host)
+    function Nexus:Connect(Host, Bypass)
+        if not Bypass and self.IsConnected then return 'Ignoring connection request, Nexus is already connected' end
+        
         while true do
             for Index, Connection in pairs(self.Connections) do
                 Connection:Disconnect()
