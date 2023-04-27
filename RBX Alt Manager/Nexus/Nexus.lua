@@ -19,7 +19,7 @@ if not game:IsLoaded() then
 end
 
 local Nexus = {}
-local WSConnect = syn and syn.websocket.connect or Krnl and Krnl.WebSocket.connect or WebSocket and WebSocket.connect
+local WSConnect = syn and syn.websocket.connect or (Krnl and Krnl.WebSocket Krnl.WebSocket.connect) or WebSocket and WebSocket.connect
 
 if not WSConnect then return end
 
@@ -201,7 +201,7 @@ do -- Nexus
 
     function Nexus:Connect(Host, Bypass)
         if not Bypass and self.IsConnected then return 'Ignoring connection request, Nexus is already connected' end
-        
+
         while true do
             for Index, Connection in pairs(self.Connections) do
                 Connection:Disconnect()
@@ -408,5 +408,4 @@ GEnv.performance = Nexus.Commands.performance -- fix the sirmeme error so that p
 
 if not Nexus_Version then
     Nexus:Connect()
-    Nexus.Connected:Wait()
 end
