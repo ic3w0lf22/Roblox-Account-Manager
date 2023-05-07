@@ -11,7 +11,7 @@
 | Feature | Description | How to |
 | :--- | :---: | ---: |
 | Account Encryption | All your account data is locally encrypted using your computer as the **password/key** meaning if someone else gets a hold of your account data, they will **NOT** be able to decrypt it unless you decrypted it yourself and shared it | **DO NOT SHARE YOUR `AccountData.json` FILE AT ALL |
-| Multi Roblox | RAM comes with a built-in multi Roblox allowing multiple Roblox clients to be open at once | **If this doesn't work for you, make sure no Roblox processes are running in the background by checking in task manager, then restart RAM** |
+| ~~Multi Roblox~~ | [DISABLED BY DEFAULT, READ FAQ] RAM comes with a built-in multi Roblox allowing multiple Roblox clients to be open at once | **If this doesn't work for you, make sure no Roblox processes are running in the background by checking in task manager, then restart RAM** |
 | Load Region | See where a server is located and get an accurate ping reading | Right click a server in the `Server List`, then click `Load Region` **(Requires a valid account to be selected in the main window)** |
 | Server List | See a game's servers, including the servers' data such as player count and server ping | Click `Server List` on the right side of the main window |
 | [Join Small Servers](https://youtu.be/Red66cV6vVI) | Easily join small servers in games that use lobby starter places to teleport you to another game | Insert the actual game's PlaceId into the text box next to `Refresh` in the `Server List`, click `Refresh`, then right click a server and click `Join Game`, you will hear a beep if successful, once you hear that beep, you can join the main game |
@@ -73,6 +73,18 @@ Be careful executing random scripts when having dangerous settings enabled.
 **Q: Why is this program detected as a virus?**
 
 **A:** Open source programs such as this program are commonly detected as viruses because actual malware may be using the same libaries as this one. For example, account manager may be detected as a RAT because of the Account Control feature, this feature uses [websockets](https://github.com/ic3w0lf22/Roblox-Account-Manager/blob/master/RBX%20Alt%20Manager/Nexus/WebsocketServer.cs) to connect to clients which is the same way actual malware may use to connect maliciously to someone elses computer. If you'd like, you can download [visual studio](https://visualstudio.microsoft.com/downloads/) yourself (it's free) and compile this program on your own, you may even get the same virus detections as the public release.
+
+
+**Q:** How do I enable multi-roblox?
+A: Go to the folder where you have installed the account manager, open RAMSettings.ini, then add EnableMultiRbx=true under the [General] section, then restart Roblox Account Manager if you had it open.
+Here is a video showing how to enable multi-roblox: https://user-images.githubusercontent.com/11778654/236662289-c05c3a5a-10bf-434b-89cc-b185352db8a2.mp4
+
+
+**Q:** Why was multi-roblox disabled by default?
+
+A: A byfron developer has stated that using multiple clients may be considered as malicious behavior, so I have decided to disable mutli-roblox by default and instead have users enable the option manually at their own risk.
+![2023-05-06 23_58_33-Clipboard](https://user-images.githubusercontent.com/11778654/236662271-ce6bc2c8-7690-436a-97d0-1cfea56b541f.png)
+
 
 
 **Q: Why am I getting CefSharp.Core.Runtime.dll/Object reference not set errors, how do I fix it?**
