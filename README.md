@@ -11,7 +11,7 @@
 | Feature | Description | How to |
 | :--- | :---: | ---: |
 | Account Encryption | All your account data is locally encrypted using your computer as the **password/key** meaning if someone else gets a hold of your account data, they will **NOT** be able to decrypt it unless you decrypted it yourself and shared it | **DO NOT SHARE YOUR `AccountData.json` FILE AT ALL |
-| ~~Multi Roblox~~ | [DISABLED BY DEFAULT, READ FAQ] RAM comes with a built-in multi Roblox allowing multiple Roblox clients to be open at once | **If this doesn't work for you, make sure no Roblox processes are running in the background by checking in task manager, then restart RAM** |
+| [Multi Roblox](https://github.com/ic3w0lf22/Roblox-Account-Manager/blob/master/README.md#frequently-asked-questions) | [DISABLED BY DEFAULT, READ FAQ] RAM comes with a built-in multi Roblox allowing multiple Roblox clients to be open at once | **If this doesn't work for you, make sure no Roblox processes are running in the background by checking in task manager, then restart RAM** |
 | Load Region | See where a server is located and get an accurate ping reading | Right click a server in the `Server List`, then click `Load Region` **(Requires a valid account to be selected in the main window)** |
 | Server List | See a game's servers, including the servers' data such as player count and server ping | Click `Server List` on the right side of the main window |
 | [Join Small Servers](https://youtu.be/Red66cV6vVI) | Easily join small servers in games that use lobby starter places to teleport you to another game | Insert the actual game's PlaceId into the text box next to `Refresh` in the `Server List`, click `Refresh`, then right click a server and click `Join Game`, you will hear a beep if successful, once you hear that beep, you can join the main game |
@@ -45,7 +45,7 @@ Useful for games that require grinding off other players, or storage accounts th
 
 You are welcome to edit the code and create pull requests if it'll benefit this project.
 
-Multiple Roblox Instances is built into the account manager unless disabled.
+Multiple Roblox Instances is built into the account manager but [must be manually enabled](https://github.com/ic3w0lf22/Roblox-Account-Manager/blob/master/README.md#frequently-asked-questions).
 
 Report bugs to the issues section or direct message me via discord @ ic3#0001 or join the discord: https://discord.gg/MsEH7smXY8
 
