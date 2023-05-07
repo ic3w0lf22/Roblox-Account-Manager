@@ -395,7 +395,7 @@ namespace RBX_Alt_Manager
 
         private void Search_Click(object sender, EventArgs e)
         {
-            if (Busy || !Int32.TryParse(PageNum.Text, out Page)) return;
+            if (Busy || !int.TryParse(PageNum.Text, out Page)) return;
 
             IRestResponse response;
 
@@ -406,15 +406,34 @@ namespace RBX_Alt_Manager
             {
                 lock (RLLock)
                 {
-                    RestRequest request = new RestRequest($"v1/games/list?model.keyword={Term.Text}&model.startRows={Page * 50}&model.maxRows=50", Method.GET);
+                    bool Searching = !string.IsNullOrEmpty(Term.Text);
 
-                    response = GamesClient.Execute(request);
+                    if (Searching)
+                        response = AccountManager.MainClient.Execute(new RestRequest($"games/list-json?keyword={Term.Text}&startRows={Page * 40}&maxRows=40", Method.GET));
+                    else
+                        response = GamesClient.Execute(new RestRequest($"v1/games/list?model.startRows={Page * 50}&model.maxRows=50", Method.GET));
 
                     List<GameControl> GControls = new List<GameControl>();
 
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
-                        GameList gamesList = JsonConvert.DeserializeObject<GameList>(response.Content);
+                        GameList gamesList = null;
+
+                        if (Searching)
+                        {
+                            gamesList = new GameList();
+                                gamesList.games = new List<PageGame>();
+
+                            Console.WriteLine("SEARCHING!!");
+
+                            foreach (dynamic game in JArray.Parse(response.Content))
+                                gamesList.games.Add(new PageGame((long)game.PlaceID, (string)game.Name)
+                                {
+                                    totalUpVotes = (int)game.TotalUpVotes,
+                                    totalDownVotes = (int)game.TotalDownVotes,
+                                });
+                        }
+                        else gamesList = JsonConvert.DeserializeObject<GameList>(response.Content);
 
                         foreach (PageGame game in gamesList.games)
                         {
