@@ -70,89 +70,90 @@ Change the webserver port if you are planning on using any dangerous functions!
 Be careful executing random scripts when having dangerous settings enabled.
 
 # Frequently Asked Questions
-**Q: Why is this program detected as a virus?**
+## **Q:** Why is this program detected as a virus?
 
 **A:** Open source programs such as this program are commonly detected as viruses because actual malware may be using the same libaries as this one. For example, account manager may be detected as a RAT because of the Account Control feature, this feature uses [websockets](https://github.com/ic3w0lf22/Roblox-Account-Manager/blob/master/RBX%20Alt%20Manager/Nexus/WebsocketServer.cs) to connect to clients which is the same way actual malware may use to connect maliciously to someone elses computer. If you'd like, you can download [visual studio](https://visualstudio.microsoft.com/downloads/) yourself (it's free) and compile this program on your own, you may even get the same virus detections as the public release.
 
 
-**Q:** How do I enable multi-roblox?
-A: Go to the folder where you have installed the account manager, open RAMSettings.ini, then add EnableMultiRbx=true under the [General] section, then restart Roblox Account Manager if you had it open.
+## **Q:** How do I enable multi-roblox?
+
+**A:** Go to the folder where you have installed the account manager, open RAMSettings.ini, then add EnableMultiRbx=true under the [General] section, then restart Roblox Account Manager if you had it open.
 Here is a video showing how to enable multi-roblox: https://user-images.githubusercontent.com/11778654/236662289-c05c3a5a-10bf-434b-89cc-b185352db8a2.mp4
 
 
-**Q:** Why was multi-roblox disabled by default?
+## **Q:** Why was multi-roblox disabled by default?
 
-A: A byfron developer has stated that using multiple clients may be considered as malicious behavior, so I have decided to disable mutli-roblox by default and instead have users enable the option manually at their own risk.
+**A:** A byfron developer has stated that using multiple clients may be considered as malicious behavior, so I have decided to disable mutli-roblox by default and instead have users enable the option manually at their own risk.
 ![2023-05-06 23_58_33-Clipboard](https://user-images.githubusercontent.com/11778654/236662271-ce6bc2c8-7690-436a-97d0-1cfea56b541f.png)
 
 
 
-**Q: Why am I getting CefSharp.Core.Runtime.dll/Object reference not set errors, how do I fix it?**
+## **Q:** Why am I getting CefSharp.Core.Runtime.dll/Object reference not set errors, how do I fix it?
 
 **A:** Download the x86 version from https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist | On an older OS? Try downloading [older versions of vcredist](https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2013-vc-120) by scrolling down on or clicking the link | If that doesn't work, download the latest .NET Framework from https://dotnet.microsoft.com/download/dotnet-framework
 
 
-**Q: Why do my accounts have yellow/red dots on them?**
+## **Q:** Why do my accounts have yellow/red dots on them?
 
 **A:** The yellow-red dots that appear on an account means that account hasn't been used in over 20 days, as that day counter goes up, the dot appears more red. You can get rid of this dot by joining a game or enabling developer mode and clicking "Get Authentication Ticket" when you right click an account (works with multiple).
 
 
-**Q: How do I backup my accounts file?**
+## **Q:** How do I backup my accounts file?
 
 **A:** Download [RAMDecrypt](https://github.com/ic3w0lf22/RAMDecrypt) and follow the instructions provided, then you can save the fully decrypted file in google drive, on a flash drive, or where ever you'd like. This does **NOT** work on files that didn't originate from your PC.
 
 
-**Q: How do I prevent Windows Defender from deleting alt manager files?**
+## **Q:** How do I prevent Windows Defender from deleting alt manager files?
 
 **A:** Add an exclusion for the Roblox Account Manager folder, here's a video on how to add an exclusion: https://youtu.be/1r93NtwZt4o
 
 
-**Q: Can I join vip servers using alt manager?**
+## **Q:** Can I join vip servers using alt manager?
 
 **A:** Yes you can, just make sure the place id is the same as the game you're trying to join, then paste the whole vip server link into the Job ID box and press Join Server
 
 
-**Q: Are there docs for the API?**
+## **Q:** Are there docs for the API?
 
 **A:** Yes, there are Docs: https://ic3w0lf22.gitbook.io/roblox-account-manager/
 
 
-**Q: My anti virus detects this program as a virus. Should I not use it?**
+## **Q:** My anti virus detects this program as a virus. Should I not use it?
 
 **A:** No. This program is in no way malicious, it's source code is fully available & trusted by a lot of people in the community. Some anti-virus programs may detect Account Manager as malicious because of the auto update function (a similar thing happens with Roblox Studio Mod Manager as well)
 
 
-**Q: Can you use this on Mac?**
+## **Q:** Can you use this on Mac?
 
 **A:** No, unfortunately we do not have compatibility with mac osx devices at this moment. This may change in the future.
 
 
-**Q: You should add ${feature}.**
+## **Q:** You should add ${feature}.
 
 **A:** If you have a idea or a request for a feature you can submit such ideas/requests in suggestions
 
 
-**Q: I’ve encountered a bug/issue on this software**
+## **Q:** I’ve encountered a bug/issue on this software
 
 **A:** If you have a bug or issue please explain your issue with screenshots (if possible) and/or a highly descriptive explanation in bugs we will try to get back to you ASAP.
 Make sure you click "Open Details" before screenshotting. Please make sure your output is in English.
 
 
-**Q: I can’t launch multiple accounts repeatedly.**
+## **Q:** I can’t launch multiple accounts repeatedly.
 
 **A:** This is due to Roblox’s rate limiting
 
 
-**Q: Adding an account doesn't work**
+## **Q:** Adding an account doesn't work
 
 **A:** Restart the program, this issue will be fixed next update
 
 
-**Q: Can you get banned for using this?**
+## **Q:** Can you get banned for using this?
 
 **A:** No, you cannot get banned for using this as this does not break Roblox T.O.S although some games may disallow you from having alt accounts so please do your research if you are unsure.
 
-**Q: My AccountData file gets corrupted often**
+## **Q:** My AccountData file gets corrupted often
 **A:** This is due to ProtectedData failing sometimes. You can disable encryption by creating a file called `NoEncryption.IUnderstandTheRisks.iautamor`. Do this at your own risk, nobody except yourself is responsible for your accounts!
 
 # Preview (Version 3.4)
