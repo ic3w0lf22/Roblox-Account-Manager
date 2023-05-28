@@ -128,6 +128,7 @@ namespace RBX_Alt_Manager.Classes
             sf.Alignment = StringAlignment.Center;
             sf.LineAlignment = StringAlignment.Center;
             r = SelectedTab.Bounds;
+                // new Rectangle(SelectedTab.Bounds.X, SelectedTab.Bounds.Y, (int)(SelectedTab.Bounds.Width * Program.Scale), (int)(SelectedTab.Bounds.Height * Program.Scale));
 
             r.Inflate(3, 3);
 
@@ -153,6 +154,7 @@ namespace RBX_Alt_Manager.Classes
         {
             TabPage tp = TabPages[index];
             r = GetTabRect(index);
+            // r = new Rectangle((int)(r.X*Program.Scale), r.Y, (int)(r.Width * Program.Scale), (int)(r.Height * 1f));
             bool isSelected = index == SelectedIndex;
             ButtonBorderStyle bs = index == SelectedIndex ? ButtonBorderStyle.Solid : ButtonBorderStyle.Solid;
 

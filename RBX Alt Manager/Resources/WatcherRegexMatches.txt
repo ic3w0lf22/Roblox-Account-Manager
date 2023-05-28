@@ -1,0 +1,7 @@
+﻿DataModelInit=\[FLog::UGCGameController\] UGCGameController, initialized DataModel\((\w+)\)
+DataModelInit2=\[FLog::SurfaceController\] SurfaceController\[_:1\]::start dataModel\((\w+)\)
+DataModelStop=\[FLog::UGCGameController\] UGCGameController::leave \(blocking:\d+\) dataModel\((\w+)\)
+DataModelStop2=\[FLog::SurfaceController\] SurfaceController\[_:1\]::stop
+DataModelPause=\[FLog::SurfaceController\] SurfaceController\[_:1\]::pause dataModel\((\w+)\), view\(\w+\), destroyView:\d+\.
+ReturnToApp1=\[FLog::SingleSurfaceApp\] returnToLuaApp: \.\.\. App not yet initialized, returning from game\.
+ReturnToApp2=\[FLog::SingleSurfaceApp\] returnToLuaApp: \.\.\. App has been initialized, returning from game\.

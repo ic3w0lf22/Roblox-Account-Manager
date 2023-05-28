@@ -10,12 +10,14 @@ using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -39,15 +41,13 @@ namespace RBX_Alt_Manager
             GamesClient = new RestClient("https://games.roblox.com/");
             DevelopClient = new RestClient("https://develop.roblox.com/");
 
-            foreach (var Client in new RestClient[] { RobloxClient, ThumbClient, GamesClient, DevelopClient })
-                Client.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
-
             if (!AccountManager.Watcher.Exists("VerifyDataModel")) AccountManager.Watcher.Set("VerifyDataModel", "true");
             if (!AccountManager.Watcher.Exists("IgnoreExistingProcesses")) AccountManager.Watcher.Set("IgnoreExistingProcesses", "true");
             if (!AccountManager.Watcher.Exists("ExpectedWindowTitle")) AccountManager.Watcher.Set("ExpectedWindowTitle", "Roblox");
 
             RobloxScannerCB.Checked = AccountManager.Watcher.Get<bool>("Enabled");
             ExitIfBetaDetectedCB.Checked = AccountManager.Watcher.Get<bool>("ExitOnBeta");
+            ExitIfNoConnectionCB.Checked = AccountManager.Watcher.Get<bool>("ExitIfNoConnection");
             VerifyDataModelCB.Checked = AccountManager.Watcher.Get<bool>("VerifyDataModel");
             IgnoreExistingProcesses.Checked = AccountManager.Watcher.Get<bool>("IgnoreExistingProcesses");
             CloseRbxWindowTitleCB.Checked = AccountManager.Watcher.Get<bool>("CloseRbxWindowTitle");
@@ -56,6 +56,7 @@ namespace RBX_Alt_Manager
             RbxWindowNameTB.Text = AccountManager.Watcher.Get<string>("ExpectedWindowTitle");
 
             RbxMemoryLTNum.Value = AccountManager.Watcher.Exists("MemoryLowValue") ? Utilities.Clamp(AccountManager.Watcher.Get<decimal>("MemoryLowValue"), RbxMemoryLTNum.Minimum, RbxMemoryLTNum.Maximum) : 200;
+            TimeoutNum.Value = AccountManager.Watcher.Exists("NoConnectionTimeout") ? Utilities.Clamp(AccountManager.Watcher.Get<decimal>("NoConnectionTimeout"), TimeoutNum.Minimum, TimeoutNum.Maximum) : 60;
 
             ScanIntervalN.Value = AccountManager.Watcher.Exists("ScanInterval") ? AccountManager.Watcher.Get<int>("ScanInterval") : 6;
             ReadIntervalN.Value = AccountManager.Watcher.Exists("ReadInterval") ? AccountManager.Watcher.Get<int>("ReadInterval") : 250;
@@ -221,7 +222,7 @@ namespace RBX_Alt_Manager
 
             servers.Clear();
             ServerListView.Items.Clear();
-            IRestResponse response;
+            RestResponse response;
 
             ServersInfo publicInfo = new ServersInfo();
             ServersInfo vipInfo = new ServersInfo();
@@ -232,7 +233,7 @@ namespace RBX_Alt_Manager
 
                 while (publicInfo.nextPageCursor != null && Busy)
                 {
-                    RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?sortOrder=Asc&limit=100" + (publicInfo.nextPageCursor == "_" ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
+                    RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?sortOrder=Asc&limit=100" + (publicInfo.nextPageCursor == "_" ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.Get);
                     response = await GamesClient.ExecuteAsync(request);
 
                     if (response.StatusCode == HttpStatusCode.OK && Busy)
@@ -258,9 +259,7 @@ namespace RBX_Alt_Manager
                 {
                     while (vipInfo.nextPageCursor != null)
                     {
-                        RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/VIP?sortOrder=Asc&limit=25" + (vipInfo.nextPageCursor == "_" ? "" : "&cursor=" + vipInfo.nextPageCursor), Method.GET);
-                        request.AddCookie(".ROBLOSECURITY", AccountManager.SelectedAccount.SecurityToken);
-                        request.AddHeader("Accept", "application/json");
+                        RestRequest request = AccountManager.SelectedAccount.MakeRequest("v1/games/" + PlaceId + "/servers/VIP?sortOrder=Asc&limit=25" + (vipInfo.nextPageCursor == "_" ? "" : "&cursor=" + vipInfo.nextPageCursor), Method.Get).AddHeader("Accept", "application/json");
                         response = GamesClient.Execute(request);
 
                         if (response.StatusCode == HttpStatusCode.OK)
@@ -315,15 +314,15 @@ namespace RBX_Alt_Manager
                 return;
             }
 
-            if (!AccountManager.GetUserID(Username.Text, out long UserID))
+            if (!AccountManager.GetUserID(Username.Text, out long UserID, out _))
             {
                 MessageBox.Show($"Failed to get UserID of {Username.Text}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            RestRequest avrequest = new RestRequest($"v1/users/avatar-headshot?size=48x48&format=png&userIds={UserID}", Method.GET);
+            RestRequest avrequest = new RestRequest($"v1/users/avatar-headshot?size=48x48&format=png&userIds={UserID}", Method.Get);
 
-            IRestResponse avresponse = ThumbClient.Execute(avrequest);
+            RestResponse avresponse = ThumbClient.Execute(avrequest);
 
             if (avresponse.StatusCode != HttpStatusCode.OK)
             {
@@ -351,9 +350,9 @@ namespace RBX_Alt_Manager
 
                 while (!string.IsNullOrEmpty(publicInfo.nextPageCursor) && Busy)
                 {
-                    RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?limit=100" + (publicInfo.nextPageCursor == "_" ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.GET);
+                    RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?limit=100" + (publicInfo.nextPageCursor == "_" ? "" : "&cursor=" + publicInfo.nextPageCursor), Method.Get);
 
-                    IRestResponse response = await GamesClient.ExecuteAsync(request);
+                    RestResponse response = await GamesClient.ExecuteAsync(request);
 
                     if (response.StatusCode == HttpStatusCode.OK && Busy)
                     {
@@ -363,11 +362,11 @@ namespace RBX_Alt_Manager
                         {
                             if (!Busy) break;
 
-                            RestRequest batchRequest = new RestRequest("v1/batch", Method.POST);
+                            RestRequest batchRequest = new RestRequest("v1/batch", Method.Post);
 
                             batchRequest.AddJsonBody(server.playerTokens.ConvertAll(s => new TokenRequest(s)));
 
-                            IRestResponse batchResponse = await ThumbClient.ExecuteAsync(batchRequest);
+                            RestResponse batchResponse = await ThumbClient.ExecuteAsync(batchRequest);
 
                             TokenAvatarRoot avatars = JsonConvert.DeserializeObject<TokenAvatarRoot>(batchResponse.Content);
 
@@ -393,66 +392,76 @@ namespace RBX_Alt_Manager
                 Clipboard.SetText(ServerListView.SelectedItem.Text);
         }
 
-        private void Search_Click(object sender, EventArgs e)
+        private async void Search_Click(object sender, EventArgs e)
         {
-            if (Busy || !Int32.TryParse(PageNum.Text, out Page)) return;
-
-            IRestResponse response;
+            if (Busy || !int.TryParse(PageNum.Text, out Page)) return;
 
             GamesListView.ClearObjects();
             GameListPanel.Controls.Clear();
 
-            Task.Factory.StartNew(() =>
+            bool NoTerm = string.IsNullOrEmpty(Term.Text);
+            RestResponse Response = null;
+
+            if (NoTerm)
+                Response = await GamesClient.ExecuteAsync(new RestRequest(string.Format("v1/games/list?model.startRows={0}&model.maxRows=50", Page * 50), Method.Get));
+            else
+                Response = await AccountManager.MainClient.ExecuteAsync(new RestRequest($"games/list-json?keyword={Term.Text}&startRows={Page * 40}&maxRows=40", Method.Get));
+
+            lock (RLLock)
             {
-                lock (RLLock)
+                List<GameControl> GControls = new List<GameControl>();
+
+                if (Response.StatusCode == HttpStatusCode.OK)
                 {
-                    RestRequest request = new RestRequest($"v1/games/list?model.keyword={Term.Text}&model.startRows={Page * 50}&model.maxRows=50", Method.GET);
+                    List<PageGame> gamesList = NoTerm ? new List<PageGame>() : JsonConvert.DeserializeObject<List<PageGame>>(Response.Content);
 
-                    response = GamesClient.Execute(request);
-
-                    List<GameControl> GControls = new List<GameControl>();
-
-                    if (response.StatusCode == HttpStatusCode.OK)
+                    if (NoTerm)
                     {
-                        GameList gamesList = JsonConvert.DeserializeObject<GameList>(response.Content);
+                        dynamic Result = JObject.Parse(Response.Content);
 
-                        foreach (PageGame game in gamesList.games)
-                        {
-                            int LikeRatio = 0;
-
-                            if (game.totalUpVotes > 0)
-                            {
-                                double totalVotes = game.totalUpVotes + game.totalDownVotes;
-                                LikeRatio = (int)((decimal)(game.totalUpVotes / totalVotes) * 100);
-                            }
-
-                            game.likeRatio = LikeRatio;
-
-                            GamesListView.AddObject(game);
-
-                            GameControl RControl = new GameControl(game);
-
-                            RControl.Selected += (s, args) => AccountManager.Instance.PlaceID.Text = $"{args.Game.Details?.placeId}";
-
-                            GControls.Add(RControl);
-                        }
+                        foreach (dynamic game in Result?.games)
+                            gamesList.Add(new PageGame((long)game.placeId, (string)game.name));
                     }
 
-                    if (GControls != null && GControls.Count > 0)
-                        GameListPanel.InvokeIfRequired(() =>
-                        {
-                            GameListPanel.Controls.AddRange(GControls.ToArray());
-                        });
+                    foreach (PageGame game in gamesList)
+                    {
+                        int LikeRatio = 0;
 
-                    Busy = false;
+                        if (game.TotalUpVotes > 0)
+                        {
+                            double totalVotes = game.TotalUpVotes + game.TotalDownVotes;
+                            LikeRatio = (int)((decimal)(game.TotalUpVotes / totalVotes) * 100);
+                        }
+
+                        game.LikeRatio = LikeRatio;
+
+                        GamesListView.AddObject(game);
+
+                        GameControl RControl = new GameControl(game);
+
+                        RControl.Selected += (s, args) => AccountManager.Instance.PlaceID.Text = $"{args.Game.Details?.placeId}";
+
+                        GControls.Add(RControl);
+                    }
                 }
-            });
+
+                if (GControls != null && GControls.Count > 0)
+                    GameListPanel.InvokeIfRequired(() => GameListPanel.Controls.AddRange(GControls.ToArray()));
+
+                Busy = false;
+            }
+        }
+
+        private void Term_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Return)
+                Search.PerformClick();
         }
 
         private void GamesListView_MouseClick(object sender, MouseEventArgs e)
         {
             if (GamesListView.SelectedObject is PageGame game)
-                AccountManager.Instance.PlaceID.Text = game.placeId.ToString();
+                AccountManager.Instance.PlaceID.Text = game.PlaceID.ToString();
         }
 
         private void FavoritesListView_MouseClick(object sender, MouseEventArgs e)
@@ -513,7 +522,7 @@ namespace RBX_Alt_Manager
             {
                 if (AccountManager.SelectedAccount == null) return;
 
-                string res = await AccountManager.SelectedAccount.JoinServer(game.placeId);
+                string res = await AccountManager.SelectedAccount.JoinServer(game.PlaceID);
 
                 if (!res.Contains("Success"))
                     MessageBox.Show(res);
@@ -523,7 +532,7 @@ namespace RBX_Alt_Manager
         private void addToFavoritesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (GamesListView.SelectedObject is PageGame game)
-                AddFavoriteToList(new FavoriteGame(game.name, game.placeId, SaveFavorites));
+                AddFavoriteToList(new FavoriteGame(game.Name, game.PlaceID, SaveFavorites));
         }
 
         private async void toolStripMenuItem1_Click(object sender, EventArgs e)
@@ -588,10 +597,10 @@ namespace RBX_Alt_Manager
 
             if (!string.IsNullOrEmpty(AccountManager.CurrentJobId) && AccountManager.CurrentJobId.Contains("privateServerLinkCode") && Regex.IsMatch(AccountManager.CurrentJobId, @"\/games\/(\d+)\/"))
                 PlaceId = Regex.Match(AccountManager.CurrentJobId, @"\/games\/(\d+)\/").Groups[1].Value;
-            
-            RestRequest request = new RestRequest($"v2/assets/{PlaceId}/details", Method.GET);
+
+            RestRequest request = new RestRequest($"v2/assets/{PlaceId}/details", Method.Get);
             request.AddHeader("Accept", "application/json");
-            IRestResponse response = await AccountManager.EconClient.ExecuteAsync(request);
+            RestResponse response = await AccountManager.EconClient.ExecuteAsync(request);
 
             Logger.Info($"MarketResponse for {PlaceId}: [{response.StatusCode}] {response.Content}");
 
@@ -680,14 +689,12 @@ namespace RBX_Alt_Manager
                         continue;
                     }
 
-                    RestRequest request = new RestRequest("v1/join-game-instance", Method.POST);
-                    request.AddCookie(".ROBLOSECURITY", acc.SecurityToken);
+                    RestRequest request = new RestRequest("v1/join-game-instance", Method.Post);
+                    request.AddCookie(".ROBLOSECURITY", acc.SecurityToken, "/", ".roblox.com");
                     request.AddHeader("Content-Type", "application/json");
                     request.AddJsonBody(new { gameId = server.id, placeId = CurrentPlaceID });
 
-                    AccountManager.GameJoinClient.UserAgent = "Roblox/WinInet";
-
-                    IRestResponse response = await AccountManager.GameJoinClient.ExecuteAsync(request);
+                    RestResponse response = await AccountManager.GameJoinClient.ExecuteAsync(request);
 
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
@@ -749,7 +756,7 @@ namespace RBX_Alt_Manager
             List<long> Ids = new List<long>();
 
             foreach (PageGame game in GamesListView.SelectedObjects)
-                Ids.Add(game.placeId);
+                Ids.Add(game.PlaceID);
 
             if (Ids.Count > 0)
                 Clipboard.SetText(string.Join("\n", Ids));
@@ -761,11 +768,9 @@ namespace RBX_Alt_Manager
 
             if (acc == null) return;
 
-            RestRequest DetailsReq = new RestRequest($"v1/games/multiget-place-details?placeIds={PlaceIDUniTB.Text}");
+            RestRequest DetailsReq = acc.MakeRequest($"v1/games/multiget-place-details?placeIds={PlaceIDUniTB.Text}");
 
-            DetailsReq.AddCookie(".ROBLOSECURITY", acc.SecurityToken);
-
-            IRestResponse DetailsResp = GamesClient.Execute(DetailsReq);
+            RestResponse DetailsResp = GamesClient.Execute(DetailsReq);
 
             if (DetailsResp.IsSuccessful)
             {
@@ -800,7 +805,7 @@ namespace RBX_Alt_Manager
         {
             RestRequest DetailsReq = new RestRequest($"v1/universes/{UniverseIDTB.Text}/places?sortOrder=Asc&limit=100&cursor={Cursor}");
 
-            IRestResponse DetailsResp = await DevelopClient.ExecuteAsync(DetailsReq);
+            RestResponse DetailsResp = await DevelopClient.ExecuteAsync(DetailsReq);
 
             if (DetailsResp.IsSuccessful)
             {
@@ -889,16 +894,28 @@ namespace RBX_Alt_Manager
             AccountManager.IniSettings.Save("RAMSettings.ini");
         }
 
+        private void ExitIfNoConnectionCB_CheckedChanged(object sender, EventArgs e)
+        {
+            AccountManager.Watcher.Set("ExitIfNoConnection", ExitIfNoConnectionCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void TimeoutNum_ValueChanged(object sender, EventArgs e)
+        {
+            AccountManager.Watcher.Set("NoConnectionTimeout", TimeoutNum.Value.ToString());
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
         private async void ViewOutfits_Click(object sender, EventArgs e)
         {
-            if (!AccountManager.GetUserID(OutfitUsernameTB.Text, out long UserId)) return;
+            if (!AccountManager.GetUserID(OutfitUsernameTB.Text, out long UserId, out _)) return;
 
             OutfitsPanel.SuspendLayout();
             OutfitsPanel.Controls.Clear();
 
             RestRequest OutfitsRequest = new RestRequest($"v1/users/{UserId}/outfits?page=1&itemsPerPage=50"); // hoping the outfit limit is 50 so i dont have to go through multiple pages in the future
 
-            IRestResponse DetailsResp = await AccountManager.AvatarClient.ExecuteAsync(OutfitsRequest);
+            RestResponse DetailsResp = await AccountManager.AvatarClient.ExecuteAsync(OutfitsRequest);
 
             if (DetailsResp.IsSuccessful)
             {
@@ -969,5 +986,15 @@ namespace RBX_Alt_Manager
             AccountManager.Watcher.Set("ExpectedWindowTitle", RbxWindowNameTB.Text);
             AccountManager.IniSettings.Save("RAMSettings.ini");
         }
+
+        private void Tabs_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            OpenLogsButton.Visible = Tabs.SelectedIndex == 5;
+
+            if (Tabs.SelectedIndex == 5)
+                OpenLogsButton.BringToFront();
+        }
+
+        private void OpenLogsButton_Click(object sender, EventArgs e) => Process.Start("explorer.exe", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Roblox", "logs"));
     }
 }

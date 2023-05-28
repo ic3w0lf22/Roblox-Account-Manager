@@ -1,16 +1,23 @@
 ﻿using BrightIdeasSoftware;
+using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PuppeteerSharp;
 using RBX_Alt_Manager.Classes;
 using RBX_Alt_Manager.Forms;
+using RBX_Alt_Manager.Properties;
 using RestSharp;
+using Sodium;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -20,6 +27,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WebSocketSharp;
 
 #pragma warning disable CS0618 // parameter warnings
 
@@ -44,8 +52,6 @@ namespace RBX_Alt_Manager
         public static RestClient Web13Client;
         public static string CurrentPlaceId { get => Instance.PlaceID.Text; }
         public static string CurrentJobId { get => Instance.JobID.Text; }
-        public static bool Elevated;
-        private AccountAdder aaform;
         private ArgumentsForm afform;
         private ServerList ServerListForm;
         private AccountUtils UtilsForm;
@@ -60,9 +66,10 @@ namespace RBX_Alt_Manager
         public static bool UseOldJoin = false;
         public static bool ShuffleJobID = false;
         public static string CurrentVersion;
-        public OLVListItem SelectedAccountItem;
+        public OLVListItem SelectedAccountItem { get; private set; }
         private WebServer AltManagerWS;
-        private string WSPassword = "";
+        private string WSPassword { get; set; }
+        public System.Timers.Timer AutoCookieRefresh { get; private set; }
 
         public static IniFile IniSettings;
         public static IniSection General;
@@ -77,6 +84,8 @@ namespace RBX_Alt_Manager
         private readonly static object rgSaveLock = new object();
         public event EventHandler<GameArgs> RecentGameAdded;
 
+        private bool IsResettingPassword;
+        private bool IsDownloadingChromium;
         private bool LaunchNext;
         private CancellationTokenSource LauncherToken;
 
@@ -120,7 +129,7 @@ namespace RBX_Alt_Manager
             if (!General.Exists("IPApiLink")) General.Set("IPApiLink", "http://ip-api.com/json/<ip>");
             if (!General.Exists("WindowScale"))
             {
-                General.Set("WindowScale", Screen.PrimaryScreen.Bounds.Height <= Screen.PrimaryScreen.Bounds.Width /*scuffed*/ ? Math.Max(Math.Min(Screen.PrimaryScreen.Bounds.Height / 1080f, 2f), 1f).ToString(".0#") : "1.0");
+                General.Set("WindowScale", Screen.PrimaryScreen.Bounds.Height <= Screen.PrimaryScreen.Bounds.Width /*scuffed*/ ? Math.Max(Math.Min(Screen.PrimaryScreen.Bounds.Height / 1080f, 2f), 1f).ToString(".0#", CultureInfo.InvariantCulture) : "1.0");
 
                 if (Program.Scale > 1)
                     if (!Utilities.YesNoPrompt("Roblox Account Manager", "RAM has detected you have a monitor larger than average", $"Would you like to keep the WindowScale setting of {Program.Scale:F2}?", false))
@@ -129,6 +138,12 @@ namespace RBX_Alt_Manager
                         MessageBox.Show("In case the font scaling is incorrect, open RAMSettings.ini and change \"ScaleFonts=true\" to \"ScaleFonts=false\" without the quotes.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             if (!General.Exists("ScaleFonts")) General.Set("ScaleFonts", "true");
+            if (!General.Exists("AutoCookieRefresh")) General.Set("AutoCookieRefresh", "true");
+            if (!General.Exists("AutoCloseLastProcess")) General.Set("AutoCloseLastProcess", "true");
+            if (!General.Exists("ShowPresence")) General.Set("ShowPresence", "true");
+            if (!General.Exists("PresenceUpdateRate")) General.Set("PresenceUpdateRate", "5");
+            if (!General.Exists("UnlockFPS")) General.Set("UnlockFPS", "false");
+            if (!General.Exists("MaxFPSValue")) General.Set("MaxFPSValue", "120");
 
             if (!Developer.Exists("DevMode")) Developer.Set("DevMode", "false");
             if (!Developer.Exists("EnableWebServer")) Developer.Set("EnableWebServer", "false");
@@ -184,6 +199,22 @@ namespace RBX_Alt_Manager
                 else
                     return GroupName;
             };
+
+            var VCKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\X86");
+
+            if (!Prompts.Exists("VCPrompted") && (VCKey == null || (VCKey is RegistryKey && VCKey.GetValue("Bld") is int VCVersion && VCVersion < 32532)))
+                Task.Run(async () => // Make sure the user has the latest 2015-2022 vcredist installed
+                {
+                    using HttpClient Client = new HttpClient();
+                    byte[] bs = await Client.GetByteArrayAsync("https://aka.ms/vs/17/release/vc_redist.x86.exe");
+                    string FN = Path.Combine(Path.GetTempPath(), "vcredist.tmp");
+
+                    File.WriteAllBytes(FN, bs);
+
+                    Process.Start(new ProcessStartInfo(FN) { UseShellExecute = false, Arguments = "/q /norestart" }).WaitForExit();
+
+                    Prompts.Set("VCPrompted", "1");
+                });
         }
 
         private void Sink_CanDrop(object sender, OlvDropEventArgs e)
@@ -223,40 +254,85 @@ namespace RBX_Alt_Manager
             });
         }
 
-        private void LoadAccounts()
-        {
-            if (File.Exists(SaveFilePath))
-            {
-                try { AccountsList = JsonConvert.DeserializeObject<List<Account>>(Encoding.UTF8.GetString(ProtectedData.Unprotect(File.ReadAllBytes(SaveFilePath), Entropy, DataProtectionScope.CurrentUser))); }
-                catch (CryptographicException e)
-                {
-                    try { AccountsList = JsonConvert.DeserializeObject<List<Account>>(File.ReadAllText(SaveFilePath)); }
-                    catch
-                    {
-                        File.WriteAllText(SaveFilePath + ".bak", File.ReadAllText(SaveFilePath));
+        private static ReadOnlyMemory<byte> PasswordHash; // Store the hash after the data is successfully decrypted so we can encrypt again.
 
-                        MessageBox.Show($"Failed to load accounts!\nA backup file was created.\n\n{e.Message}");
+        private void LoadAccounts(byte[] Hash = null)
+        {
+            bool EnteredPassword = false;
+            byte[] Data = File.Exists(SaveFilePath) ? File.ReadAllBytes(SaveFilePath) : Array.Empty<byte>();
+
+            if (Data.Length > 0)
+            {
+                var Header = new ReadOnlySpan<byte>(Data, 0, Cryptography.RAMHeader.Length);
+
+                if (Header.SequenceEqual(Cryptography.RAMHeader))
+                {
+                    if (Hash == null)
+                    {
+                        EncryptionSelectionPanel.Visible = false;
+                        PasswordSelectionPanel.Visible = false;
+                        PasswordLayoutPanel.Visible = true;
+                        PasswordPanel.Visible = true;
+                        PasswordPanel.BringToFront();
+                        PasswordTextBox.Focus();
+
+                        return;
                     }
+
+                    Data = Cryptography.Decrypt(Data, Hash);
+                    AccountsList = JsonConvert.DeserializeObject<List<Account>>(Encoding.UTF8.GetString(Data));
+                    PasswordHash = new ReadOnlyMemory<byte>(ProtectedData.Protect(Hash, Array.Empty<byte>(), DataProtectionScope.CurrentUser));
+
+                    PasswordPanel.Visible = false;
+                    EnteredPassword = true;
                 }
+                else
+                    try { AccountsList = JsonConvert.DeserializeObject<List<Account>>(Encoding.UTF8.GetString(ProtectedData.Unprotect(Data, Entropy, DataProtectionScope.CurrentUser))); }
+                    catch (CryptographicException e)
+                    {
+                        try { AccountsList = JsonConvert.DeserializeObject<List<Account>>(Encoding.UTF8.GetString(Data)); }
+                        catch
+                        {
+                            File.WriteAllBytes(SaveFilePath + ".bak", Data);
+
+                            MessageBox.Show($"Failed to load accounts!\nA backup file was created in case the data can be recovered.\n\n{e.Message}");
+                        }
+                    }
             }
 
             AccountsList ??= new List<Account>();
 
-            if (AccountsList.Count == 0 && File.Exists(SaveFilePath + ".backup"))
+            if (!EnteredPassword && AccountsList.Count == 0 && File.Exists($"{SaveFilePath}.backup") && File.ReadAllBytes($"{SaveFilePath}.backup") is byte[] BackupData && BackupData.Length > 0)
             {
-                DialogResult Result = MessageBox.Show("No accounts were loaded but there is a backup file, would you like to load the backup file?", "Roblox Account Manager", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+                var Header = new ReadOnlySpan<byte>(BackupData, 0, Cryptography.RAMHeader.Length);
 
-                if (Result == DialogResult.Yes)
+                if (Header.SequenceEqual(Cryptography.RAMHeader) && MessageBox.Show("The existing backup file is password-locked, would you like to attempt to load it?", "Roblox Account Manager", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                {
+                    if (File.Exists(SaveFilePath))
+                    {
+                        if (File.Exists($"{SaveFilePath}.old")) File.Delete($"{SaveFilePath}.old");
+
+                        File.Move(SaveFilePath, $"{SaveFilePath}.old");
+                    }
+
+                    File.Move($"{SaveFilePath}.backup", SaveFilePath);
+
+                    LoadAccounts();
+
+                    return;
+                }
+
+                if (MessageBox.Show("No accounts were loaded but there is a backup file, would you like to load the backup file?", "Roblox Account Manager", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.Yes)
                 {
                     try
                     {
-                        string Decoded = Encoding.UTF8.GetString(ProtectedData.Unprotect(File.ReadAllBytes(SaveFilePath + ".backup"), Entropy, DataProtectionScope.CurrentUser));
+                        string Decoded = Encoding.UTF8.GetString(ProtectedData.Unprotect(BackupData, Entropy, DataProtectionScope.CurrentUser));
 
                         AccountsList = JsonConvert.DeserializeObject<List<Account>>(Decoded);
                     }
                     catch
                     {
-                        try { AccountsList = JsonConvert.DeserializeObject<List<Account>>(File.ReadAllText(SaveFilePath + ".backup")); }
+                        try { AccountsList = JsonConvert.DeserializeObject<List<Account>>(Encoding.UTF8.GetString(BackupData)); }
                         catch { MessageBox.Show("Failed to load backup file!", "Roblox Account Manager", MessageBoxButtons.OKCancel, MessageBoxIcon.Error); }
                     }
                 }
@@ -275,35 +351,201 @@ namespace RBX_Alt_Manager
             }
         }
 
-        public static void SaveAccounts()
+        public static void SaveAccounts(bool BypassRateLimit = false, bool BypassCountCheck = false)
         {
-            if ((DateTime.Now - startTime).Seconds < 5 || AccountsList.Count == 0) return;
+            if ((!BypassRateLimit && (DateTime.Now - startTime).Seconds < 2) || (!BypassCountCheck && AccountsList.Count == 0)) return;
 
             lock (saveLock)
             {
-                string OldInfo = File.Exists(SaveFilePath) ? File.ReadAllText(SaveFilePath) : "";
+                byte[] OldInfo = File.Exists(SaveFilePath) ? File.ReadAllBytes(SaveFilePath) : Array.Empty<byte>();
                 string SaveData = JsonConvert.SerializeObject(AccountsList);
-                int OldSize = Encoding.Unicode.GetByteCount(OldInfo);
-                int NewSize = Encoding.Unicode.GetByteCount(SaveData);
 
                 FileInfo OldFile = new FileInfo(SaveFilePath);
+                FileInfo Backup = new FileInfo($"{SaveFilePath}.backup");
 
-                if (OldFile.Exists && NewSize < OldSize || (OldFile.Exists && (DateTime.Now - OldFile.LastWriteTime).TotalHours > 36))
-                    File.WriteAllText(SaveFilePath + ".backup", OldInfo);
+                if (!Backup.Exists || (Backup.Exists && (DateTime.Now - Backup.LastWriteTime).TotalMinutes > 60 * 8))
+                    File.WriteAllBytes(Backup.FullName, OldInfo);
 
-                if (File.Exists(Path.Combine(Environment.CurrentDirectory, "NoEncryption.IUnderstandTheRisks.iautamor")))
-                    File.WriteAllBytes(SaveFilePath, Encoding.UTF8.GetBytes(SaveData));
+                if (!PasswordHash.IsEmpty)
+                    File.WriteAllBytes(SaveFilePath, Cryptography.Encrypt(SaveData, ProtectedData.Unprotect(PasswordHash.ToArray(), Array.Empty<byte>(), DataProtectionScope.CurrentUser)));
                 else
-                    File.WriteAllBytes(SaveFilePath, ProtectedData.Protect(Encoding.UTF8.GetBytes(SaveData), Entropy, DataProtectionScope.LocalMachine));
+                {
+                    if (File.Exists(Path.Combine(Environment.CurrentDirectory, "NoEncryption.IUnderstandTheRisks.iautamor")))
+                        File.WriteAllBytes(SaveFilePath, Encoding.UTF8.GetBytes(SaveData));
+                    else
+                        File.WriteAllBytes(SaveFilePath, ProtectedData.Protect(Encoding.UTF8.GetBytes(SaveData), Entropy, DataProtectionScope.LocalMachine));
+                }
             }
         }
 
-        public static bool GetUserID(string Username, out long UserId)
+        public void ResetEncryption(bool ManualReset = false)
         {
-            RestRequest request = new RestRequest("v1/usernames/users", Method.POST);
+            foreach (var Form in Application.OpenForms.OfType<Form>())
+                if (Form != this)
+                    Form.Hide();
+
+            IsResettingPassword = true;
+
+            PasswordLayoutPanel.Visible = !PasswordHash.IsEmpty && ManualReset;
+            PasswordSelectionPanel.Visible = false;
+            EncryptionSelectionPanel.Visible = PasswordHash.IsEmpty || !ManualReset;
+
+            PasswordPanel.Visible = true;
+            PasswordPanel.BringToFront();
+        }
+
+        private void PasswordTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Return)
+            {
+                UnlockButton.PerformClick();
+
+                e.Handled = true;
+            }
+        }
+
+        private void Error(string Message)
+        {
+            Program.Logger.Error(Message);
+
+            throw new Exception(Message);
+        }
+
+        private void UnlockButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                byte[] Hash = CryptoHash.Hash(PasswordTextBox.Text);
+
+                if (PasswordTextBox.Text.Length < 4)
+                    Error("Invalid password, your password must contain 4 or more characters");
+
+                if (IsResettingPassword)
+                {
+                    byte[] Data = File.Exists(SaveFilePath) ? File.ReadAllBytes(SaveFilePath) : Array.Empty<byte>();
+
+                    if (Data.Length > 0)
+                    {
+                        var Header = new ReadOnlySpan<byte>(Data, 0, Cryptography.RAMHeader.Length);
+
+                        if (Header.SequenceEqual(Cryptography.RAMHeader))
+                        {
+                            if (Hash == null)
+                            {
+                                EncryptionSelectionPanel.Visible = false;
+                                PasswordSelectionPanel.Visible = false;
+                                PasswordLayoutPanel.Visible = true;
+                                PasswordPanel.Visible = true;
+                                PasswordPanel.BringToFront();
+                                PasswordTextBox.Focus();
+
+                                return;
+                            }
+
+                            Cryptography.Decrypt(Data, Hash);
+
+                            PasswordLayoutPanel.Visible = false;
+                            EncryptionSelectionPanel.Visible = true;
+                            IsResettingPassword = false;
+                        }
+                    }
+                }
+                else
+                    LoadAccounts(Hash);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show($"Incorrect Password!\n\n{exception.Message}", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            finally { PasswordTextBox.Text = string.Empty; PasswordTextBox.Focus(); }
+        }
+
+        private void DefaultEncryptionButton_Click(object sender, EventArgs e)
+        {
+            PasswordHash = Array.Empty<byte>();
+            SaveAccounts(true, true);
+
+            PasswordPanel.Visible = false;
+        }
+
+        private void PasswordEncryptionButton_Click(object sender, EventArgs e)
+        {
+            EncryptionSelectionPanel.Visible = false;
+            PasswordLayoutPanel.Visible = false;
+            PasswordSelectionPanel.Visible = true;
+        }
+
+        private ReadOnlyMemory<byte> LastHash = null;
+
+        private void SetPasswordButton_Click(object sender, EventArgs e)
+        {
+            if (PasswordSelectionTB.Text.Length < 4)
+            {
+                MessageBox.Show("Invalid password, your password must contain 4 or more characters", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            byte[] Hash = CryptoHash.Hash(PasswordSelectionTB.Text);
+
+            PasswordHash = new ReadOnlyMemory<byte>(ProtectedData.Protect(Hash, Array.Empty<byte>(), DataProtectionScope.CurrentUser));
+
+            if (LastHash.IsEmpty)
+            {
+                LastHash = new ReadOnlyMemory<byte>(PasswordHash.ToArray());
+                PasswordSelectionTB.Text = string.Empty;
+                MessageBox.Show("Please confirm your password.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+            }
+            else
+            {
+                if (ProtectedData.Unprotect(LastHash.ToArray(), Array.Empty<byte>(), DataProtectionScope.CurrentUser).SequenceEqual(Hash.ToArray()))
+                {
+                    SaveAccounts(true, true);
+
+                    PasswordSelectionTB.Text = string.Empty;
+                    PasswordPanel.Visible = false;
+
+                    LastHash = null;
+                }
+                else
+                    MessageBox.Show("You have entered the wrong password, please try again.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        CancellationTokenSource PasswordSelectionCancellationToken;
+
+        private void PasswordSelectionTB_TextChanged(object sender, EventArgs e)
+        {
+            PasswordSelectionCancellationToken?.Cancel();
+
+            SetPasswordButton.Enabled = false;
+
+            PasswordSelectionCancellationToken = new CancellationTokenSource();
+            var Token = PasswordSelectionCancellationToken.Token;
+
+            Task.Run(async () =>
+            {
+                await Task.Delay(500); // Wait until the user has stopped typing to enable the continue button
+
+                if (Token.IsCancellationRequested)
+                    return;
+
+                AccountsView.InvokeIfRequired(() => SetPasswordButton.Enabled = true);
+            }, PasswordSelectionCancellationToken.Token);
+        }
+
+        private void PasswordPanel_VisibleChanged(object sender, EventArgs e)
+        {
+            foreach (Control Control in Controls)
+                if (Control != PasswordPanel)
+                    Control.Enabled = !PasswordPanel.Visible;
+        }
+
+        public static bool GetUserID(string Username, out long UserId, out RestResponse response)
+        {
+            RestRequest request = LastValidAccount?.MakeRequest("v1/usernames/users", Method.Post) ?? new RestRequest("v1/usernames/users", Method.Post);
             request.AddJsonBody(new { usernames = new string[] { Username } });
 
-            IRestResponse response = UsersClient.Execute(request);
+            response = UsersClient.Execute(request);
 
             if (response.StatusCode == HttpStatusCode.OK && response.Content.TryParseJson(out JObject UserData) && UserData.ContainsKey("data") && UserData["data"].Count() >= 1)
             {
@@ -320,15 +562,15 @@ namespace RBX_Alt_Manager
         public void UpdateAccountView(Account account) =>
             AccountsView.InvokeIfRequired(() => AccountsView.UpdateObject(account));
 
-        public static Account AddAccount(string SecurityToken, string Password = "")
+        public static Account AddAccount(string SecurityToken, string Password = "", string AccountJSON = null)
         {
-            Account account = new Account(SecurityToken);
+            Account account = new Account(SecurityToken, AccountJSON);
 
             if (account.Valid)
             {
                 account.Password = Password;
 
-                Account exists = AccountsList.FirstOrDefault(acc => acc.UserID == account.UserID);
+                Account exists = AccountsList.AsReadOnly().FirstOrDefault(acc => acc.UserID == account.UserID);
 
                 if (exists != null)
                 {
@@ -347,7 +589,7 @@ namespace RBX_Alt_Manager
                     Instance.RefreshView(account);
                 }
 
-                SaveAccounts();
+                SaveAccounts(true);
 
                 return account;
             }
@@ -355,63 +597,49 @@ namespace RBX_Alt_Manager
             return null;
         }
 
-        public static string ShowDialog(string text, string caption, string defaultText = "") // tbh pasted from stackoverflow
+        public static string ShowDialog(string text, string caption, string defaultText = "", bool big = false) // tbh pasted from stackoverflow
         {
             Form prompt = new Form()
             {
                 Width = 340,
-                Height = 125,
+                Height = big ? 420 : 125,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
                 MaximizeBox = false,
                 Text = caption,
                 StartPosition = FormStartPosition.CenterScreen
             };
 
-            Label textLabel = new Label() { Left = 15, Top = 10, Text = text };
-            TextBox textBox = new TextBox() { Left = 15, Top = 25, Width = 220, Text = defaultText };
-            Button confirmation = new Button() { Text = "OK", Left = 15, Width = 100, Top = 50, DialogResult = DialogResult.OK };
+            Label textLabel = new Label() { Left = 15, Top = 10, Text = text, AutoSize = true };
+            Control textBox;
+            Button confirmation = new Button() { Text = "OK", Left = 15, Width = 100, Top = big ? 350 : 50, DialogResult = DialogResult.OK };
+
+            if (big) textBox = new RichTextBox() { Left = 15, Top = 15 + textLabel.Size.Height, Width = 295, Height = 330 - textLabel.Size.Height, Text = defaultText };
+            else textBox = new TextBox() { Left = 15, Top = 25, Width = 295, Text = defaultText };
 
             confirmation.Click += (sender, e) => { prompt.Close(); };
             prompt.Controls.Add(textBox);
             prompt.Controls.Add(confirmation);
             prompt.Controls.Add(textLabel);
-            prompt.AcceptButton = confirmation;
+            if (!big) prompt.AcceptButton = confirmation;
 
-            return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "";
+            prompt.Rescale();
+
+            return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "/UC";
         }
 
         private void AccountManager_Load(object sender, EventArgs e)
         {
-            int Stupid = 1337;
-
-            try
-            {
-                if (Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName.Contains(Path.GetTempPath().Remove(Path.GetTempPath().Length - 1)))
-                {
-                    MessageBox.Show("Roblox Account Manager must be extracted in order to function correctly!", "Roblox Account Manager", MessageBoxButtons.OK);
-                    Environment.Exit(Stupid);
-                }
-            }
-            catch { }
-
             string AFN = Path.Combine(Directory.GetCurrentDirectory(), "Auto Update.exe");
             string AU2FN = Path.Combine(Directory.GetCurrentDirectory(), "AU.exe");
 
-            if (File.Exists(AU2FN))
-            {
-                if (File.Exists(AFN))
-                    File.Delete(AFN);
-
-                File.Copy(AU2FN, AFN);
-                File.Delete(AU2FN);
-            }
+            if (File.Exists(AFN)) File.Delete(AFN);
+            if (File.Exists(AU2FN)) File.Delete(AU2FN);
 
             DirectoryInfo UpdateDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "Update"));
 
             if (UpdateDir.Exists)
                 UpdateDir.RecursiveDelete();
 
-            aaform = new AccountAdder();
             afform = new ArgumentsForm();
             ServerListForm = new ServerList();
             UtilsForm = new AccountUtils();
@@ -425,19 +653,22 @@ namespace RBX_Alt_Manager
             AuthClient = new RestClient("https://auth.roblox.com/");
             EconClient = new RestClient("https://economy.roblox.com/");
             AccountClient = new RestClient("https://accountsettings.roblox.com/");
-            GameJoinClient = new RestClient("https://gamejoin.roblox.com/");
+            GameJoinClient = new RestClient(new RestClientOptions("https://gamejoin.roblox.com/") { UserAgent = "Roblox/WinInet" });
             UsersClient = new RestClient("https://users.roblox.com");
             FriendsClient = new RestClient("https://friends.roblox.com");
             Web13Client = new RestClient("https://web.roblox.com/");
 
-            foreach (var Client in new RestClient[] { MainClient, AvatarClient, AuthClient, EconClient, AccountClient, GameJoinClient, UsersClient, FriendsClient, Web13Client })
-                Client.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
+            if (File.Exists(SaveFilePath))
+                LoadAccounts();
+            else
+                ResetEncryption();
 
             ApplyTheme();
 
             RGForm.RecentGameSelected += (sender, e) => { PlaceID.Text = e.Game.Details?.placeId.ToString(); };
 
             PlaceID.Text = General.Exists("SavedPlaceId") ? General.Get("SavedPlaceId") : "5315046213";
+            UserID.Text = General.Exists("SavedFollowUser") ? General.Get("SavedFollowUser") : string.Empty;
 
             if (!Developer.Get<bool>("DevMode"))
             {
@@ -448,11 +679,7 @@ namespace RBX_Alt_Manager
                 AccountsStrip.Items.Remove(copyAppLinkToolStripMenuItem);
             }
             else
-            {
-                ImportByCookie.Visible = true;
-                OpenApp.Size = ImportByCookie.Size;
                 ArgumentsB.Visible = true;
-            }
 
             if (General.Get<bool>("HideUsernames"))
                 HideUsernamesCheckbox.Checked = true;
@@ -475,24 +702,33 @@ namespace RBX_Alt_Manager
 
                         if (match.Success)
                         {
-                            string version = fvi.FileVersion.Substring(0, match.Groups[1].Value.Length);
+                            string Current = fvi.FileVersion.TrimEnd('.', '0').Replace(".", string.Empty);
+                            string New = match.Groups[1].Value.TrimEnd('.', '0').Replace(".", string.Empty);
 
-                            if (match.Groups[1].Value != version)
+                            if (Current.Length > New.Length)
+                                New = New.PadRight(Current.Length, '0');
+                            else if (New.Length > Current.Length)
+                                Current = Current.PadRight(New.Length, '0');
+
+                            if (double.TryParse(New, out double NV) && double.TryParse(Current, out double CV) && NV > CV)
                             {
                                 bool ShouldUpdate = Utilities.YesNoPrompt("Roblox Account Manager", "An update is available", "Would you like to update now?");
 
                                 if (ShouldUpdate)
                                 {
-                                    if (File.Exists(AFN))
-                                    {
-                                        Process.Start(AFN, "skip");
-                                        Environment.Exit(1);
-                                    }
-                                    else
-                                    {
-                                        MessageBox.Show("You do not have the auto updater downloaded, go to the github page and download the latest release.");
-                                        Process.Start("https://github.com/ic3w0lf22/Roblox-Account-Manager/releases");
-                                    }
+                                    File.WriteAllBytes(AFN, File.ReadAllBytes(Application.ExecutablePath));
+                                    Process.Start(AFN, "-update");
+                                    Environment.Exit(1);
+                                    //if (File.Exists(AFN))
+                                    //{
+                                    //    Process.Start(AFN, "skip");
+                                    //    Environment.Exit(1);
+                                    //}
+                                    //else
+                                    //{
+                                    //    MessageBox.Show("You do not have the auto updater downloaded, go to the github page and download the latest release.");
+                                    //    Process.Start("https://github.com/ic3w0lf22/Roblox-Account-Manager/releases");
+                                    //}
                                 }
                             }
                         }
@@ -506,15 +742,6 @@ namespace RBX_Alt_Manager
 
             try
             {
-                if (new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator))
-                    Elevated = true;
-
-                // MessageBox.Show("Some features may not work properly if you ran the account manager as admin!", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error); // I don't think this is an issue anymore
-            }
-            catch { }
-
-            try
-            {
                 if (Developer.Get<bool>("EnableWebServer"))
                 {
                     string Port = WebServer.Exists("WebServerPort") ? WebServer.Get("WebServerPort") : "7963";
@@ -522,7 +749,7 @@ namespace RBX_Alt_Manager
                     List<string> Prefixes = new List<string>() { $"http://localhost:{Port}/" };
 
                     if (WebServer.Get<bool>("AllowExternalConnections"))
-                        if (Elevated)
+                        if (Program.Elevated)
                             Prefixes.Add($"http://*:{Port}/");
                         else
                             using (Process proc = new Process() { StartInfo = new ProcessStartInfo(AppDomain.CurrentDomain.FriendlyName, "-adminRequested") { Verb = "runas" } })
@@ -556,9 +783,36 @@ namespace RBX_Alt_Manager
             PlaceID.AutoCompleteSource = AutoCompleteSource.CustomSource;
 
             Task.Run(LoadRecentGames);
+            Task.Run(RobloxProcess.UpdateMatches);
 
             if (General.Get<bool>("ShuffleJobId"))
                 ShuffleIcon_Click(null, EventArgs.Empty);
+
+            if (General.Get<bool>("AutoCookieRefresh"))
+            {
+                AutoCookieRefresh = new System.Timers.Timer(60000 * 5) { Enabled = true };
+                AutoCookieRefresh.Elapsed += async (s, e) =>
+                {
+                    int Count = 0;
+
+                    foreach (var Account in AccountsList)
+                    {
+                        if (Account.GetField("NoCookieRefresh") != "true" && (DateTime.Now - Account.LastUse).TotalDays > 20 && (DateTime.Now - Account.LastAttemptedRefresh).TotalDays >= 7)
+                        {
+                            Program.Logger.Info($"Attempting to refresh {Account.Username} | Last Use: {Account.LastUse}");
+
+                            Account.LastAttemptedRefresh = DateTime.Now;
+
+                            if (Account.LogOutOfOtherSessions(true)) Count++;
+
+                            await Task.Delay(5000);
+                        }
+                    };
+                };
+            }
+
+            var PresenceTimer = new System.Timers.Timer(60000 * 2) { Enabled = true };
+            PresenceTimer.Elapsed += (s, e) => AccountsView.InvokeIfRequired(async () => await UpdatePresence());
         }
 
         public void ApplyTheme()
@@ -577,53 +831,8 @@ namespace RBX_Alt_Manager
             AccountsView.HeaderStyle = ThemeEditor.ShowHeaders ? (AccountsView.ShowGroups ? ColumnHeaderStyle.Nonclickable : ColumnHeaderStyle.Clickable) : ColumnHeaderStyle.None;
             AccountsView.CellEditActivation = ObjectListView.CellEditActivateMode.DoubleClick;
 
-            foreach (Control control in Controls)
-            {
-                if (control is PictureBox)
-                {
-                    control.BackColor = Color.Transparent;
-                    if (ThemeEditor.LightImages && control.GetLuminance(out float L) && L < 0.3) control.ColorImage(255, 255, 255);
-                }
-                else if (control is Button || control is CheckBox)
-                {
-                    if (control is Button)
-                    {
-                        if (ThemeEditor.LightImages && control.GetLuminance(out float L) && L < 0.3)
-                            control.ColorImage(255, 255, 255);
+            Controls.ApplyTheme();
 
-                        Button b = control as Button;
-                        b.FlatStyle = ThemeEditor.ButtonStyle;
-                        b.FlatAppearance.BorderColor = ThemeEditor.ButtonsBorder;
-                    }
-
-                    if (!(control is CheckBox)) control.BackColor = ThemeEditor.ButtonsBackground;
-                    control.ForeColor = ThemeEditor.ButtonsForeground;
-                }
-                else if (control is TextBox || control is RichTextBox)
-                {
-                    if (control is Classes.BorderedTextBox)
-                    {
-                        Classes.BorderedTextBox b = control as Classes.BorderedTextBox;
-                        b.BorderColor = ThemeEditor.TextBoxesBorder;
-                    }
-
-                    if (control is Classes.BorderedRichTextBox)
-                    {
-                        Classes.BorderedRichTextBox b = control as Classes.BorderedRichTextBox;
-                        b.BorderColor = ThemeEditor.TextBoxesBorder;
-                    }
-
-                    control.BackColor = ThemeEditor.TextBoxesBackground;
-                    control.ForeColor = ThemeEditor.TextBoxesForeground;
-                }
-                else if (control is Label)
-                {
-                    control.BackColor = ThemeEditor.LabelTransparent ? Color.Transparent : ThemeEditor.LabelBackground;
-                    control.ForeColor = ThemeEditor.LabelForeground;
-                }
-            }
-
-            aaform.ApplyTheme();
             afform.ApplyTheme();
             ServerListForm.ApplyTheme();
             UtilsForm.ApplyTheme();
@@ -632,8 +841,8 @@ namespace RBX_Alt_Manager
             ThemeForm.ApplyTheme();
             RGForm.ApplyTheme();
 
-            if (ControlForm != null) ControlForm.ApplyTheme();
-            if (SettingsForm != null) SettingsForm.ApplyTheme();
+            ControlForm?.ApplyTheme();
+            SettingsForm?.ApplyTheme();
         }
 
         private async void LoadRecentGames()
@@ -687,27 +896,30 @@ namespace RBX_Alt_Manager
             bool V2 = request.Url.AbsolutePath.StartsWith("/v2/");
             string AbsolutePath = V2 ? request.Url.AbsolutePath.Substring(3) : request.Url.AbsolutePath;
 
-            if (!request.IsLocal && !WebServer.Get<bool>("AllowExternalConnections")) return V2 ? WebServerResponse("External connections are not allowed", false) : "";
+            string Reply(string Response, bool Success = false, int Code = -1, string Raw = null)
+            {
+                Context.Response.StatusCode = Code > 0 ? Code : (Success ? 200 : 400);
+
+                return V2 ? WebServerResponse(Response, Success) : (Raw ?? Response);
+            }
+
+            if (!request.IsLocal && !WebServer.Get<bool>("AllowExternalConnections")) return Reply("External connections are not allowed", false, 401, string.Empty);
             if (AbsolutePath == "/favicon.ico") return ""; // always return nothing
 
-            if (AbsolutePath == "/Running") return V2 ? WebServerResponse("Roblox Account Manager is running", true) : "true";
+            if (AbsolutePath == "/Running") return Reply("Roblox Account Manager is running", true, Raw: "true");
 
             string Body = new StreamReader(request.InputStream).ReadToEnd();
             string Method = AbsolutePath.Substring(1);
             string Account = request.QueryString["Account"];
             string Password = request.QueryString["Password"];
 
-            Context.Response.StatusCode = 401;
+            if (WebServer.Get<bool>("EveryRequestRequiresPassword") && (WSPassword.Length < 6 || Password != WSPassword)) return Reply("Invalid Password, make sure your password contains 6 or more characters", false, 401, "Invalid Password");
 
-            if (WebServer.Get<bool>("EveryRequestRequiresPassword") && (WSPassword.Length < 6 || Password != WSPassword)) return V2 ? WebServerResponse("Invalid Password, make sure your password contains 6 or more characters", false) : "Invalid Password";
-
-            if ((Method == "GetCookie" || Method == "GetAccounts" || Method == "LaunchAccount") && (WSPassword.Length < 6 || Password != WSPassword)) return V2 ? WebServerResponse("Invalid Password, make sure your password contains 6 or more characters", false) : "Invalid Password";
-
-            Context.Response.StatusCode = 200;
+            if ((Method == "GetCookie" || Method == "GetAccounts" || Method == "LaunchAccount" || Method == "KillProcess") && (WSPassword.Length < 6 || Password != WSPassword)) return Reply("Invalid Password, make sure your password contains 6 or more characters", false, 401, "Invalid Password");
 
             if (Method == "GetAccounts")
             {
-                if (!WebServer.Get<bool>("AllowGetAccounts")) return V2 ? WebServerResponse("Method `GetAccounts` not allowed", false) : "Method not allowed";
+                if (!WebServer.Get<bool>("AllowGetAccounts")) return Reply("Method `GetAccounts` not allowed", false, 401, "Method not allowed");
 
                 string Names = "";
                 string GroupFilter = request.QueryString["Group"];
@@ -719,15 +931,15 @@ namespace RBX_Alt_Manager
                     Names += acc.Username + ",";
                 }
 
-                return V2 ? WebServerResponse(Names.Remove(Names.Length - 1), true) : Names.Remove(Names.Length - 1);
+                return Reply(Names.Remove(Names.Length - 1), true, Raw: Names.Remove(Names.Length - 1));
             }
 
             if (Method == "GetAccountsJson")
             {
-                if (!WebServer.Get<bool>("AllowGetAccounts")) return V2 ? WebServerResponse("Method `GetAccountsJson` not allowed", false) : "Method not allowed";
+                if (!WebServer.Get<bool>("AllowGetAccounts")) return Reply("Method `GetAccountsJson` not allowed", false, 401, "Method not allowed");
 
                 string GroupFilter = request.QueryString["Group"];
-                bool ShowCookies = request.QueryString["IncludeCookies"] == "true" && WebServer.Get<bool>("AllowGetCookie");
+                bool ShowCookies = WSPassword.Length >= 6 && Password != WSPassword && request.QueryString["IncludeCookies"] == "true" && WebServer.Get<bool>("AllowGetCookie");
 
                 List<object> Objects = new List<object>();
 
@@ -751,10 +963,8 @@ namespace RBX_Alt_Manager
                     Objects.Add(AccountObject);
                 }
 
-                return V2 ? WebServerResponse(JsonConvert.SerializeObject(Objects), true) : JsonConvert.SerializeObject(Objects);
+                return Reply(JsonConvert.SerializeObject(Objects), true);
             }
-
-            Context.Response.StatusCode = 400;
 
             if (Method == "ImportCookie")
             {
@@ -762,109 +972,87 @@ namespace RBX_Alt_Manager
 
                 bool Success = New != null;
 
-                if (Success)
-                    Context.Response.StatusCode = 200;
-
-                return V2 ? WebServerResponse(Success ? "Cookie successfully imported" : "An error occured importing the cookie", Success) : (Success ? "true" : "false");
+                return Reply(Success ? "Cookie successfully imported" : "[ImportCookie] An error was encountered importing the cookie", Success, Raw: Success ? "true" : "false");
             }
 
-            if (string.IsNullOrEmpty(Account)) return V2 ? WebServerResponse("Empty Account", false) : "Empty Account";
+            if (string.IsNullOrEmpty(Account)) return Reply("Empty Account", false);
 
             Account account = AccountsList.FirstOrDefault(x => x.Username == Account || x.UserID.ToString() == Account);
 
-            if (account == null || !account.GetCSRFToken(out string Token)) return V2 ? WebServerResponse("Invalid Account, the account's cookie may have expired and resulted in the account being logged out", false) : "Invalid Account";
-
-            Context.Response.StatusCode = 401;
+            if (account == null || !account.GetCSRFToken(out string Token)) return Reply("Invalid Account, the account's cookie may have expired and resulted in the account being logged out", false, Raw: "Invalid Account");
 
             if (Method == "GetCookie")
             {
-                if (!WebServer.Get<bool>("AllowGetCookie")) return V2 ? WebServerResponse("Method `GetCookie` not allowed", false) : "Method not allowed";
+                if (!WebServer.Get<bool>("AllowGetCookie")) return Reply("Method `GetCookie` not allowed", false, 401, "Method not allowed");
 
-                Context.Response.StatusCode = 200;
-
-                return V2 ? WebServerResponse(account.SecurityToken, true) : account.SecurityToken;
+                return Reply(account.SecurityToken, true);
             }
 
             if (Method == "LaunchAccount")
             {
-                if (!WebServer.Get<bool>("AllowLaunchAccount")) return V2 ? WebServerResponse("Method `LaunchAccount` not allowed", false) : "Method not allowed";
+                if (!WebServer.Get<bool>("AllowLaunchAccount")) return Reply("Method `LaunchAccount` not allowed", false, 401, "Method not allowed");
 
-                bool ValidPlaceId = long.TryParse(request.QueryString["PlaceId"], out long PlaceId); if (!ValidPlaceId) return V2 ? WebServerResponse("Invalid PlaceId provided", false) : "Invalid PlaceId";
+                bool ValidPlaceId = long.TryParse(request.QueryString["PlaceId"], out long PlaceId); if (!ValidPlaceId) return Reply("Invalid PlaceId provided", false, Raw: "Invalid PlaceId");
 
                 string JobID = !string.IsNullOrEmpty(request.QueryString["JobId"]) ? request.QueryString["JobId"] : "";
                 string FollowUser = request.QueryString["FollowUser"];
                 string JoinVIP = request.QueryString["JoinVIP"];
 
                 string Res = string.Empty; account.JoinServer(PlaceId, JobID, FollowUser == "true", JoinVIP == "true").ContinueWith(result => Res = result.Result).Wait();
+                bool Success = Res == "Success";
 
-                Context.Response.StatusCode = 200;
-
-                return JsonConvert.SerializeObject(new { Message = $"Launched {Account} to {PlaceId}", Result = Res /* Support any old scripts that may use this value */, Success = true });
+                return Reply(Success ? $"Launched {Account} to {PlaceId}" : Res, Success);
             }
 
             if (Method == "FollowUser") // https://github.com/ic3w0lf22/Roblox-Account-Manager/pull/52
             {
-                if (!WebServer.Get<bool>("AllowLaunchAccount")) return V2 ? WebServerResponse("Method `FollowUser` not allowed", false) : "Method not allowed";
+                if (!WebServer.Get<bool>("AllowLaunchAccount")) return Reply("Method `FollowUser` not allowed", false, 401, "Method not allowed");
 
-                string User = request.QueryString["Username"]; if (string.IsNullOrEmpty(User)) { Context.Response.StatusCode = 400; return V2 ? WebServerResponse("Invalid Username Parameter", false) : "Invalid Username Parameter"; }
+                string User = request.QueryString["Username"]; if (string.IsNullOrEmpty(User)) return Reply("Invalid Username Parameter", false);
 
-                if (!GetUserID(User, out long UserId))
-                    return V2 ? WebServerResponse("Failed to get UserId", false) : "Failed to get UserId";
+                if (!GetUserID(User, out long UserId, out var Response))
+                    return Reply($"[{Response.StatusCode} {Response.StatusDescription}] Failed to get UserId: {Response.Content}", false);
 
                 string Res = string.Empty; account.JoinServer(UserId, "", true).ContinueWith(result => Res = result.Result).Wait();
+                bool Success = Res == "Success";
 
-                Context.Response.StatusCode = 200;
-
-                string Message = JsonConvert.SerializeObject(new { Message = $"Joining {User}'s game on {Account}", Result = Res });
-
-                return V2 ? WebServerResponse(Message, true) : Message;
+                return Reply($"Joining {User}'s game on {Account}", Success);
             }
 
-            Context.Response.StatusCode = 200;
-
-            if (Method == "GetCSRFToken") return V2 ? WebServerResponse(Token, true) : Token;
-            if (Method == "GetAlias") return V2 ? WebServerResponse(account.Alias, true) : account.Alias;
-            if (Method == "GetDescription") return V2 ? WebServerResponse(account.Description, true) : account.Description;
+            if (Method == "GetCSRFToken") return Reply(Token, true);
+            if (Method == "GetAlias") return Reply(account.Alias, true);
+            if (Method == "GetDescription") return Reply(account.Description, true);
 
             if (Method == "BlockUser" && !string.IsNullOrEmpty(request.QueryString["UserId"]))
                 try
                 {
                     var Res = account.BlockUserId(request.QueryString["UserId"], Context: Context);
 
-                    Context.Response.StatusCode = (int)Res.StatusCode;
-
-                    return V2 ? WebServerResponse(Res.Content, Res.IsSuccessful) : Res.Content;
+                    return Reply(Res.Content, Res.IsSuccessful, (int)Res.StatusCode);
                 }
-                catch (Exception x) { return V2 ? WebServerResponse(x.Message, false) : x.Message; }
+                catch (Exception x) { return Reply(x.Message, false, 500); }
             if (Method == "UnblockUser" && !string.IsNullOrEmpty(request.QueryString["UserId"]))
                 try
                 {
                     var Res = account.UnblockUserId(request.QueryString["UserId"], Context: Context);
 
-                    Context.Response.StatusCode = (int)Res.StatusCode;
-
-                    return V2 ? WebServerResponse(Res.Content, Res.IsSuccessful) : Res.Content;
+                    return Reply(Res.Content, Res.IsSuccessful, (int)Res.StatusCode);
                 }
-                catch (Exception x) { return V2 ? WebServerResponse(x.Message, false) : x.Message; }
+                catch (Exception x) { return Reply(x.Message, false, 500); }
             if (Method == "GetBlockedList") try
                 {
                     var Res = account.GetBlockedList(Context);
 
-                    Context.Response.StatusCode = (int)Res.StatusCode;
-
-                    return V2 ? WebServerResponse(Res.Content, Res.IsSuccessful) : Res.Content;
+                    return Reply(Res.Content, Res.IsSuccessful, (int)Res.StatusCode);
                 }
-                catch (Exception x) { return V2 ? WebServerResponse(x.Message, false) : x.Message; }
-            if (Method == "UnblockEveryone") return V2 ? WebServerResponse(account.UnblockEveryone(Context), true) : account.UnblockEveryone(Context);
+                catch (Exception x) { return Reply(x.Message, false, 500); }
+            if (Method == "UnblockEveryone" && account.UnblockEveryone(out string UbRes) is bool UbSuccess) return Reply(UbRes, UbSuccess);
 
             if (Method == "SetServer" && !string.IsNullOrEmpty(request.QueryString["PlaceId"]) && !string.IsNullOrEmpty(request.QueryString["JobId"]))
             {
                 string RSP = account.SetServer(Convert.ToInt64(request.QueryString["PlaceId"]), request.QueryString["JobId"], out bool Success);
 
-                if (!Success)
-                    Context.Response.StatusCode = 400;
-
-                return V2 ? WebServerResponse(RSP, Success) : RSP;
+                return Reply(RSP, Success);
             }
 
             if (Method == "SetRecommendedServer")
@@ -875,11 +1063,7 @@ namespace RBX_Alt_Manager
                 for (int i = RBX_Alt_Manager.ServerList.servers.Count - 1; i > 0; i--)
                 {
                     if (attempts > 10)
-                    {
-                        Context.Response.StatusCode = 400;
-
-                        return V2 ? WebServerResponse("Too many failed attempts", false) : "Too many failed attempts";
-                    }
+                        return Reply("Too many failed attempts", false);
 
                     ServerData server = RBX_Alt_Manager.ServerList.servers[i];
 
@@ -890,84 +1074,60 @@ namespace RBX_Alt_Manager
 
                     attempts++;
 
-                    res = account.SetServer(RBX_Alt_Manager.ServerList.CurrentPlaceID, server.id, out bool iSuccess);
+                    res = account.SetServer(!string.IsNullOrEmpty(request.QueryString["PlaceId"]) ? Convert.ToInt64(request.QueryString["PlaceId"]) : RBX_Alt_Manager.ServerList.CurrentPlaceID, server.id, out bool iSuccess);
 
                     if (iSuccess)
-                        return V2 ? WebServerResponse(res, iSuccess) : res;
+                        return Reply(res, iSuccess);
                 }
 
                 bool Success = !string.IsNullOrEmpty(res);
 
-                if (!Success) Context.Response.StatusCode = 400;
-
-                return V2 ? WebServerResponse(Success ? "Failed" : res, Success) : Success ? "Failed" : res;
+                return Reply(Success ? "Failed" : res, Success);
             }
 
-            if (Method == "GetField" && !string.IsNullOrEmpty(request.QueryString["Field"])) return V2 ? WebServerResponse(account.GetField(request.QueryString["Field"]), true) : account.GetField(request.QueryString["Field"]);
-
-            Context.Response.StatusCode = 401;
+            if (Method == "GetField" && !string.IsNullOrEmpty(request.QueryString["Field"])) return Reply(account.GetField(request.QueryString["Field"]), true);
 
             if (Method == "SetField" && !string.IsNullOrEmpty(request.QueryString["Field"]) && !string.IsNullOrEmpty(request.QueryString["Value"]))
             {
-                if (!WebServer.Get<bool>("AllowAccountEditing")) return V2 ? WebServerResponse("Method `SetField` not allowed", false) : "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return Reply("Method `SetField` not allowed", false, 401, "Method not allowed");
 
                 account.SetField(request.QueryString["Field"], request.QueryString["Value"]);
 
-                Context.Response.StatusCode = 200;
-
-                string Res = $"Set Field {request.QueryString["Field"]} to {request.QueryString["Value"]} for {account.Username}";
-
-                return V2 ? WebServerResponse(Res, true) : Res;
+                return Reply($"Set Field {request.QueryString["Field"]} to {request.QueryString["Value"]} for {account.Username}", true);
             }
             if (Method == "RemoveField" && !string.IsNullOrEmpty(request.QueryString["Field"]))
             {
-                if (!WebServer.Get<bool>("AllowAccountEditing")) return V2 ? WebServerResponse("Method `RemoveField` not allowed", false) : "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return Reply("Method `RemoveField` not allowed", false, 401, "Method not allowed");
 
                 account.RemoveField(request.QueryString["Field"]);
 
-                Context.Response.StatusCode = 200;
-
-                string Res = $"Removed Field {request.QueryString["Field"]} from {account.Username}";
-
-                return V2 ? WebServerResponse(Res, true) : Res;
+                return Reply($"Removed Field {request.QueryString["Field"]} from {account.Username}", true);
             }
 
             if (Method == "SetAvatar" && Body.TryParseJson(out object _))
             {
                 account.SetAvatar(Body);
 
-                Context.Response.StatusCode = 200;
-
-                string Res = $"Attempting to set avatar of {account.Username} to {Body}";
-
-                return V2 ? WebServerResponse(Res, true) : Res;
+                return Reply($"Attempting to set avatar of {account.Username} to {Body}", true);
             }
 
             if (Method == "SetAlias" && !string.IsNullOrEmpty(Body))
             {
-                if (!WebServer.Get<bool>("AllowAccountEditing")) return V2 ? WebServerResponse("Method `SetAlias` not allowed", false) : "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) return Reply("Method `SetAlias` not allowed", false, Raw: "Method not allowed");
 
                 account.Alias = Body;
                 UpdateAccountView(account);
 
-                Context.Response.StatusCode = 200;
-
-                string Res = $"Set Alias of {account.Username} to {Body}";
-
-                return V2 ? WebServerResponse(Res, true) : Res;
+                return Reply($"Set Alias of {account.Username} to {Body}", true);
             }
             if (Method == "SetDescription" && !string.IsNullOrEmpty(Body))
             {
-                if (!WebServer.Get<bool>("AllowAccountEditing")) return V2 ? WebServerResponse("Method `SetDescription` not allowed", false) : "Method not allowed";
+                if (!WebServer.Get<bool>("AllowAccountEditing")) Reply("Method `SetDescription` not allowed", false, Raw: "Method not allowed");
 
                 account.Description = Body;
                 UpdateAccountView(account);
 
-                Context.Response.StatusCode = 200;
-
-                string Res = $"Set Description of {account.Username} to {Body}";
-
-                return V2 ? WebServerResponse(Res, true) : Res;
+                return Reply($"Set Description of {account.Username} to {Body}", true);
             }
             if (Method == "AppendDescription" && !string.IsNullOrEmpty(Body))
             {
@@ -976,36 +1136,54 @@ namespace RBX_Alt_Manager
                 account.Description += Body;
                 UpdateAccountView(account);
 
-                Context.Response.StatusCode = 200;
-
-                string Res = $"Appended Description of {account.Username} with {Body}";
-
-                return V2 ? WebServerResponse(Res, true) : Res;
+                return Reply($"Appended Description of {account.Username} with {Body}", true);
             }
 
-            Context.Response.StatusCode = 404;
-
-            return V2 ? WebServerResponse("404 not found", false) : "";
+            return Reply("404 not found", false, 404);
         }
 
         private void AccountManager_Shown(object sender, EventArgs e)
         {
-            LoadAccounts();
+            if (!UpdateMultiRoblox() && !General.Get<bool>("HideRbxAlert"))
+                MessageBox.Show("WARNING: Roblox is currently running, multi roblox will not work until you restart the account manager with roblox closed.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
-            if (!General.Get<bool>("DisableMultiRbx"))
+            if (!Directory.Exists(AccountBrowser.Fetcher.DownloadsFolder) || Directory.GetDirectories(AccountBrowser.Fetcher.DownloadsFolder).Length == 0)
             {
-                try
+                Task.Run(async () =>
                 {
-                    rbxMultiMutex = new Mutex(true, "ROBLOX_singletonMutex");
+                    await AccountBrowser.Fetcher.DownloadAsync(BrowserFetcher.DefaultChromiumRevision);
 
-                    if (!rbxMultiMutex.WaitOne(TimeSpan.Zero, true) && !General.Get<bool>("HideRbxAlert"))
-                        MessageBox.Show("WARNING: Roblox is currently running, multi roblox will not work until you restart the account manager with roblox closed.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-                catch { }
+                    IsDownloadingChromium = false;
+                });
+
+                MessageBox.Show("Chromium needs to be downloaded, you may have to wait a while before adding an account.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
             if (AccountControl.Get<bool>("StartOnLaunch"))
                 LaunchNexus.PerformClick();
+        }
+
+        public bool UpdateMultiRoblox()
+        {
+            bool Enabled = General.Get<bool>("EnableMultiRbx");
+
+            if (Enabled && rbxMultiMutex == null)
+                try
+                {
+                    rbxMultiMutex = new Mutex(true, "ROBLOX_singletonMutex");
+
+                    if (!rbxMultiMutex.WaitOne(TimeSpan.Zero, true))
+                        return false;
+                }
+                catch { return false; }
+            else if (!Enabled && rbxMultiMutex != null)
+            {
+                rbxMultiMutex.Close();
+                rbxMultiMutex = null;
+            }
+
+
+            return true;
         }
 
         private void Remove_Click(object sender, EventArgs e)
@@ -1039,13 +1217,94 @@ namespace RBX_Alt_Manager
             }
         }
 
-        private void Add_Click(object sender, EventArgs e)
+        private async void Add_Click(object sender, EventArgs e)
         {
-            if (aaform != null && aaform.Visible)
-                aaform.HideForm();
+            if (IsDownloadingChromium)
+            {
+                static void ShowManualInstallInstructions()
+                {
+                    string Temp = Path.Combine(Path.GetTempPath(), "manual install instructions.html");
+                    string DownloadLink = (string)typeof(BrowserFetcher).GetMethod("GetDownloadURL", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[] { AccountBrowser.Fetcher.Product, AccountBrowser.Fetcher.Platform, AccountBrowser.Fetcher.DownloadHost, BrowserFetcher.DefaultChromiumRevision });
+                    string Directory = Path.Combine(AccountBrowser.Fetcher.DownloadsFolder, $"{AccountBrowser.Fetcher.Platform}-{BrowserFetcher.DefaultChromiumRevision}");
 
-            aaform.BrowserMode = false;
-            aaform.ShowForm();
+                    File.WriteAllText(Temp, string.Format(Resources.ManualInstallHTML, DownloadLink, Directory));
+
+                    Process.Start(new ProcessStartInfo(Temp) { UseShellExecute = true });
+                    Process.Start(new ProcessStartInfo("cmd") { Arguments = $"/c mkdir \"{Directory}\"", CreateNoWindow = true });
+                }
+
+                if (TaskDialog.IsPlatformSupported)
+                {
+                    TaskDialog Dialog = new TaskDialog()
+                    {
+                        Caption = "Add Account",
+                        InstructionText = "Chromium is still being downloaded",
+                        Text = "If this is not working for you, you can choose to manually install",
+                        Icon = TaskDialogStandardIcon.Information
+                    };
+
+                    TaskDialogButton Manual = new TaskDialogButton("Manual", "Download Manually");
+                    TaskDialogButton Wait = new TaskDialogButton("Wait", "Wait");
+
+                    Wait.Click += (s, e) => Dialog.Close();
+                    Manual.Click += (s, e) =>
+                    {
+                        Dialog.Close();
+
+                        ShowManualInstallInstructions();
+                    };
+
+                    Dialog.Controls.Add(Manual);
+                    Dialog.Controls.Add(Wait);
+                    Wait.Default = true;
+
+                    Dialog.Show();
+                }
+                else if (MessageBox.Show("Chromium is still downloading, you may have to wait a while before adding an account.\n\nNot working? You can choose to manually install by pressing \"Yes\"", "Roblox Account Manager", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information) == DialogResult.Yes)
+                    ShowManualInstallInstructions();
+
+                return;
+            }
+
+            Add.Enabled = false;
+
+            try { await new AccountBrowser().Login(); } catch (Exception x) { Program.Logger.Error($"[Add_Click] An error was encountered attempting to login: {x}"); } // incase the user closes the browser for some reason during launch
+
+            Add.Enabled = true;
+        }
+
+        private void manualToolStripMenuItem_Click(object sender, EventArgs e) => Add.PerformClick();
+
+        private void addAccountsToolStripMenuItem_Click(object sender, EventArgs e) => Add.PerformClick();
+
+        private void byCookieToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ImportAccountsForm.Show();
+            ImportAccountsForm.WindowState = FormWindowState.Normal;
+            ImportAccountsForm.BringToFront();
+        }
+
+        private async void bulkUserPassToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string Combos = ShowDialog("Separate the accounts with new lines\nMust be in user:pass form", "Import by User:Pass", big: true);
+
+            if (Combos == "/UC") return;
+
+            List<string> ComboList = new List<string>(Combos.Split('\n'));
+
+            var Size = new System.Numerics.Vector2(455, 485);
+            AccountBrowser.CreateGrid(Size);
+
+            for (int i = 0; i < ComboList.Count; i++)
+            {
+                string Combo = ComboList[i];
+
+                if (!Combo.Contains(':')) continue;
+
+                var LoginTask = new AccountBrowser() { Index = i, Size = Size }.Login(Combo.Substring(0, Combo.IndexOf(':')), Combo.Substring(Combo.IndexOf(":") + 1));
+
+                if ((i + 1) % 2 == 0) await LoginTask;
+            }
         }
 
         private void AccountsView_SelectedIndexChanged(object sender, EventArgs e)
@@ -1136,11 +1395,14 @@ namespace RBX_Alt_Manager
 
         private async void Follow_Click(object sender, EventArgs e)
         {
-            if (!GetUserID(UserID.Text, out long UserId))
+            if (!GetUserID(UserID.Text, out long UserId, out var Response))
             {
-                MessageBox.Show("Failed to get UserId");
+                MessageBox.Show($"[{Response.StatusCode} {Response.StatusDescription}] Failed to get UserId: {Response.Content}");
                 return;
             }
+    
+            if (!(await Presence.GetPresenceSingular(UserId) is UserPresence Status && Status.userPresenceType == UserPresenceType.InGame && Status.placeId is long FollowPlaceID && FollowPlaceID > 0) &&
+                !Utilities.YesNoPrompt("Warning", "The user you are trying to follow is not in game or has their joins off", "Do you want to attempt to join anyways?")) return;
 
             CancelLaunching();
 
@@ -1190,14 +1452,6 @@ namespace RBX_Alt_Manager
             AccountsView.EndUpdate();
         }
 
-        private void addAccountsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (aaform != null && aaform.Visible)
-                aaform.HideForm();
-
-            aaform.ShowForm();
-        }
-
         private void removeAccountToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (AccountsView.SelectedObjects.Count > 1)
@@ -1229,12 +1483,12 @@ namespace RBX_Alt_Manager
 
         private void AccountManager_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (AltManagerWS != null)
-                AltManagerWS.Stop();
+            AltManagerWS?.Stop();
 
             if (PlaceID == null || string.IsNullOrEmpty(PlaceID.Text)) return;
 
             General.Set("SavedPlaceId", PlaceID.Text);
+            General.Set("SavedFollowUser", UserID.Text);
             IniSettings.Save("RAMSettings.ini");
         }
 
@@ -1249,19 +1503,6 @@ namespace RBX_Alt_Manager
             UtilsForm.Show();
             UtilsForm.WindowState = FormWindowState.Normal;
             UtilsForm.BringToFront();
-        }
-
-        private void reAuthToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (SelectedAccount == null) return;
-
-            if (aaform != null && aaform.Visible)
-                aaform.HideForm();
-
-            aaform.BrowserMode = false;
-            aaform.ShowForm();
-
-            aaform.SetUsername = SelectedAccount.Username;
         }
 
         private void getAuthenticationTicketToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1304,10 +1545,11 @@ namespace RBX_Alt_Manager
 
         private void ArgumentsB_Click(object sender, EventArgs e)
         {
-            if (afform != null && afform.Visible)
-                afform.HideForm();
-
-            afform.ShowForm();
+            if (afform != null)
+                if (afform.Visible)
+                    afform.HideForm();
+                else
+                    afform.ShowForm();
         }
 
         private void copySecurityTokenToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1373,9 +1615,9 @@ namespace RBX_Alt_Manager
 
             PlaceTimer.Stop();
 
-            RestRequest request = new RestRequest($"v2/assets/{PlaceID.Text}/details", Method.GET);
+            RestRequest request = new RestRequest($"v2/assets/{PlaceID.Text}/details", Method.Get);
             request.AddHeader("Accept", "application/json");
-            IRestResponse response = await EconClient.ExecuteAsync(request);
+            RestResponse response = await EconClient.ExecuteAsync(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK && response.Content.StartsWith("{") && response.Content.EndsWith("}"))
             {
@@ -1391,6 +1633,7 @@ namespace RBX_Alt_Manager
 
             string GroupName = ShowDialog("Group Name", "Move Account to Group", SelectedAccount != null ? SelectedAccount.Group : string.Empty);
 
+            if (GroupName == "/UC") return; // User Cancelled
             if (string.IsNullOrEmpty(GroupName)) GroupName = "Default";
 
             foreach (Account acc in AccountsView.SelectedObjects)
@@ -1417,13 +1660,64 @@ namespace RBX_Alt_Manager
 
         private void JoinDiscord_Click(object sender, EventArgs e) => Process.Start("https://discord.gg/MsEH7smXY8");
 
-        private void OpenApp_Click(object sender, EventArgs e) => SelectedAccount?.LaunchApp();
-
-        private void ImportByCookie_Click(object sender, EventArgs e)
+        private void OpenBrowser_Click(object sender, EventArgs e)
         {
-            ImportAccountsForm.Show();
-            ImportAccountsForm.WindowState = FormWindowState.Normal;
-            ImportAccountsForm.BringToFront();
+            foreach (Account account in AccountsView.SelectedObjects)
+                new AccountBrowser(account);
+        }
+
+        private void customURLToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Uri.TryCreate(ShowDialog("URL", "Open Browser"), UriKind.Absolute, out Uri Link))
+                foreach (Account account in AccountsView.SelectedObjects)
+                    new AccountBrowser(account, Link.ToString(), string.Empty);
+        }
+
+        private void URLJSToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!Utilities.YesNoPrompt("Warning", "Your accounts may be at risk using this feature", "Do not paste in javascript unless you know what it does, your account's cookies can easily be logged through javascript.\n\nPress Yes to continue", true)) return;
+
+            if (Uri.TryCreate(ShowDialog("URL", "Open Browser"), UriKind.Absolute, out Uri Link))
+            {
+                string Script = ShowDialog("Javascript", "Open Browser", big: true);
+
+                foreach (Account account in AccountsView.SelectedObjects)
+                    new AccountBrowser(account, Link.ToString(), Script);
+            }
+        }
+
+        private void joinGroupToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Uri.TryCreate(ShowDialog("Group Link", "Open Browser"), UriKind.Absolute, out Uri Link))
+            {
+                foreach (Account account in AccountsView.SelectedObjects)
+                    new AccountBrowser(account, Link.ToString(), PostNavigation: async (page) =>
+                    {
+                        await (await page.WaitForSelectorAsync("#group-join-button", new PuppeteerSharp.WaitForSelectorOptions() { Timeout = 12000 })).ClickAsync();
+                    });
+            }
+        }
+
+        private void customURLJSToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int Count = 1;
+
+            if (ModifierKeys == Keys.Shift)
+                int.TryParse(ShowDialog("Amount (Limited to 15)", "Launch Browser", "1"), out Count);
+
+            if (Uri.TryCreate(ShowDialog("URL", "Launch Browser", "https://roblox.com/"), UriKind.Absolute, out Uri Link))
+            {
+                string Script = ShowDialog("Javascript", "Launch Browser", big: true);
+
+                var Size = new System.Numerics.Vector2(550, 440);
+                AccountBrowser.CreateGrid(Size);
+
+                for (int i = 0; i < Math.Min(Count, 15); i++) {
+                    var Browser = new AccountBrowser() { Size = Size, Index = i };
+
+                    _ = Browser.LaunchBrowser(Url: Link.ToString(), Script: Script, PostNavigation: async (p) => await Browser.LoginTask(p));
+                }
+            }
         }
 
         private void copyProfileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1445,6 +1739,22 @@ namespace RBX_Alt_Manager
 
         private void SaveToAccount_Click(object sender, EventArgs e)
         {
+            if (ModifierKeys == Keys.Shift)
+            {
+                List<Account> HasSaved = new List<Account>();
+
+                foreach (Account account in AccountsList)
+                    if (account.Fields.ContainsKey("SavedPlaceId") || account.Fields.ContainsKey("SavedJobId"))
+                        HasSaved.Add(account);
+
+                if (HasSaved.Count > 0 && MessageBox.Show($"Are you sure you want to remove {HasSaved.Count} saved Place Ids?", "Roblox Account Manager", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.OK)
+                    foreach (Account account in HasSaved)
+                    {
+                        account.RemoveField("SavedPlaceId");
+                        account.RemoveField("SavedJobId");
+                    }
+            }
+
             foreach (Account account in AccountsView.SelectedObjects)
             {
                 if (string.IsNullOrEmpty(PlaceID.Text) && string.IsNullOrEmpty(JobID.Text))
@@ -1504,11 +1814,30 @@ namespace RBX_Alt_Manager
             }
         }
 
+        private async void quickLogInToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (SelectedAccount == null) return;
+
+            if (!Utilities.YesNoPrompt("Quick Log In", "Only enter codes that you requested\nNever enter another user's code", $"Do you understand?", SaveIfNo: false))
+                return;
+
+            if (Clipboard.ContainsText() && Clipboard.GetText() is string ClipCode && ClipCode.Length == 6 && await SelectedAccount.QuickLogIn(ClipCode))
+                return;
+
+            string Code = ShowDialog("Code", "Quick Log In");
+
+            if (Code.Length != 6) { MessageBox.Show("Quick Log In codes requires 6 characters", "Quick Log In", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+
+            await SelectedAccount.QuickLogIn(Code);
+        }
+
         private void toggleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             AccountsView.ShowGroups = !AccountsView.ShowGroups;
 
             if (AccountsView.HeaderStyle != ColumnHeaderStyle.None) AccountsView.HeaderStyle = AccountsView.ShowGroups ? ColumnHeaderStyle.Nonclickable : ColumnHeaderStyle.Clickable;
+
+            AccountsView.BuildGroups();
         }
 
         private void EditTheme_Click(object sender, EventArgs e)
@@ -1675,6 +2004,47 @@ namespace RBX_Alt_Manager
                     Process.Start(FileName);
                 });
             }
+        }
+
+        CancellationTokenSource PresenceCancellationToken;
+
+        private void AccountsView_Scroll(object sender, ScrollEventArgs e)
+        {
+            if (PresenceCancellationToken != null || !General.Get<bool>("ShowPresence"))
+                PresenceCancellationToken.Cancel();
+
+            PresenceCancellationToken = new CancellationTokenSource();
+            var Token = PresenceCancellationToken.Token;
+
+            Task.Run(async () =>
+            {
+                await Task.Delay(3500); // Wait until the user has stopped scrolling before updating account presence
+
+                if (Token.IsCancellationRequested)
+                    return;
+
+                AccountsView.InvokeIfRequired(async () => await UpdatePresence());
+            }, PresenceCancellationToken.Token);
+        }
+
+        private async Task UpdatePresence()
+        {
+            if (!General.Get<bool>("ShowPresence")) return;
+
+            List<Account> VisibleAccounts = new List<Account>();
+
+            var Bounds = AccountsView.ClientRectangle;
+            int Padding = (int)(AccountsView.HeaderStyle == ColumnHeaderStyle.None ? 4f * Program.Scale : 20f * Program.Scale);
+
+            for (int Y = Padding; Y < Bounds.Height - (Padding / 2); Y += (int)(6f * Program.Scale))
+            {
+                var Item = AccountsView.GetItemAt(4, Y);
+
+                if (Item != null && AccountsView.GetModelObject(Item.Index) is Account account && !VisibleAccounts.Contains(account))
+                    VisibleAccounts.Add(account);
+            }
+
+            await Presence.UpdatePresence(VisibleAccounts.Select(account => account.UserID).ToArray());
         }
     }
 }

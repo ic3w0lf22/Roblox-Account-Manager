@@ -3,6 +3,8 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RBX_Alt_Manager;
+using RBX_Alt_Manager.Classes;
+using RBX_Alt_Manager.Forms;
 using RestSharp;
 using System;
 using System.Collections.Generic;
@@ -20,6 +22,12 @@ using System.Windows.Forms;
 
 public static class Utilities
 {
+    [DllImport("user32.dll")]
+    public static extern bool PostMessage(IntPtr hWnd, UInt32 Msg, int wParam, int lParam);
+
+    [DllImport("wininet.dll")]
+    private extern static bool InternetGetConnectedState(out int Description, int ReservedValue);
+
     public static T Next<T>(this T src) where T : struct
     {
         if (!typeof(T).IsEnum) throw new ArgumentException(string.Format("Argument {0} is not an Enum", typeof(T).FullName));
@@ -72,9 +80,19 @@ public static class Utilities
         return sb.ToString();
     }
 
-    public static Color Lerp(this Color s, Color t, float k)
+    public static string FileSHA256(this string FileName)
     {
-        var bk = (1 - k);
+        if (!File.Exists(FileName)) return "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855";
+
+        using SHA256 SHA256 = SHA256.Create();
+        using FileStream fileStream = File.OpenRead(FileName);
+
+        return BitConverter.ToString(SHA256.ComputeHash(fileStream)).Replace("-", "");
+    }
+
+public static Color Lerp(this Color s, Color t, float k)
+    {
+        var bk = 1 - k;
         var a = s.A * bk + t.A * k;
         var r = s.R * bk + t.R * k;
         var g = s.G * bk + t.G * k;
@@ -83,24 +101,14 @@ public static class Utilities
         return Color.FromArgb((int)a, (int)r, (int)g, (int)b);
     }
 
-    public static double ToRobloxTick(this DateTime Date)
-    {
-        TimeSpan TS = Date - Epoch;
-        double Ticks = TS.Ticks / TimeSpan.TicksPerSecond;
-        Ticks += (double)Date.Millisecond / 1000;
-
-        return Ticks;
-    }
+    public static double ToRobloxTick(this DateTime Date) => ((Date - Epoch).Ticks / TimeSpan.TicksPerSecond) + ((double)Date.Millisecond / 1000);
 
     public static string GetCommandLine(this Process process)
     {
-        using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT CommandLine FROM Win32_Process WHERE ProcessId = " + process.Id))
-        using (ManagementObjectCollection objects = searcher.Get())
-            return objects.Cast<ManagementBaseObject>().SingleOrDefault()?["CommandLine"]?.ToString();
+        using ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT CommandLine FROM Win32_Process WHERE ProcessId = " + process.Id);
+        using ManagementObjectCollection objects = searcher.Get();
+        return objects.Cast<ManagementBaseObject>().SingleOrDefault()?["CommandLine"]?.ToString();
     }
-
-    [DllImport("user32.dll")]
-    public static extern bool PostMessage(IntPtr hWnd, UInt32 Msg, int wParam, int lParam);
 
     public static async Task<string> GetRandomJobId(long PlaceId, bool ChooseLowestServer = false)
     {
@@ -115,7 +123,7 @@ public static class Utilities
 
             PageCount++;
 
-            RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?sortOrder=Asc&limit=100" + (string.IsNullOrEmpty(Cursor) ? "" : "&cursor=" + Cursor), Method.GET);
+            RestRequest request = new RestRequest("v1/games/" + PlaceId + "/servers/public?sortOrder=Asc&limit=100" + (string.IsNullOrEmpty(Cursor) ? "" : "&cursor=" + Cursor), Method.Get);
             var response = await ServerList.GamesClient?.ExecuteAsync(request);
 
             if (response == null || !response.IsSuccessful) return;
@@ -144,6 +152,8 @@ public static class Utilities
     // probably not the best way to do it but it works so whatever
     public static void Rescale(this Control control, bool UseControlFont = false)
     {
+        if (control.Tag is string Tag && Tag == "NoScaling") return;
+
         if (Program.ScaleFonts)
         {
             Font font = control.FindForm()?.Font ?? SystemFonts.DefaultFont;
@@ -156,6 +166,10 @@ public static class Utilities
         if (control is Button btn && btn.Image != null)
             btn.Image = new Bitmap(btn.Image, new Size((int)(btn.Image.Width * Program.Scale), (int)(btn.Image.Height * Program.Scale)));
 
+        if (control is TabControl tc && Program.Scale > 1)
+            foreach (TabPage tab in tc.Controls)
+                tab.Text = tab.Text.PadRight((int)(2 + tab.Text.Length * Program.Scale)); // Bad. Very Bad. But it works...
+
         if (control is ObjectListView olv)
             foreach (OLVColumn col in olv.Columns)
                 col.Width = (int)(col.Width * Program.Scale);
@@ -163,9 +177,10 @@ public static class Utilities
 
     public static void Rescale(this Form form)
     {
+        form.MaximumSize = new Size((int)(form.MaximumSize.Width * Program.Scale), (int)(form.MaximumSize.Height * Program.Scale));
         form.Scale(new SizeF(Program.Scale, Program.Scale));
 
-        void RescaleControls(Control.ControlCollection controls)
+        static void RescaleControls(Control.ControlCollection controls)
         {
             foreach (Control control in controls)
             {
@@ -195,11 +210,11 @@ public static class Utilities
         baseDir.Delete(true);
     }
 
-    public static bool YesNoPrompt(string Caption, string Instruction, string Text, bool CanSave = true)
+    public static bool YesNoPrompt(string Caption, string Instruction, string Text, bool CanSave = true, bool SaveIfNo = true)
     {
         string Hash = MD5($"{Caption}.{Instruction}.{Text}");
 
-        if (AccountManager.Prompts.Exists(Hash))
+        if (CanSave && AccountManager.Prompts.Exists(Hash))
             return AccountManager.Prompts.Get<bool>(Hash);
 
         TaskDialog Dialog = TaskDialog.IsPlatformSupported == true ? new TaskDialog()
@@ -213,13 +228,67 @@ public static class Utilities
 
         var DR = Dialog?.Show();
 
-        if (Dialog?.FooterCheckBoxChecked == true)
+        if (CanSave && Dialog?.FooterCheckBoxChecked == true)
         {
-            AccountManager.Prompts.Set(Hash, DR == TaskDialogResult.Yes ? "true" : "false");
-            AccountManager.IniSettings.Save("RAMSettings.ini");
+            if (SaveIfNo || (!SaveIfNo && DR == TaskDialogResult.Yes))
+            {
+                AccountManager.Prompts.Set(Hash, DR == TaskDialogResult.Yes ? "true" : "false");
+                AccountManager.IniSettings.Save("RAMSettings.ini");
+            }
         }
 
         return DR != null ? DR == TaskDialogResult.Yes : MessageBox.Show($"{Instruction}\n{Text}", Caption, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
+    }
+
+    public static void ApplyTheme(this Control.ControlCollection Controls)
+    {
+        foreach (Control control in Controls)
+        {
+            if (control is PictureBox)
+            {
+                control.BackColor = Color.Transparent;
+                if (ThemeEditor.LightImages && control.GetLuminance(out float L) && L < 0.3) control.ColorImage(255, 255, 255);
+            }
+            else if (control is Button || control is CheckBox)
+            {
+                if (control is Button)
+                {
+                    if (ThemeEditor.LightImages && control.GetLuminance(out float L) && L < 0.3)
+                        control.ColorImage(255, 255, 255);
+
+                    Button b = control as Button;
+                    b.FlatStyle = ThemeEditor.ButtonStyle;
+                    b.FlatAppearance.BorderColor = ThemeEditor.ButtonsBorder;
+                }
+
+                if (!(control is CheckBox)) control.BackColor = ThemeEditor.ButtonsBackground;
+                control.ForeColor = ThemeEditor.ButtonsForeground;
+            }
+            else if (control is TextBox || control is RichTextBox)
+            {
+                if (control is BorderedTextBox)
+                {
+                    BorderedTextBox b = control as BorderedTextBox;
+                    b.BorderColor = ThemeEditor.TextBoxesBorder;
+                }
+
+                if (control is BorderedRichTextBox)
+                {
+                    BorderedRichTextBox b = control as BorderedRichTextBox;
+                    b.BorderColor = ThemeEditor.TextBoxesBorder;
+                }
+
+                control.BackColor = ThemeEditor.TextBoxesBackground;
+                control.ForeColor = ThemeEditor.TextBoxesForeground;
+            }
+            else if (control is Label)
+            {
+                control.BackColor = ThemeEditor.LabelTransparent ? Color.Transparent : ThemeEditor.LabelBackground;
+                control.ForeColor = ThemeEditor.LabelForeground;
+            }
+            else if (control is Panel)
+                control.Controls.ApplyTheme();
+        }
     }
 
     public static Color DarkenOrBrighten(this Color color, float Percent) => color.GetBrightness() < 0.5 ? ControlPaint.Light(color, Percent) : ControlPaint.Dark(color, Percent);
@@ -227,6 +296,9 @@ public static class Utilities
     public static double MapValue(double Input, double IL, double IH, double OL, double OH) => (Input - IL) / (IH - IL) * (OH - OL) + OL;
 
     private static readonly DateTime Epoch = new DateTime(1970, 1, 1);
+
+    public static bool IsConnectedToInternet() => InternetGetConnectedState(out int _, 0);
+
 }
 
 public static class ImageExtensions

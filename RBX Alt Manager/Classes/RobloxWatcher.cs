@@ -61,7 +61,7 @@ namespace RBX_Alt_Manager.Classes
                             Kill($"Window Title isn't {ExpectedWindowTitle}, got {process.MainWindowTitle}");
                     }
                 }
-                catch (Exception x){ Program.Logger.Error($"Error with checking for Memory & Window Title: {x.Message}\n{x.StackTrace}"); }
+                catch (Exception x) { Program.Logger.Error($"Error with checking for Memory & Window Title: {x.Message}\n{x.StackTrace}"); }
 
                 if (Seen.Contains(process.Id)) continue;
 

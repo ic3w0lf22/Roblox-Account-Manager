@@ -61,24 +61,21 @@ namespace RBX_Alt_Manager.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
-        ///&lt;configuration&gt;
-        ///  &lt;startup&gt;
-        ///    &lt;supportedRuntime version=&quot;v4.0&quot; sku=&quot;.NETFramework,Version=v4.8&quot; /&gt;
-        ///  &lt;/startup&gt;
-        ///  &lt;appSettings&gt;
-        ///    &lt;add key=&quot;log4net.Config&quot; value=&quot;log4.config&quot; /&gt;
-        ///    &lt;add key=&quot;log4net.Config.Watch&quot; value=&quot;True&quot; /&gt;
-        ///    &lt;add key=&quot;log4net.Internal.Debug&quot; value=&quot;False&quot; /&gt;
-        ///    &lt;add key=&quot;ClientSettingsProvider.ServiceUri&quot; value=&quot;&quot; /&gt;
-        ///  &lt;/appSettings&gt;
-        ///  &lt;runtime&gt;
-        ///    &lt;assemblyBinding xmlns=&quot;urn:schemas-microsoft-com:asm.v1&quot;&gt;
-        ///      &lt;probing pr [rest of string was truncated]&quot;;.
+        ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static string AppConfig {
+        internal static byte[] App {
             get {
-                return ResourceManager.GetString("AppConfig", resourceCulture);
+                object obj = ResourceManager.GetObject("App", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 82CC2370C96CC50EFF498869D000563AA938F96EA4AB163C725060E5EC7ACC9D.
+        /// </summary>
+        internal static string AppConfigHash {
+            get {
+                return ResourceManager.GetString("AppConfigHash", resourceCulture);
             }
         }
         
@@ -93,7 +90,7 @@ namespace RBX_Alt_Manager.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to [RBX Alt Manager]
+        ///   Looks up a localized string similar to [Roblox Account Manager]
         ///AccountsBG=#1E1F28
         ///AccountsFG=#FFFFFF
         ///ButtonsBG=#292929
@@ -157,42 +154,61 @@ namespace RBX_Alt_Manager.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
-        ///&lt;configuration&gt;
-        ///    &lt;configSections&gt;
-        ///        &lt;section name=&quot;log4net&quot; type=&quot;log4net.Config.Log4NetConfigurationSectionHandler, log4net&quot; /&gt;
-        ///    &lt;/configSections&gt;
-        ///
-        ///    &lt;log4net&gt;
-        ///        &lt;appender name=&quot;RollingFileAppender&quot; type=&quot;log4net.Appender.RollingFileAppender&quot;&gt;
-        ///            &lt;file value=&quot;log.txt&quot; /&gt;
-        ///            &lt;appendToFile value=&quot;true&quot; /&gt;
-        ///            &lt;rollingStyle value=&quot;Size&quot; /&gt;
-        ///            &lt;maxSizeRollBackups value=&quot;1&quot; /&gt;
-        ///            &lt;maximumFileSize  [rest of string was truncated]&quot;;.
+        ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static string Log4Config {
+        internal static byte[] libsodium {
             get {
-                return ResourceManager.GetString("Log4Config", resourceCulture);
+                object obj = ResourceManager.GetObject("libsodium", resourceCulture);
+                return ((byte[])(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Nexus_Version = 102
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] log4 {
+            get {
+                object obj = ResourceManager.GetObject("log4", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to E4B10630D9EC2AF508DE31752FBBC6816C7426C40A3E57F0A085CE7F42C77BD5.
+        /// </summary>
+        internal static string Log4ConfigHash {
+            get {
+                return ResourceManager.GetString("Log4ConfigHash", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;style&gt;*{{color:rgba(232,230,227,1);font-family:Arial,Helvetica,sans-serif}}a{{color:#4892f1}}li{{font-size:20px}}body{{background-color:#131516}}code{{background-color:rgba(255,255,255,.12);font-size:18px}}&lt;/style&gt;&lt;script crossorigin=anonymous integrity=&quot;sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw==&quot;referrerpolicy=no-referrer src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js&gt;&lt;/script&gt;&lt;script crossorigin=anonymous integrity=&quot;sha512-lbwH47 [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ManualInstallHTML {
+            get {
+                return ResourceManager.GetString("ManualInstallHTML", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nexus_Version = 104
         ///
-        ///local Success, Error, Function
+        ///local FileName, Success, Error, Function = &apos;ic3w0lf22.Nexus.lua&apos;
+        ///
+        ///if isfile and readfile and isfile(FileName) then -- Execute ASAP, update later.
+        ///	Function, Error = loadstring(readfile(FileName), &apos;Nexus&apos;)
+        ///
+        ///	if Function then
+        ///		Function()
+        ///
+        ///		if Nexus then Nexus:Connect() end
+        ///	end
+        ///end
         ///
         ///for i=1, 10 do
         ///	Success, Error = pcall(function()
-        ///		local Response = (http_request or (syn and syn.request)) { Method = &apos;GET&apos;, Url = &apos;https://raw.githubusercontent.com/ic3w0lf22/Roblox-Account-Manager/master/RBX%20Alt%20Manager/Nexus/Nexus.lua&apos; }
-        ///
-        ///		if not Response.Success then error((&apos;HTTP Error %s&apos;):format(Response.StatusCode)) end
-        ///
-        ///		Function, Error = loadstring(Response.Body, &apos;Nexus&apos;)
-        ///
-        ///		if not Function then error(Error) end
-        ///
-        ///		Function( [rest of string was truncated]&quot;;.
+        ///		local Response = (http_request or (syn and syn.request)) { Method = &apos;GET&apos;, Url = &apos;https://raw.githubusercontent.com/ic3w0lf22/Roblox-Accoun [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string NexusLoader {
             get {

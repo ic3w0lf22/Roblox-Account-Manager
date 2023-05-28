@@ -1,20 +1,24 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29709.97
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33414.496
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RBX Alt Manager", "RBX Alt Manager\RBX Alt Manager.csproj", "{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auto Update", "Auto Update\Auto Update.csproj", "{57C0C681-4690-426A-AE9B-537D3C092827}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug Updater|Any CPU = Debug Updater|Any CPU
+		Debug Updater|x86 = Debug Updater|x86
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Debug Updater|Any CPU.ActiveCfg = Debug Updater|Any CPU
+		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Debug Updater|Any CPU.Build.0 = Debug Updater|Any CPU
+		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Debug Updater|x86.ActiveCfg = Debug Updater|x86
+		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Debug Updater|x86.Build.0 = Debug Updater|x86
 		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Debug|x86.ActiveCfg = Debug|x86
@@ -23,14 +27,6 @@ Global
 		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Release|x86.ActiveCfg = Release|x86
 		{93B3858F-3DAC-4DC0-99CB-0476EFC5ADCE}.Release|x86.Build.0 = Release|x86
-		{57C0C681-4690-426A-AE9B-537D3C092827}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{57C0C681-4690-426A-AE9B-537D3C092827}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{57C0C681-4690-426A-AE9B-537D3C092827}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{57C0C681-4690-426A-AE9B-537D3C092827}.Debug|x86.Build.0 = Debug|Any CPU
-		{57C0C681-4690-426A-AE9B-537D3C092827}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{57C0C681-4690-426A-AE9B-537D3C092827}.Release|Any CPU.Build.0 = Release|Any CPU
-		{57C0C681-4690-426A-AE9B-537D3C092827}.Release|x86.ActiveCfg = Release|Any CPU
-		{57C0C681-4690-426A-AE9B-537D3C092827}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

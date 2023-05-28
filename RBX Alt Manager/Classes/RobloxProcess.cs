@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -18,7 +19,12 @@ namespace RBX_Alt_Manager.Classes
         private long CurrentDataModel;
         private bool IsDMPaused;
         private bool StreamDisposed;
+        private bool IsConnected;
+        private DateTime DisconnectedTime;
         private string LastLine;
+        private System.Timers.Timer WaitForExitTimer;
+
+        const string TimestampRegex = @"[\d+\-]+T[\d+:]+\.\w+Z,[\d.+]+,\w+,\d+[\s+]?";
 
         private static readonly Dictionary<string, string> Matches = new Dictionary<string, string>{
             { "DataModelInit", @"\[FLog::UGCGameController\] UGCGameController, initialized DataModel\((\w+)\)" },
@@ -26,9 +32,36 @@ namespace RBX_Alt_Manager.Classes
             { "DataModelStop", @"\[FLog::UGCGameController\] UGCGameController::leave \(blocking:\d+\) dataModel\((\w+)\)" },
             { "DataModelStop2", @"\[FLog::SurfaceController\] SurfaceController\[_:1\]::stop" },
             { "DataModelPause", @"\[FLog::SurfaceController\] SurfaceController\[_:1\]::pause dataModel\((\w+)\), view\(\w+\), destroyView:\d+\." },
-            { "ReturnToApp1", @"\[FLog::SingleSurfaceApp\] SingleSurfaceAppImpl::returnToLuaApp: App not yet initialized, returning from game\." },
-            { "ReturnToApp2", @"\[FLog::SingleSurfaceApp\] SingleSurfaceAppImpl::returnToLuaApp: App has been initialized, returning from game\." },
+            { "ReturnToApp1", @"\[FLog::SingleSurfaceApp\] returnToLuaApp: \.\.\. App not yet initialized, returning from game\." },
+            { "ReturnToApp2", @"\[FLog::SingleSurfaceApp\] returnToLuaApp: \.\.\. App has been initialized, returning from game\." }
         };
+
+        public static async void UpdateMatches()
+        {
+            try
+            {
+                using (HttpClient Client = new HttpClient())
+                {
+                    string MatchList = await Client.GetStringAsync("https://github.com/ic3w0lf22/Roblox-Account-Manager/raw/master/RBX%20Alt%20Manager/Resources/WatcherRegexMatches.txt");
+
+                    foreach (string Line in MatchList.Split('\n'))
+                    {
+                        int Split = Line.IndexOf('='); if (Split < 0) continue;
+
+                        string Name = Line.Substring(0, Split);
+                        string Value = Line.Substring(Split + 1);
+
+                        if (Matches.ContainsKey(Name)) Matches.Remove(Name);
+
+                        Matches.Add(Name, Value);
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Program.Logger.Error($"Couldn't update \"Matches\" dictionary: {exception}");
+            }
+        }
 
         public RobloxProcess(Process process)
         {
@@ -39,7 +72,33 @@ namespace RBX_Alt_Manager.Classes
             RobloxWatcher.LogFileRead += ReadLogFile;
 
             Task.Run(WaitForLogPath).ContinueWith(task => { if (task.IsFaulted) Program.Logger.Error($"WaitForLogPath Error: {task.Exception}"); });
-            Task.Run(WaitForExit).ContinueWith(task => { if (task.IsFaulted) Program.Logger.Error($"WaitForExit Error: {task.Exception}"); });
+
+            DisconnectedTime = DateTime.Now.AddSeconds(90);
+
+            WaitForExitTimer = new System.Timers.Timer(500);
+            WaitForExitTimer.Elapsed += (s, e) =>
+            {
+                if (AccountManager.Watcher.Get<bool>(" ExitIfNoConnection") && AccountManager.Watcher.Get<double>("NoConnectionTimeout") is double Timeout && Timeout > 0 && !IsConnected && (DateTime.Now - DisconnectedTime).TotalSeconds is double Seconds && Seconds > Timeout)
+                    KillProcess($"Lost connection for more than {Seconds} second(s)");
+
+                try
+                {
+                    if (!RbxProcess.HasExited && !Program.Closed)
+                        return;
+
+                    Program.Logger.Info($"{RbxProcess.Id} has exited");
+
+                    RobloxWatcher.LogFileRead -= ReadLogFile;
+
+                    RobloxWatcher.Instances.Remove(this);
+                    RobloxWatcher.Seen.Remove(RbxProcess.Id);
+
+                    LogStream?.Dispose();
+                    WaitForExitTimer?.Dispose();
+                }
+                catch (Exception x) { Program.Logger.Error($"WaitForExit Error: {x}"); }
+            };
+            WaitForExitTimer.Start();
         }
 
         private void ReadLogFile(object s, EventArgs e)
@@ -64,6 +123,21 @@ namespace RBX_Alt_Manager.Classes
                     for (int i = 0; i < Lines.Length; i++)
                     {
                         string Line = Lines[i];
+
+                        if (Regex.IsMatch(Line, $@"^{TimestampRegex}\[FLog::Output\] ! Joining game '[\w+\-]{{36}}' place \d+ at [\d+\.]+"))
+                        {
+                            IsConnected = true;
+
+                            continue;
+                        }
+
+                        if (Regex.IsMatch(Line, $@"^{TimestampRegex}\[FLog::Network\] Sending disconnect with reason: (\d+)"))
+                        {
+                            IsConnected = false;
+                            DisconnectedTime = DateTime.Now;
+
+                            continue;
+                        }
 
                         Match DMI = Regex.Match(Line, Matches["DataModelInit"]);
 
@@ -109,13 +183,13 @@ namespace RBX_Alt_Manager.Classes
                                     CurrentDataModel = -1;
                                     Program.Logger.Info($"CurrentDataModel set to {CurrentDataModel} ({DMS}) | Position: {LastPosition}");
 
-                                    if (KillProcess())
+                                    if (AccountManager.Watcher.Get<bool>("ExitOnBeta") && KillProcess("Beta home menu detected"))
                                         return;
                                 }
                             }
                             else
                             {
-                                if (KillProcess())
+                                if (AccountManager.Watcher.Get<bool>("ExitOnBeta") && KillProcess("Beta home menu detected"))
                                     return;
                             }
                         }
@@ -129,22 +203,20 @@ namespace RBX_Alt_Manager.Classes
                     LastPosition = LogStream.Length;
                 }
             }
-            catch (Exception x) { Program.Logger.Error($"An error occured while trying to read LogFile of {RbxProcess.Id}: {x.Message} | {x.StackTrace} | {x.Source}"); }
+            catch (Exception x) { Program.Logger.Error($"An error occured while trying to read LogFile of {RbxProcess.Id}: {x}"); }
         }
 
-        private bool KillProcess()
+        private bool KillProcess(string Reason)
         {
-            if (AccountManager.Watcher.Get<bool>("ExitOnBeta") && (RobloxWatcher.IgnoreExistingProcesses || (!RobloxWatcher.IgnoreExistingProcesses && LastPosition > 0))) // Ignore processes that were already in Beta App state
-            {
-                StreamDisposed = true;
+            if (!(RobloxWatcher.IgnoreExistingProcesses || (!RobloxWatcher.IgnoreExistingProcesses && LastPosition > 0))) return false;
 
-                LogStream.Dispose();
-                RbxProcess.Kill();
+            Program.Logger.Info($"Attempting to kill process {RbxProcess.Id}, reason: {Reason}");
+            StreamDisposed = true;
 
-                return true;
-            }
+            LogStream.Dispose();
+            RbxProcess.Kill();
 
-            return false;
+            return true;
         }
 
         private async Task WaitForLogPath()
@@ -200,21 +272,6 @@ namespace RBX_Alt_Manager.Classes
 
                 await Task.Run(WaitForLogPath);
             }
-        }
-
-        private async Task WaitForExit()
-        {
-            while (!RbxProcess.HasExited && !Program.Closed) // Process.WaitForExit errors with `Access is denied` for roblox's second process so we just check if it exists in a loop
-                await Task.Delay(200);
-
-            Program.Logger.Info($"{RbxProcess.Id} has exited");
-
-            RobloxWatcher.LogFileRead -= ReadLogFile;
-
-            RobloxWatcher.Instances.Remove(this);
-            RobloxWatcher.Seen.Remove(RbxProcess.Id);
-
-            LogStream?.Dispose();
         }
     }
 }

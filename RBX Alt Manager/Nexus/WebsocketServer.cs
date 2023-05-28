@@ -57,6 +57,6 @@ namespace RBX_Alt_Manager.Nexus
                 Account.Disconnect();
         }
 
-        protected override void OnError(ErrorEventArgs e) => Console.WriteLine($"error {_name}: {e.Message} {e.Exception}");
+        protected override void OnError(ErrorEventArgs e) => Program.Logger.Error($"WebsocketServer Error {_name}: {e.Message} {e.Exception}");
     }
 }

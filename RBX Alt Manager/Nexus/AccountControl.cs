@@ -6,6 +6,7 @@ using RBX_Alt_Manager.Properties;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -34,7 +35,7 @@ namespace RBX_Alt_Manager.Forms
         public Dictionary<WebSocketContext, ControlledAccount> ContextList = new Dictionary<WebSocketContext, ControlledAccount>();
         public List<ControlledAccount> Accounts = new List<ControlledAccount>();
 
-        private Dictionary<string, Control> CustomElements = new Dictionary<string, Control>();
+        private readonly Dictionary<string, Control> CustomElements = new Dictionary<string, Control>();
         private Control LastControl;
         private StreamWriter OutputWriter;
 
@@ -317,8 +318,11 @@ namespace RBX_Alt_Manager.Forms
             LauncherDelayNumber.Value = AccountManager.AccountControl.Get<decimal>("LauncherDelayNumber");
             AutoMinimizeCB.Checked = AccountManager.AccountControl.Get<bool>("AutoMinimizeEnabled");
             AutoCloseCB.Checked = AccountManager.AccountControl.Get<bool>("AutoCloseEnabled");
+            InternetCheckCB.Checked = AccountManager.AccountControl.Get<bool>("InternetCheck");
+            UsePresenceCB.Checked = AccountManager.AccountControl.Get<bool>("UsePresence");
             AutoMinIntervalNum.Value = Math.Max(Math.Min(AccountManager.AccountControl.Get<decimal>("AutoMinimizeInterval"), AutoMinIntervalNum.Minimum), AutoMinIntervalNum.Maximum);
             AutoCloseIntervalNum.Value = Math.Max(Math.Min(AccountManager.AccountControl.Get<decimal>("AutoCloseInterval"), AutoCloseIntervalNum.Maximum), AutoCloseIntervalNum.Minimum);
+            MaxInstancesNum.Value = Math.Max(Math.Min(AccountManager.AccountControl.Get<int>("MaxInstances"), MaxInstancesNum.Maximum), MaxInstancesNum.Minimum);
             AutoCloseType.SelectedIndex = AccountManager.AccountControl.Get<int>("AutoCloseType");
 
             SettingsLoaded = true;
@@ -477,22 +481,30 @@ namespace RBX_Alt_Manager.Forms
         private async void AutoRelaunchTimer_Tick(object sender, EventArgs e)
         {
             if (!double.TryParse(AccountManager.AccountControl.Get("RelaunchDelay"), out double RelaunchDelay)) return;
+            if (AccountManager.AccountControl.Get<bool>("InternetCheck") && !Utilities.IsConnectedToInternet()) return;
 
             try
             {
+                bool UsePresence = AccountManager.AccountControl.Get<bool>("UsePresence");
+
+                if (UsePresence) await Presence.UpdatePresence(Accounts.Select(a => a.LinkedAccount.UserID).ToArray());
+
                 foreach (ControlledAccount account in Accounts)
                 {
-                    if (account.AutoRelaunch && (DateTime.Now - account.LastPing).TotalSeconds > account.RelaunchDelay)
+                    if (account.AutoRelaunch)
                     {
-                        Program.Logger.Info($"Relaunch Delay: {RelaunchDelay} | Current Time: {DateTime.Now}");
-                        Program.Logger.Info($"Relaunching {account.Username} to {account.PlaceId}, time since last relaunch: {(DateTime.Now - account.LastPing).TotalSeconds} seconds [{account.LastPing}] | Linked: {account.LinkedAccount}");
+                        if ((UsePresence && account.LinkedAccount.Presence.userPresenceType != UserPresenceType.InGame) || (!UsePresence && (DateTime.Now - account.LastPing).TotalSeconds > account.RelaunchDelay))
+                        {
+                            Program.Logger.Info($"Relaunch Delay: {RelaunchDelay} | Current Time: {DateTime.Now}");
+                            Program.Logger.Info($"Relaunching {account.Username} to {account.PlaceId}, time since last relaunch: {(DateTime.Now - account.LastPing).TotalSeconds} seconds [{account.LastPing}] | Linked: {account.LinkedAccount}");
 
-                        account.LastPing = DateTime.Now;
-                        account.RelaunchDelay = RelaunchDelay;
+                            account.LastPing = DateTime.Now;
+                            account.RelaunchDelay = RelaunchDelay;
 
-                        await account.LinkedAccount.JoinServer(account.PlaceId, account.JobId);
+                            await account.LinkedAccount.JoinServer(account.PlaceId, account.JobId);
 
-                        break;
+                            break;
+                        }
                     }
                 }
 
@@ -587,10 +599,17 @@ namespace RBX_Alt_Manager.Forms
 
         private void CloseTimer_Tick(object sender, EventArgs e)
         {
-            foreach (Process p in Process.GetProcessesByName("RobloxPlayerBeta"))
+            int ActualCount = 0;
+            Process[] Processes = Process.GetProcessesByName("RobloxPlayerBeta");
+
+            foreach (Process p in Processes) if (p.MainWindowHandle != IntPtr.Zero) ActualCount++;
+
+            foreach (Process p in Processes)
                 try
                 { // Roblox's second process has elevated permissions meaning we won't be able to kill the second process unless we also have elevated permissions.
-                    if (AutoCloseType.SelectedIndex == 0 && (DateTime.Now - p.StartTime).TotalMinutes > (int)AutoCloseIntervalNum.Value) // Per Instance
+                    if (ActualCount > MaxInstancesNum.Value)
+                        p.Kill();
+                    else if (AutoCloseType.SelectedIndex == 0 && (DateTime.Now - p.StartTime).TotalMinutes > (int)AutoCloseIntervalNum.Value) // Per Instance
                         p.Kill();
                     else if (AutoCloseType.SelectedIndex == 1) // Global
                         p.Kill();
@@ -605,6 +624,22 @@ namespace RBX_Alt_Manager.Forms
             if (!SettingsLoaded) return;
 
             AccountManager.AccountControl.Set("AutoCloseEnabled", AutoCloseCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void InternetCheckCB_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!SettingsLoaded) return;
+
+            AccountManager.AccountControl.Set("InternetCheck", InternetCheckCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void UsePresenceCB_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!SettingsLoaded) return;
+
+            AccountManager.AccountControl.Set("UsePresence", UsePresenceCB.Checked ? "true" : "false");
             AccountManager.IniSettings.Save("RAMSettings.ini");
         }
 
@@ -625,6 +660,14 @@ namespace RBX_Alt_Manager.Forms
             if (!SettingsLoaded) return;
 
             AccountManager.AccountControl.Set("AutoCloseInterval", AutoCloseIntervalNum.Value.ToString());
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void MaxInstancesNum_ValueChanged(object sender, EventArgs e)
+        {
+            if (!SettingsLoaded) return;
+
+            AccountManager.AccountControl.Set("MaxInstances", ((int)MaxInstancesNum.Value).ToString());
             AccountManager.IniSettings.Save("RAMSettings.ini");
         }
 

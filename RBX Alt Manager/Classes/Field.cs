@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.Windows.Forms;
 
 namespace RBX_Alt_Manager.Classes
@@ -47,7 +46,7 @@ namespace RBX_Alt_Manager.Classes
 
                 account.SetField(FieldBox.Text, ValueBox.Text);
 
-                (this.FindForm() as AccountFields)?.FlashGreen();
+                (FindForm() as AccountFields)?.FlashGreen();
             }
         }
     }

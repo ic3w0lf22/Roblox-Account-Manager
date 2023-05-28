@@ -4,8 +4,11 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -18,18 +21,18 @@ namespace Auto_Update
             InitializeComponent();
         }
 
-        private Task currentTask;
         private string FileName = "Update.zip";
-        private string UpdatePath = Path.Combine(Environment.CurrentDirectory, "Update");
+        private readonly string UpdatePath = Path.Combine(Environment.CurrentDirectory, "Update");
+        private long TotalDownloadSize = 0;
         private delegate void SafeCallDelegateSetProgress(int Progress);
         private delegate void SafeCallDelegateSetStatus(string Text);
 
-        private void AutoUpdater_Load(object sender, EventArgs e)
+        private async void AutoUpdater_Load(object sender, EventArgs e)
         {
             string[] args = Environment.GetCommandLineArgs();
             bool ShouldUpdate;
 
-            if (args.Length > 1 && args[1] == "skip")
+            if (args.Length > 1 && args[1] == "-skip")
                 ShouldUpdate = true;
             else
                 ShouldUpdate = MessageBox.Show($"Auto Update?", "Alt Manager Auto Updater", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
@@ -40,8 +43,8 @@ namespace Auto_Update
 
             FileName = Path.Combine(Directory.GetCurrentDirectory(), FileName);
 
-            if (ShouldUpdate)
-                currentTask = Task.Run(Download);
+            if (ShouldUpdate) 
+                await Download();
             else
                 Close();
         }
@@ -71,28 +74,15 @@ namespace Auto_Update
             return;
         }
 
-        static double B2MB(double bytes) => Math.Round((bytes / 1024f) / 1024f, 2);
+        static double B2MB(double bytes) => Math.Round(bytes / 1024f / 1024f, 2);
 
-        private void progressChanged(object sender, DownloadProgressChangedEventArgs e)
+        private void progressChanged(float value)
         {
-            SetStatus($"Downloaded {string.Format("{0:0.00}", B2MB(e.BytesReceived))}MB/{string.Format("{0:0.00}", B2MB(e.TotalBytesToReceive))}MB");
-            SetProgress(e.ProgressPercentage);
+            SetStatus(value ==1 ? "Extracting Files..." : $"Downloaded {string.Format("{0:0}", value * 100f)}% of {string.Format("{0:0.00}", B2MB(TotalDownloadSize))}MB");
+            SetProgress((int)(value * 100f));
         }
 
-        void downloadCompleted(object sender, AsyncCompletedEventArgs e)
-        {
-            if (e.Cancelled)
-                Invoke(new Action(() => { MessageBox.Show(this, $"Something went w21rong! \n{e.Error}"); }));
-
-            currentTask.Dispose();
-
-            SetStatus("Extracting Files...");
-            SetProgress(100);
-
-            currentTask = Task.Run(Extract);
-        }
-
-        private void Download()
+        private async Task Download()
         {
             WebClient WC = new WebClient();
             WC.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36";
@@ -107,15 +97,25 @@ namespace Auto_Update
                     return;
                 }
 
-                WebClient client = new nWebClient();
+                using (var client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromMinutes(20);
 
-                client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(progressChanged);
-                client.DownloadFileCompleted += new AsyncCompletedEventHandler(downloadCompleted);
-                client.DownloadFileAsync(new Uri(match.Groups[1].Value), FileName);
+                    string DownloadUrl = match.Groups[1].Value;
+
+                    TotalDownloadSize = (await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, DownloadUrl))).Content.Headers.ContentLength.Value;
+
+                    Progress<float> progress = new Progress<float>(progressChanged);
+
+                    using (var file = new FileStream(FileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                        await client.DownloadAsync(match.Groups[1].Value, file, progress);
+
+                    _=Task.Run(Extract);
+                }
             }
         }
 
-        private async void Extract()
+        private async Task Extract()
         {
             bool ErorrOccured = false;
 
@@ -126,13 +126,19 @@ namespace Auto_Update
             }
             catch { }
 
-#if RELEASE
+#if !DEBUG
             try
-            {
 #endif
+            {
                 using (ZipArchive archive = ZipFile.OpenRead(FileName))
                 {
                     archive.ExtractToDirectory(UpdatePath);
+
+                    //string x86Path = Path.Combine(Environment.CurrentDirectory, "x86");
+                    //string HashFile = Path.Combine(UpdatePath, "x86-hash.txt");
+
+                    //if (File.Exists(HashFile) && Program.FolderHash(x86Path) != File.ReadAllText(HashFile))
+                    //    Program.RecursiveDelete(new DirectoryInfo(x86Path)); // forcefully delete ALL old files in the x86 folder instead of replacing/inserting new files into the existing folder (only updates with package updates should have this hash file)
 
                     string UP = Path.Combine(Environment.CurrentDirectory, "Update", "Auto Update.exe");
 
@@ -173,8 +179,8 @@ namespace Auto_Update
 
                     UpdateDir.RecursiveDelete();
                 }
-#if RELEASE
-        }
+            }
+#if !DEBUG
             catch (Exception x)
             {
                 ErorrOccured = true;
@@ -183,10 +189,10 @@ namespace Auto_Update
                     var Result = MessageBox.Show(this, $"Something went wrong! \n{x.Message}\n{x.StackTrace}", "Auto Updater", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
 
                     if (Result == DialogResult.Retry)
-                        currentTask.ContinueWith(t => {
-                            Application.Restart();
+                    {
+                        Application.Restart();
                             Environment.Exit(0);
-                        });
+                        }
                     else
                         Environment.Exit(0);
                 }));
@@ -204,12 +210,6 @@ namespace Auto_Update
                 RunAsDesktopUser(Path.Combine(Environment.CurrentDirectory, "RBX Alt Manager.exe"));
 
             Environment.Exit(0);
-        }
-
-        private void AutoUpdater_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (currentTask != null && currentTask.IsCompleted)
-                currentTask.Dispose();
         }
 
         private static void RunAsDesktopUser(string fileName) // ahhh, pasting. (https://stackoverflow.com/a/40501607)
@@ -267,8 +267,7 @@ namespace Auto_Update
             try
             {
                 // Get the PID of the desktop shell process.
-                uint dwPID;
-                if (GetWindowThreadProcessId(hwnd, out dwPID) == 0)
+                if (GetWindowThreadProcessId(hwnd, out uint dwPID) == 0)
                     return;
 
                 // Open the desktop shell process in order to query it (get the token)
@@ -301,7 +300,7 @@ namespace Auto_Update
             }
         }
 
-#region Interop
+        #region Interop
 
         private struct TOKEN_PRIVILEGES
         {
@@ -420,8 +419,64 @@ namespace Auto_Update
         [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern bool CreateProcessWithTokenW(IntPtr hToken, int dwLogonFlags, string lpApplicationName, string lpCommandLine, int dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory, [In] ref STARTUPINFO lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation);
 
-#endregion
+        #endregion
     }
+
+    #region Extensions
+    public static class Extensions
+    {
+        // https://stackoverflow.com/a/46497896
+        public static async Task DownloadAsync(this HttpClient client, string requestUri, Stream destination, IProgress<float> progress = null, CancellationToken cancellationToken = default)
+        {
+            // Get the http headers first to examine the content length
+            using (var response = await client.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead))
+            {
+                var contentLength = response.Content.Headers.ContentLength;
+
+                using (var download = await response.Content.ReadAsStreamAsync())
+                {
+                    // Ignore progress reporting when no progress reporter was 
+                    // passed or when the content length is unknown
+                    if (progress == null || !contentLength.HasValue)
+                    {
+                        await download.CopyToAsync(destination);
+                        return;
+                    }
+
+                    // Convert absolute progress (bytes downloaded) into relative progress (0% - 100%)
+                    var relativeProgress = new Progress<long>(totalBytes => progress.Report((float)totalBytes / contentLength.Value));
+                    // Use extension method to report progress while downloading
+                    await CopyToAsync(download, destination, 81920, relativeProgress, cancellationToken);
+                    progress.Report(1);
+                }
+            }
+        }
+
+        public static async Task CopyToAsync(Stream source, Stream destination, int bufferSize, IProgress<long> progress = null, CancellationToken cancellationToken = default)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+            if (!source.CanRead)
+                throw new ArgumentException("Has to be readable", nameof(source));
+            if (destination == null)
+                throw new ArgumentNullException(nameof(destination));
+            if (!destination.CanWrite)
+                throw new ArgumentException("Has to be writable", nameof(destination));
+            if (bufferSize < 0)
+                throw new ArgumentOutOfRangeException(nameof(bufferSize));
+
+            var buffer = new byte[bufferSize];
+            long totalBytesRead = 0;
+            int bytesRead;
+            while ((bytesRead = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
+            {
+                await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
+                totalBytesRead += bytesRead;
+                progress?.Report(totalBytesRead);
+            }
+        }
+    }
+    #endregion
 
     public class nWebClient : WebClient
     {

@@ -1,4 +1,6 @@
-﻿namespace RBX_Alt_Manager
+﻿using RBX_Alt_Manager.Classes;
+
+namespace RBX_Alt_Manager
 {
     partial class AccountManager
     {
@@ -31,7 +33,11 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AccountManager));
             this.LabelJobID = new System.Windows.Forms.Label();
-            this.Add = new System.Windows.Forms.Button();
+            this.AddAccountsStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.manualToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.bulkUserPassToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.byCookieToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.customURLJSToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.Remove = new System.Windows.Forms.Button();
             this.JoinServer = new System.Windows.Forms.Button();
             this.SetDescription = new System.Windows.Forms.Button();
@@ -49,6 +55,7 @@
             this.copyProfileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyUserIdToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sortAlphabeticallyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.quickLogInToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveGroupUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toggleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -69,12 +76,16 @@
             this.LabelPlaceID = new System.Windows.Forms.Label();
             this.PlaceTimer = new System.Windows.Forms.Timer(this.components);
             this.JoinDiscord = new System.Windows.Forms.Button();
-            this.OpenApp = new System.Windows.Forms.Button();
-            this.ImportByCookie = new System.Windows.Forms.Button();
+            this.OpenBrowserStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.customURLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.URLJSToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.joinGroupToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveToAccount = new System.Windows.Forms.Button();
             this.SaveTooltip = new System.Windows.Forms.ToolTip(this.components);
             this.ShuffleIcon = new System.Windows.Forms.PictureBox();
             this.JobID = new RBX_Alt_Manager.Classes.BorderedTextBox();
+            this.DefaultEncryptionButton = new System.Windows.Forms.Button();
+            this.PasswordEncryptionButton = new System.Windows.Forms.Button();
             this.DonateButton = new System.Windows.Forms.Button();
             this.AccountsView = new BrightIdeasSoftware.ObjectListView();
             this.Username = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
@@ -86,14 +97,35 @@
             this.LaunchNexus = new System.Windows.Forms.Button();
             this.ConfigButton = new System.Windows.Forms.Button();
             this.HistoryIcon = new System.Windows.Forms.PictureBox();
+            this.PasswordPanel = new System.Windows.Forms.Panel();
+            this.PasswordLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
+            this.UnlockButton = new System.Windows.Forms.Button();
+            this.PasswordTextBox = new System.Windows.Forms.TextBox();
+            this.AccessLabel = new System.Windows.Forms.Label();
+            this.PasswordRequiredLabel = new System.Windows.Forms.Label();
+            this.PasswordSelectionPanel = new System.Windows.Forms.TableLayoutPanel();
+            this.SetPasswordButton = new System.Windows.Forms.Button();
+            this.PasswordSelectionTB = new System.Windows.Forms.TextBox();
+            this.Password2Label = new System.Windows.Forms.Label();
+            this.EncryptionSelectionPanel = new System.Windows.Forms.TableLayoutPanel();
+            this.EncSelectionLabel = new System.Windows.Forms.Label();
+            this.OpenBrowser = new RBX_Alt_Manager.Classes.MenuButton();
             this.UserID = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.Alias = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.DescriptionBox = new RBX_Alt_Manager.Classes.BorderedRichTextBox();
+            this.Add = new RBX_Alt_Manager.Classes.MenuButton();
             this.PlaceID = new RBX_Alt_Manager.Classes.BorderedTextBox();
+            this.PresenceUpdateTimer = new System.Windows.Forms.Timer(this.components);
+            this.AddAccountsStrip.SuspendLayout();
             this.AccountsStrip.SuspendLayout();
+            this.OpenBrowserStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ShuffleIcon)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HistoryIcon)).BeginInit();
+            this.PasswordPanel.SuspendLayout();
+            this.PasswordLayoutPanel.SuspendLayout();
+            this.PasswordSelectionPanel.SuspendLayout();
+            this.EncryptionSelectionPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // LabelJobID
@@ -107,16 +139,43 @@
             this.LabelJobID.Text = "Job ID";
             this.SaveTooltip.SetToolTip(this.LabelJobID, "Job ID is a unique ID assigned to every roblox server.");
             // 
-            // Add
+            // AddAccountsStrip
             // 
-            this.Add.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.Add.Location = new System.Drawing.Point(13, 266);
-            this.Add.Name = "Add";
-            this.Add.Size = new System.Drawing.Size(95, 23);
-            this.Add.TabIndex = 14;
-            this.Add.Text = "Add Account";
-            this.Add.UseVisualStyleBackColor = true;
-            this.Add.Click += new System.EventHandler(this.Add_Click);
+            this.AddAccountsStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.manualToolStripMenuItem,
+            this.bulkUserPassToolStripMenuItem,
+            this.byCookieToolStripMenuItem,
+            this.customURLJSToolStripMenuItem});
+            this.AddAccountsStrip.Name = "AddAccountsStrip";
+            this.AddAccountsStrip.Size = new System.Drawing.Size(173, 92);
+            // 
+            // manualToolStripMenuItem
+            // 
+            this.manualToolStripMenuItem.Name = "manualToolStripMenuItem";
+            this.manualToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.manualToolStripMenuItem.Text = "Manual Login";
+            this.manualToolStripMenuItem.Click += new System.EventHandler(this.manualToolStripMenuItem_Click);
+            // 
+            // bulkUserPassToolStripMenuItem
+            // 
+            this.bulkUserPassToolStripMenuItem.Name = "bulkUserPassToolStripMenuItem";
+            this.bulkUserPassToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.bulkUserPassToolStripMenuItem.Text = "User:Pass";
+            this.bulkUserPassToolStripMenuItem.Click += new System.EventHandler(this.bulkUserPassToolStripMenuItem_Click);
+            // 
+            // byCookieToolStripMenuItem
+            // 
+            this.byCookieToolStripMenuItem.Name = "byCookieToolStripMenuItem";
+            this.byCookieToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.byCookieToolStripMenuItem.Text = "Cookie(s)";
+            this.byCookieToolStripMenuItem.Click += new System.EventHandler(this.byCookieToolStripMenuItem_Click);
+            // 
+            // customURLJSToolStripMenuItem
+            // 
+            this.customURLJSToolStripMenuItem.Name = "customURLJSToolStripMenuItem";
+            this.customURLJSToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.customURLJSToolStripMenuItem.Text = "Custom (URL + JS)";
+            this.customURLJSToolStripMenuItem.Click += new System.EventHandler(this.customURLJSToolStripMenuItem_Click);
             // 
             // Remove
             // 
@@ -203,6 +262,7 @@
             this.removeAccountToolStripMenuItem,
             this.copyToolStripMenuItem,
             this.sortAlphabeticallyToolStripMenuItem,
+            this.quickLogInToolStripMenuItem,
             this.moveGroupUpToolStripMenuItem,
             this.infoToolStripMenuItem,
             this.viewFieldsToolStripMenuItem,
@@ -281,6 +341,13 @@
             this.sortAlphabeticallyToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.sortAlphabeticallyToolStripMenuItem.Text = "Sort Alphabetically";
             this.sortAlphabeticallyToolStripMenuItem.Click += new System.EventHandler(this.sortAlphabeticallyToolStripMenuItem_Click);
+            // 
+            // quickLogInToolStripMenuItem
+            // 
+            this.quickLogInToolStripMenuItem.Name = "quickLogInToolStripMenuItem";
+            this.quickLogInToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.quickLogInToolStripMenuItem.Text = "Quick Log In";
+            this.quickLogInToolStripMenuItem.Click += new System.EventHandler(this.quickLogInToolStripMenuItem_Click);
             // 
             // moveGroupUpToolStripMenuItem
             // 
@@ -450,28 +517,35 @@
             this.JoinDiscord.UseVisualStyleBackColor = true;
             this.JoinDiscord.Click += new System.EventHandler(this.JoinDiscord_Click);
             // 
-            // OpenApp
+            // OpenBrowserStrip
             // 
-            this.OpenApp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.OpenApp.Location = new System.Drawing.Point(325, 266);
-            this.OpenApp.Name = "OpenApp";
-            this.OpenApp.Size = new System.Drawing.Size(143, 23);
-            this.OpenApp.TabIndex = 18;
-            this.OpenApp.Text = "Open App";
-            this.OpenApp.UseVisualStyleBackColor = true;
-            this.OpenApp.Click += new System.EventHandler(this.OpenApp_Click);
+            this.OpenBrowserStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.customURLToolStripMenuItem,
+            this.URLJSToolStripMenuItem,
+            this.joinGroupToolStripMenuItem});
+            this.OpenBrowserStrip.Name = "OpenBrowserStrip";
+            this.OpenBrowserStrip.Size = new System.Drawing.Size(161, 70);
             // 
-            // ImportByCookie
+            // customURLToolStripMenuItem
             // 
-            this.ImportByCookie.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.ImportByCookie.Location = new System.Drawing.Point(398, 266);
-            this.ImportByCookie.Name = "ImportByCookie";
-            this.ImportByCookie.Size = new System.Drawing.Size(70, 23);
-            this.ImportByCookie.TabIndex = 17;
-            this.ImportByCookie.Text = "Import";
-            this.ImportByCookie.UseVisualStyleBackColor = true;
-            this.ImportByCookie.Visible = false;
-            this.ImportByCookie.Click += new System.EventHandler(this.ImportByCookie_Click);
+            this.customURLToolStripMenuItem.Name = "customURLToolStripMenuItem";
+            this.customURLToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.customURLToolStripMenuItem.Text = "URL";
+            this.customURLToolStripMenuItem.Click += new System.EventHandler(this.customURLToolStripMenuItem_Click);
+            // 
+            // URLJSToolStripMenuItem
+            // 
+            this.URLJSToolStripMenuItem.Name = "URLJSToolStripMenuItem";
+            this.URLJSToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.URLJSToolStripMenuItem.Text = "URL + Javascript";
+            this.URLJSToolStripMenuItem.Click += new System.EventHandler(this.URLJSToolStripMenuItem_Click);
+            // 
+            // joinGroupToolStripMenuItem
+            // 
+            this.joinGroupToolStripMenuItem.Name = "joinGroupToolStripMenuItem";
+            this.joinGroupToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.joinGroupToolStripMenuItem.Text = "Join Group";
+            this.joinGroupToolStripMenuItem.Click += new System.EventHandler(this.joinGroupToolStripMenuItem_Click);
             // 
             // SaveToAccount
             // 
@@ -517,6 +591,43 @@
             this.JobID.TabIndex = 2;
             this.SaveTooltip.SetToolTip(this.JobID, "Job ID is a unique ID assigned to every roblox server.\r\nYou may also put a Privat" +
         "e Server link in this box to join it.");
+            // 
+            // DefaultEncryptionButton
+            // 
+            this.DefaultEncryptionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.DefaultEncryptionButton.Cursor = System.Windows.Forms.Cursors.Help;
+            this.DefaultEncryptionButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.DefaultEncryptionButton.Location = new System.Drawing.Point(3, 59);
+            this.DefaultEncryptionButton.Name = "DefaultEncryptionButton";
+            this.DefaultEncryptionButton.Size = new System.Drawing.Size(474, 50);
+            this.DefaultEncryptionButton.TabIndex = 3;
+            this.DefaultEncryptionButton.Tag = "UseControlFont";
+            this.DefaultEncryptionButton.Text = "Default Encryption";
+            this.SaveTooltip.SetToolTip(this.DefaultEncryptionButton, "This encryption method doesn\'t allow sharing\r\nyour account data across multiple d" +
+        "evices\r\nunless you manually decrypt the data");
+            this.DefaultEncryptionButton.UseVisualStyleBackColor = true;
+            this.DefaultEncryptionButton.Click += new System.EventHandler(this.DefaultEncryptionButton_Click);
+            // 
+            // PasswordEncryptionButton
+            // 
+            this.PasswordEncryptionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.PasswordEncryptionButton.Cursor = System.Windows.Forms.Cursors.Help;
+            this.PasswordEncryptionButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.PasswordEncryptionButton.Location = new System.Drawing.Point(3, 115);
+            this.PasswordEncryptionButton.Name = "PasswordEncryptionButton";
+            this.PasswordEncryptionButton.Size = new System.Drawing.Size(474, 51);
+            this.PasswordEncryptionButton.TabIndex = 5;
+            this.PasswordEncryptionButton.Tag = "UseControlFont";
+            this.PasswordEncryptionButton.Text = "Password Locked (Recommended)";
+            this.SaveTooltip.SetToolTip(this.PasswordEncryptionButton, "This encryption method allows sharing\r\nyour account data across multiple devices\r" +
+        "\nand is recommended in order to prevent loss\r\nof data which can also be easily s" +
+        "tored securely");
+            this.PasswordEncryptionButton.UseVisualStyleBackColor = true;
+            this.PasswordEncryptionButton.Click += new System.EventHandler(this.PasswordEncryptionButton_Click);
             // 
             // DonateButton
             // 
@@ -566,6 +677,7 @@
             this.AccountsView.View = System.Windows.Forms.View.Details;
             this.AccountsView.ModelCanDrop += new System.EventHandler<BrightIdeasSoftware.ModelDropEventArgs>(this.AccountsView_ModelCanDrop);
             this.AccountsView.ModelDropped += new System.EventHandler<BrightIdeasSoftware.ModelDropEventArgs>(this.AccountsView_ModelDropped);
+            this.AccountsView.Scroll += new System.EventHandler<System.Windows.Forms.ScrollEventArgs>(this.AccountsView_Scroll);
             this.AccountsView.SelectedIndexChanged += new System.EventHandler(this.AccountsView_SelectedIndexChanged);
             // 
             // Username
@@ -652,6 +764,205 @@
             this.HistoryIcon.TabStop = false;
             this.HistoryIcon.MouseHover += new System.EventHandler(this.HistoryIcon_MouseHover);
             // 
+            // PasswordPanel
+            // 
+            this.PasswordPanel.Controls.Add(this.PasswordLayoutPanel);
+            this.PasswordPanel.Controls.Add(this.PasswordSelectionPanel);
+            this.PasswordPanel.Controls.Add(this.EncryptionSelectionPanel);
+            this.PasswordPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.PasswordPanel.Location = new System.Drawing.Point(0, 0);
+            this.PasswordPanel.Name = "PasswordPanel";
+            this.PasswordPanel.Size = new System.Drawing.Size(784, 301);
+            this.PasswordPanel.TabIndex = 1005;
+            this.PasswordPanel.Visible = false;
+            this.PasswordPanel.VisibleChanged += new System.EventHandler(this.PasswordPanel_VisibleChanged);
+            // 
+            // PasswordLayoutPanel
+            // 
+            this.PasswordLayoutPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.PasswordLayoutPanel.ColumnCount = 1;
+            this.PasswordLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.PasswordLayoutPanel.Controls.Add(this.UnlockButton, 0, 3);
+            this.PasswordLayoutPanel.Controls.Add(this.PasswordTextBox, 0, 2);
+            this.PasswordLayoutPanel.Controls.Add(this.AccessLabel, 0, 0);
+            this.PasswordLayoutPanel.Controls.Add(this.PasswordRequiredLabel, 0, 1);
+            this.PasswordLayoutPanel.Location = new System.Drawing.Point(192, 85);
+            this.PasswordLayoutPanel.Name = "PasswordLayoutPanel";
+            this.PasswordLayoutPanel.RowCount = 4;
+            this.PasswordLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.PasswordLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.PasswordLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
+            this.PasswordLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.PasswordLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.PasswordLayoutPanel.Size = new System.Drawing.Size(400, 130);
+            this.PasswordLayoutPanel.TabIndex = 5;
+            // 
+            // UnlockButton
+            // 
+            this.UnlockButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.UnlockButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.UnlockButton.Location = new System.Drawing.Point(3, 92);
+            this.UnlockButton.Name = "UnlockButton";
+            this.UnlockButton.Size = new System.Drawing.Size(394, 35);
+            this.UnlockButton.TabIndex = 3;
+            this.UnlockButton.Tag = "UseControlFont";
+            this.UnlockButton.Text = "Continue";
+            this.UnlockButton.UseVisualStyleBackColor = true;
+            this.UnlockButton.Click += new System.EventHandler(this.UnlockButton_Click);
+            // 
+            // PasswordTextBox
+            // 
+            this.PasswordTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.PasswordTextBox.Location = new System.Drawing.Point(3, 67);
+            this.PasswordTextBox.Name = "PasswordTextBox";
+            this.PasswordTextBox.PasswordChar = '*';
+            this.PasswordTextBox.Size = new System.Drawing.Size(394, 20);
+            this.PasswordTextBox.TabIndex = 2;
+            this.PasswordTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.PasswordTextBox_KeyPress);
+            // 
+            // AccessLabel
+            // 
+            this.AccessLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.AccessLabel.AutoSize = true;
+            this.AccessLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AccessLabel.Location = new System.Drawing.Point(3, 0);
+            this.AccessLabel.Name = "AccessLabel";
+            this.AccessLabel.Size = new System.Drawing.Size(394, 25);
+            this.AccessLabel.TabIndex = 1;
+            this.AccessLabel.Tag = "UseControlFont";
+            this.AccessLabel.Text = "Restricted Access";
+            this.AccessLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // PasswordRequiredLabel
+            // 
+            this.PasswordRequiredLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.PasswordRequiredLabel.AutoSize = true;
+            this.PasswordRequiredLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F);
+            this.PasswordRequiredLabel.Location = new System.Drawing.Point(3, 25);
+            this.PasswordRequiredLabel.Name = "PasswordRequiredLabel";
+            this.PasswordRequiredLabel.Size = new System.Drawing.Size(394, 39);
+            this.PasswordRequiredLabel.TabIndex = 0;
+            this.PasswordRequiredLabel.Tag = "UseControlFont";
+            this.PasswordRequiredLabel.Text = "Please enter your password to continue";
+            this.PasswordRequiredLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // PasswordSelectionPanel
+            // 
+            this.PasswordSelectionPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.PasswordSelectionPanel.ColumnCount = 1;
+            this.PasswordSelectionPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.PasswordSelectionPanel.Controls.Add(this.SetPasswordButton, 0, 2);
+            this.PasswordSelectionPanel.Controls.Add(this.PasswordSelectionTB, 0, 1);
+            this.PasswordSelectionPanel.Controls.Add(this.Password2Label, 0, 0);
+            this.PasswordSelectionPanel.Location = new System.Drawing.Point(242, 80);
+            this.PasswordSelectionPanel.Name = "PasswordSelectionPanel";
+            this.PasswordSelectionPanel.RowCount = 3;
+            this.PasswordSelectionPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.PasswordSelectionPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.PasswordSelectionPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.PasswordSelectionPanel.Size = new System.Drawing.Size(300, 88);
+            this.PasswordSelectionPanel.TabIndex = 6;
+            // 
+            // SetPasswordButton
+            // 
+            this.SetPasswordButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.SetPasswordButton.Enabled = false;
+            this.SetPasswordButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.SetPasswordButton.Location = new System.Drawing.Point(3, 51);
+            this.SetPasswordButton.Name = "SetPasswordButton";
+            this.SetPasswordButton.Size = new System.Drawing.Size(294, 34);
+            this.SetPasswordButton.TabIndex = 3;
+            this.SetPasswordButton.Tag = "UseControlFont";
+            this.SetPasswordButton.Text = "Continue";
+            this.SetPasswordButton.UseVisualStyleBackColor = true;
+            this.SetPasswordButton.Click += new System.EventHandler(this.SetPasswordButton_Click);
+            // 
+            // PasswordSelectionTB
+            // 
+            this.PasswordSelectionTB.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.PasswordSelectionTB.Location = new System.Drawing.Point(3, 25);
+            this.PasswordSelectionTB.Name = "PasswordSelectionTB";
+            this.PasswordSelectionTB.PasswordChar = '*';
+            this.PasswordSelectionTB.ShortcutsEnabled = false;
+            this.PasswordSelectionTB.Size = new System.Drawing.Size(294, 20);
+            this.PasswordSelectionTB.TabIndex = 2;
+            this.PasswordSelectionTB.TextChanged += new System.EventHandler(this.PasswordSelectionTB_TextChanged);
+            // 
+            // Password2Label
+            // 
+            this.Password2Label.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.Password2Label.AutoSize = true;
+            this.Password2Label.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F);
+            this.Password2Label.Location = new System.Drawing.Point(3, 0);
+            this.Password2Label.Name = "Password2Label";
+            this.Password2Label.Size = new System.Drawing.Size(294, 22);
+            this.Password2Label.TabIndex = 0;
+            this.Password2Label.Tag = "UseControlFont";
+            this.Password2Label.Text = "Password";
+            this.Password2Label.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // EncryptionSelectionPanel
+            // 
+            this.EncryptionSelectionPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.EncryptionSelectionPanel.ColumnCount = 1;
+            this.EncryptionSelectionPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.EncryptionSelectionPanel.Controls.Add(this.PasswordEncryptionButton, 0, 2);
+            this.EncryptionSelectionPanel.Controls.Add(this.EncSelectionLabel, 0, 0);
+            this.EncryptionSelectionPanel.Controls.Add(this.DefaultEncryptionButton, 0, 1);
+            this.EncryptionSelectionPanel.Location = new System.Drawing.Point(152, 65);
+            this.EncryptionSelectionPanel.Name = "EncryptionSelectionPanel";
+            this.EncryptionSelectionPanel.RowCount = 3;
+            this.EncryptionSelectionPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.EncryptionSelectionPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.EncryptionSelectionPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.EncryptionSelectionPanel.Size = new System.Drawing.Size(480, 169);
+            this.EncryptionSelectionPanel.TabIndex = 6;
+            this.EncryptionSelectionPanel.Visible = false;
+            // 
+            // EncSelectionLabel
+            // 
+            this.EncSelectionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.EncSelectionLabel.AutoSize = true;
+            this.EncSelectionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F);
+            this.EncSelectionLabel.Location = new System.Drawing.Point(3, 0);
+            this.EncSelectionLabel.Name = "EncSelectionLabel";
+            this.EncSelectionLabel.Size = new System.Drawing.Size(474, 56);
+            this.EncSelectionLabel.TabIndex = 4;
+            this.EncSelectionLabel.Tag = "UseControlFont";
+            this.EncSelectionLabel.Text = "Please select how you want your data to be secured";
+            this.EncSelectionLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // OpenBrowser
+            // 
+            this.OpenBrowser.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.OpenBrowser.Location = new System.Drawing.Point(325, 266);
+            this.OpenBrowser.Menu = this.OpenBrowserStrip;
+            this.OpenBrowser.Name = "OpenBrowser";
+            this.OpenBrowser.Size = new System.Drawing.Size(143, 23);
+            this.OpenBrowser.TabIndex = 18;
+            this.OpenBrowser.Text = "Open Browser";
+            this.OpenBrowser.UseVisualStyleBackColor = true;
+            this.OpenBrowser.Click += new System.EventHandler(this.OpenBrowser_Click);
+            // 
             // UserID
             // 
             this.UserID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -682,6 +993,18 @@
             this.DescriptionBox.TabIndex = 11;
             this.DescriptionBox.Text = "Description";
             // 
+            // Add
+            // 
+            this.Add.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.Add.Location = new System.Drawing.Point(13, 266);
+            this.Add.Menu = this.AddAccountsStrip;
+            this.Add.Name = "Add";
+            this.Add.Size = new System.Drawing.Size(95, 23);
+            this.Add.TabIndex = 14;
+            this.Add.Text = "Add Account";
+            this.Add.UseVisualStyleBackColor = true;
+            this.Add.Click += new System.EventHandler(this.Add_Click);
+            // 
             // PlaceID
             // 
             this.PlaceID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -692,6 +1015,10 @@
             this.PlaceID.TabIndex = 1;
             this.PlaceID.Text = "5315046213";
             this.PlaceID.TextChanged += new System.EventHandler(this.PlaceID_TextChanged);
+            // 
+            // PresenceUpdateTimer
+            // 
+            this.PresenceUpdateTimer.Interval = 60000;
             // 
             // AccountManager
             // 
@@ -706,8 +1033,7 @@
             this.Controls.Add(this.DonateButton);
             this.Controls.Add(this.EditTheme);
             this.Controls.Add(this.SaveToAccount);
-            this.Controls.Add(this.ImportByCookie);
-            this.Controls.Add(this.OpenApp);
+            this.Controls.Add(this.OpenBrowser);
             this.Controls.Add(this.JoinDiscord);
             this.Controls.Add(this.CurrentPlace);
             this.Controls.Add(this.ArgumentsB);
@@ -729,6 +1055,7 @@
             this.Controls.Add(this.JobID);
             this.Controls.Add(this.PlaceID);
             this.Controls.Add(this.AccountsView);
+            this.Controls.Add(this.PasswordPanel);
             this.HelpButton = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
@@ -738,10 +1065,19 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AccountManager_FormClosing);
             this.Load += new System.EventHandler(this.AccountManager_Load);
             this.Shown += new System.EventHandler(this.AccountManager_Shown);
+            this.AddAccountsStrip.ResumeLayout(false);
             this.AccountsStrip.ResumeLayout(false);
+            this.OpenBrowserStrip.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.ShuffleIcon)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.HistoryIcon)).EndInit();
+            this.PasswordPanel.ResumeLayout(false);
+            this.PasswordLayoutPanel.ResumeLayout(false);
+            this.PasswordLayoutPanel.PerformLayout();
+            this.PasswordSelectionPanel.ResumeLayout(false);
+            this.PasswordSelectionPanel.PerformLayout();
+            this.EncryptionSelectionPanel.ResumeLayout(false);
+            this.EncryptionSelectionPanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -751,7 +1087,7 @@
         public Classes.BorderedTextBox PlaceID;
         public Classes.BorderedTextBox JobID;
         private System.Windows.Forms.Label LabelJobID;
-        private System.Windows.Forms.Button Add;
+        private MenuButton Add;
         private System.Windows.Forms.Button Remove;
         private System.Windows.Forms.Button JoinServer;
         private System.Windows.Forms.Button SetDescription;
@@ -780,8 +1116,7 @@
         private System.Windows.Forms.ToolStripMenuItem moveToToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyAppLinkToolStripMenuItem;
         private System.Windows.Forms.Button JoinDiscord;
-        private System.Windows.Forms.Button OpenApp;
-        private System.Windows.Forms.Button ImportByCookie;
+        private MenuButton OpenBrowser;
         private System.Windows.Forms.ToolStripMenuItem copyProfileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem viewFieldsToolStripMenuItem;
         private System.Windows.Forms.Button SaveToAccount;
@@ -808,5 +1143,30 @@
         private System.Windows.Forms.ToolStripMenuItem copyUserPassComboToolStripMenuItem;
         private System.Windows.Forms.PictureBox ShuffleIcon;
         private System.Windows.Forms.ToolStripMenuItem ShowDetailsToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip AddAccountsStrip;
+        private System.Windows.Forms.ToolStripMenuItem manualToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem bulkUserPassToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem byCookieToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip OpenBrowserStrip;
+        private System.Windows.Forms.ToolStripMenuItem customURLToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem URLJSToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem joinGroupToolStripMenuItem;
+        private System.Windows.Forms.Panel PasswordPanel;
+        private System.Windows.Forms.TextBox PasswordTextBox;
+        private System.Windows.Forms.Label AccessLabel;
+        private System.Windows.Forms.Button UnlockButton;
+        private System.Windows.Forms.TableLayoutPanel PasswordLayoutPanel;
+        private System.Windows.Forms.Label PasswordRequiredLabel;
+        private System.Windows.Forms.TableLayoutPanel EncryptionSelectionPanel;
+        private System.Windows.Forms.Label EncSelectionLabel;
+        private System.Windows.Forms.Button DefaultEncryptionButton;
+        private System.Windows.Forms.Button PasswordEncryptionButton;
+        private System.Windows.Forms.TableLayoutPanel PasswordSelectionPanel;
+        private System.Windows.Forms.Button SetPasswordButton;
+        private System.Windows.Forms.TextBox PasswordSelectionTB;
+        private System.Windows.Forms.Label Password2Label;
+        private System.Windows.Forms.Timer PresenceUpdateTimer;
+        private System.Windows.Forms.ToolStripMenuItem quickLogInToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem customURLJSToolStripMenuItem;
     }
 }
