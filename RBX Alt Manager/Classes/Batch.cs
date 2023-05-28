@@ -120,13 +120,13 @@ namespace RBX_Alt_Manager.Classes
                 Pending.AddRange(PendingBatch.GetRange(0, Math.Min(PendingBatch.Count, 100)));
                 PendingBatch.RemoveRange(0, Math.Min(PendingBatch.Count, 100));
 
-                var Request = new RestRequest("v1/batch", Method.POST);
+                var Request = new RestRequest("v1/batch", Method.Post);
                 Request.AddJsonBody(Pending.ToArray());
 
                 var Response = await ThumbnailAPI.ExecuteAsync(Request);
 
                 if (!Response.IsSuccessful)
-                    throw new HttpException($"{Response.StatusCode} Batch request failed\nBody: {Request.Body.Value}\nError: {Response.ErrorMessage}");
+                    throw new HttpException($"{Response.StatusCode} Batch request failed\nBody: {Pending.ToArray()}\nError: {Response.ErrorMessage}");
 
                 JArray Data = JObject.Parse(Response.Content)?["data"]?.Value<JArray>();
 
@@ -160,9 +160,9 @@ namespace RBX_Alt_Manager.Classes
 
                 var Request = new RestRequest($"v1/games/multiget-place-details?placeIds={string.Join("&placeIds=", Pending.ToArray())}");
 
-                Request.AddCookie(".ROBLOSECURITY", AccountManager.LastValidAccount?.SecurityToken);
+                Request.AddCookie(".ROBLOSECURITY", AccountManager.LastValidAccount?.SecurityToken, "/", ".roblox.com");
 
-                IRestResponse DetailsResponse = await GamesAPI.ExecuteAsync(Request);
+                RestResponse DetailsResponse = await GamesAPI.ExecuteAsync(Request);
 
                 if (DetailsResponse.IsSuccessful)
                 {
@@ -189,7 +189,7 @@ namespace RBX_Alt_Manager.Classes
 
             var Request = new RestRequest($"v1/assets?assetIds={AssetId}&returnPolicy=PlaceHolder&size=150x150&format=Png&isCircular=false");
 
-            Request.AddCookie(".ROBLOSECURITY", AccountManager.LastValidAccount?.SecurityToken);
+            Request.AddCookie(".ROBLOSECURITY", AccountManager.LastValidAccount?.SecurityToken, "/", ".roblox.com");
 
             var Response = await ThumbnailAPI.ExecuteAsync(Request);
 

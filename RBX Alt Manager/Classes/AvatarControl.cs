@@ -24,7 +24,7 @@ namespace RBX_Alt_Manager.Classes
         {
             if (AccountManager.SelectedAccount == null) return;
 
-            var Request = new RestRequest($"v1/outfits/{OutfitID}/details", Method.GET);
+            var Request = new RestRequest($"v1/outfits/{OutfitID}/details", Method.Get);
             var Details = await AccountManager.AvatarClient.ExecuteAsync(Request);
 
             AccountManager.SelectedAccount.SetAvatar(Details.Content);
@@ -32,7 +32,7 @@ namespace RBX_Alt_Manager.Classes
 
         private async void copyAvatarJSONToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var Request = new RestRequest($"v1/outfits/{OutfitID}/details", Method.GET);
+            var Request = new RestRequest($"v1/outfits/{OutfitID}/details", Method.Get);
             var Details = await AccountManager.AvatarClient.ExecuteAsync(Request);
 
             Clipboard.SetText(Details.Content);

@@ -148,60 +148,8 @@
   <data name="icons8_history_32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\icons8-history-32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="AppConfig" xml:space="preserve">
-    <value>&lt;?xml version="1.0" encoding="utf-8"?&gt;
-&lt;configuration&gt;
-  &lt;startup&gt;
-    &lt;supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.8" /&gt;
-  &lt;/startup&gt;
-  &lt;appSettings&gt;
-    &lt;add key="log4net.Config" value="log4.config" /&gt;
-    &lt;add key="log4net.Config.Watch" value="True" /&gt;
-    &lt;add key="log4net.Internal.Debug" value="False" /&gt;
-    &lt;add key="ClientSettingsProvider.ServiceUri" value="" /&gt;
-  &lt;/appSettings&gt;
-  &lt;runtime&gt;
-    &lt;assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1"&gt;
-      &lt;probing privatePath="x86" /&gt;
-      &lt;probing privatePath="x64" /&gt;
-      &lt;dependentAssembly&gt;
-        &lt;assemblyIdentity name="System.Runtime.CompilerServices.Unsafe" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" /&gt;
-        &lt;bindingRedirect oldVersion="0.0.0.0-6.0.0.0" newVersion="6.0.0.0" /&gt;
-      &lt;/dependentAssembly&gt;
-      &lt;dependentAssembly&gt;
-        &lt;assemblyIdentity name="Microsoft.Bcl.AsyncInterfaces" publicKeyToken="cc7b13ffcd2ddd51" culture="neutral" /&gt;
-        &lt;bindingRedirect oldVersion="0.0.0.0-6.0.0.0" newVersion="6.0.0.0" /&gt;
-      &lt;/dependentAssembly&gt;
-      &lt;dependentAssembly&gt;
-        &lt;assemblyIdentity name="System.Text.Json" publicKeyToken="cc7b13ffcd2ddd51" culture="neutral" /&gt;
-        &lt;bindingRedirect oldVersion="0.0.0.0-6.0.0.3" newVersion="6.0.0.3" /&gt;
-      &lt;/dependentAssembly&gt;
-      &lt;dependentAssembly&gt;
-        &lt;assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" /&gt;
-        &lt;bindingRedirect oldVersion="0.0.0.0-13.0.0.0" newVersion="13.0.0.0" /&gt;
-      &lt;/dependentAssembly&gt;
-      &lt;dependentAssembly&gt;
-        &lt;assemblyIdentity name="System.Memory" publicKeyToken="cc7b13ffcd2ddd51" culture="neutral" /&gt;
-        &lt;bindingRedirect oldVersion="0.0.0.0-4.0.1.2" newVersion="4.0.1.2" /&gt;
-      &lt;/dependentAssembly&gt;
-    &lt;/assemblyBinding&gt;
-  &lt;/runtime&gt;
-  &lt;system.web&gt;
-    &lt;membership defaultProvider="ClientAuthenticationMembershipProvider"&gt;
-      &lt;providers&gt;
-        &lt;add name="ClientAuthenticationMembershipProvider" type="System.Web.ClientServices.Providers.ClientFormsAuthenticationMembershipProvider, System.Web.Extensions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" serviceUri="" /&gt;
-      &lt;/providers&gt;
-    &lt;/membership&gt;
-    &lt;roleManager defaultProvider="ClientRoleProvider" enabled="true"&gt;
-      &lt;providers&gt;
-        &lt;add name="ClientRoleProvider" type="System.Web.ClientServices.Providers.ClientRoleProvider, System.Web.Extensions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" serviceUri="" cacheTimeout="86400" /&gt;
-      &lt;/providers&gt;
-    &lt;/roleManager&gt;
-  &lt;/system.web&gt;
-&lt;/configuration&gt;</value>
-  </data>
   <data name="DefaultTheme" xml:space="preserve">
-    <value>[RBX Alt Manager]
+    <value>[Roblox Account Manager]
 AccountsBG=#1E1F28
 AccountsFG=#FFFFFF
 ButtonsBG=#292929
@@ -218,32 +166,6 @@ TextBoxesBG=#3A3A3A
 TextBoxesFG=#FFFFFF
 TextBoxesBC=#282828</value>
   </data>
-  <data name="Log4Config" xml:space="preserve">
-    <value>&lt;?xml version="1.0" encoding="utf-8" ?&gt;
-&lt;configuration&gt;
-    &lt;configSections&gt;
-        &lt;section name="log4net" type="log4net.Config.Log4NetConfigurationSectionHandler, log4net" /&gt;
-    &lt;/configSections&gt;
-
-    &lt;log4net&gt;
-        &lt;appender name="RollingFileAppender" type="log4net.Appender.RollingFileAppender"&gt;
-            &lt;file value="log.txt" /&gt;
-            &lt;appendToFile value="true" /&gt;
-            &lt;rollingStyle value="Size" /&gt;
-            &lt;maxSizeRollBackups value="1" /&gt;
-            &lt;maximumFileSize value="5MB" /&gt;
-            &lt;staticLogFileName value="true" /&gt;
-            &lt;layout type="log4net.Layout.PatternLayout"&gt;
-                &lt;conversionPattern value="%date [%thread] %-5level %logger - %message%newline" /&gt;
-            &lt;/layout&gt;
-        &lt;/appender&gt;
-        &lt;root&gt;
-            &lt;level value="ALL" /&gt;
-            &lt;appender-ref ref="RollingFileAppender" /&gt;
-        &lt;/root&gt;
-    &lt;/log4net&gt;
-&lt;/configuration&gt;</value>
-  </data>
   <data name="ShuffleIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\shuffle-crossing-arrows.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -251,9 +173,19 @@ TextBoxesBC=#282828</value>
     <value>..\Resources\handle.exe;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="NexusLoader" xml:space="preserve">
-    <value>Nexus_Version = 102
+    <value>Nexus_Version = 104
 
-local Success, Error, Function
+local FileName, Success, Error, Function = 'ic3w0lf22.Nexus.lua'
+
+if isfile and readfile and isfile(FileName) then -- Execute ASAP, update later.
+	Function, Error = loadstring(readfile(FileName), 'Nexus')
+
+	if Function then
+		Function()
+
+		if Nexus then Nexus:Connect() end
+	end
+end
 
 for i=1, 10 do
 	Success, Error = pcall(function()
@@ -265,15 +197,39 @@ for i=1, 10 do
 
 		if not Function then error(Error) end
 
-		Function()
-		Nexus:Connect()
+		if isfile and not isfile(FileName) then
+			writefile(FileName, Response.Body)
+		end
+		
+		if not Nexus then -- Nexus was already ran earlier, this will update the existing file to the latest version instead of re-creating Nexus
+			Function()
+			Nexus:Connect()
+		end
 	end)
 	
-	if not Success then task.wait(1) end
+	if Success then break else task.wait(1) end
 end
 
 if not Success and Error then
 	(messagebox or print)(('Nexus encountered an error while launching!\n\n%s'):format(Error), 'Roblox Account Manager', 0)
 end</value>
+  </data>
+  <data name="libsodium" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\libsodium.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="App" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\app.config;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="AppConfigHash" xml:space="preserve">
+    <value>82CC2370C96CC50EFF498869D000563AA938F96EA4AB163C725060E5EC7ACC9D</value>
+  </data>
+  <data name="log4" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\log4.config;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Log4ConfigHash" xml:space="preserve">
+    <value>E4B10630D9EC2AF508DE31752FBBC6816C7426C40A3E57F0A085CE7F42C77BD5</value>
+  </data>
+  <data name="ManualInstallHTML" xml:space="preserve">
+    <value>&lt;style&gt;*{{color:rgba(232,230,227,1);font-family:Arial,Helvetica,sans-serif}}a{{color:#4892f1}}li{{font-size:20px}}body{{background-color:#131516}}code{{background-color:rgba(255,255,255,.12);font-size:18px}}&lt;/style&gt;&lt;script crossorigin=anonymous integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="referrerpolicy=no-referrer src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js&gt;&lt;/script&gt;&lt;script crossorigin=anonymous integrity="sha512-lbwH47l/tPXJYG9AcFNoJaTMhGvYWhVM9YI43CT+uteTRRaiLCui8snIgyAN8XWgNjNhCqlAUdzZptso6OCoFQ=="referrerpolicy=no-referrer src=https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js&gt;&lt;/script&gt;&lt;link crossorigin=anonymous href=https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.css integrity="sha512-oe8OpYjBaDWPt2VmSFR+qYOdnTjeV9QPLJUeqZyprDEQvQLJ9C5PCFclxwNuvb/GQgQngdCXzKSFltuHD3eCxA=="referrerpolicy=no-referrer rel=stylesheet&gt;&lt;div style="padding:10px 25px"&gt;&lt;h1&gt;How to manually install Chromium for Roblox Account Manager&lt;/h1&gt;&lt;ol&gt;&lt;li&gt;Close Roblox Account Manager first&lt;li&gt;Download the Chromium ZIP file by clicking &lt;a href={0}&gt;here&lt;/a&gt; or by going to &lt;code&gt;{0}&lt;/code&gt;&lt;li&gt;Open the ZIP file and extract the folder named “chrome-win” to &lt;code&gt;{1}&lt;/code&gt;&lt;li&gt;Relaunch Roblox Account Manager&lt;/ol&gt;&lt;h2&gt;&lt;a href="https://youtu.be/yC5g22aXYlQ"&gt;Tutorial Video&lt;/a&gt;&lt;/h2&gt;&lt;iframe width="1366" height="768" src="https://www.youtube.com/embed/yC5g22aXYlQ" title="how to manually install chromium for account manager" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen&gt;&lt;/iframe&gt;&lt;/div&gt;&lt;script&gt;toastr.options.timeOut=2e3,toastr.options.preventDuplicates=!0,toastr.options.positionClass="toast-top-right",$("code").each((function(){{$(this).on("click",(function(){{!async function(t){{await navigator.clipboard.writeText(t),toastr.success("Copied to clipboard!")}}($(this)[0].innerText)}}))}}));&lt;/script&gt;</value>
   </data>
 </root>

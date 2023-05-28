@@ -64,7 +64,6 @@
             this.Name = "AutoUpdater";
             this.Padding = new System.Windows.Forms.Padding(10);
             this.Text = "Roblox Account Manager Auto Update";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AutoUpdater_FormClosing);
             this.Load += new System.EventHandler(this.AutoUpdater_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

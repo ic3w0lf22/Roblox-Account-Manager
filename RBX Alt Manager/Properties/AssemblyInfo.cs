@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("RBX Alt Account Manager")]
+[assembly: AssemblyTitle("Roblox Account Manager")]
 [assembly: AssemblyDescription("Created by ic3w0lf")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ic3")]
-[assembly: AssemblyProduct("RBX Alt Manager")]
+[assembly: AssemblyProduct("Roblox Account Manager")]
 [assembly: AssemblyCopyright("Copyright © ic3 2023")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -32,4 +32,4 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("3.5.0.0")]
+[assembly: AssemblyFileVersion("3.6.0.0")]

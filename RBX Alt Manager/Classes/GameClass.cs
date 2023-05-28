@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using RBX_Alt_Manager.Classes;
 using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -78,25 +77,30 @@ namespace RBX_Alt_Manager
 
     public class PageGame : Game
     {
-        public long creatorId { get; set; }
-        public string creatorName { get; set; }
-        public string creatorType { get; set; }
-        public int totalUpVotes { get; set; }
-        public int totalDownVotes { get; set; }
-        public object universeId { get; set; }
-        public string name { get; set; }
-        public long placeId { get; set; }
-        public int playerCount { get; set; }
-        public string imageToken { get; set; }
-        public bool isSponsored { get; set; }
-        public string nativeAdData { get; set; }
-        public bool isShowSponsoredLabel { get; set; }
-        public int? price { get; set; }
-        public object analyticsIdentifier { get; set; }
-        public object gameDescription { get; set; }
-        public int? likeRatio;
+        public long CreatorID { get; set; }
+        public string CreatorName { get; set; }
+        public string CreatorUrl { get; set; }
+        public long Plays { get; set; }
+        public long Price { get; set; }
+        public long ProductID { get; set; }
+        public bool IsOwned { get; set; }
+        public bool IsVotingEnabled { get; set; }
+        public long TotalUpVotes { get; set; }
+        public long TotalDownVotes { get; set; }
+        public long TotalBought { get; set; }
+        public long UniverseID { get; set; }
+        public bool HasErrorOcurred { get; set; }
+        public string GameDetailReferralUrl { get; set; }
+        public string Url { get; set; }
+        public object RetryUrl { get; set; }
+        public bool Final { get; set; }
+        public string Name { get; set; }
+        public long PlaceID { get; set; }
+        public int PlayerCount { get; set; }
+        public long ImageId { get; set; }
+        public int? LikeRatio; // Doesn't actually exist in roblox's return value
 
-        [JsonConstructor] public PageGame(long placeId, string name) : base(placeId, name) { this.placeId = placeId; this.name = name; }
+        [JsonConstructor] public PageGame(long PlaceID, string Name) : base(PlaceID, Name) { this.PlaceID = PlaceID; this.Name = Name; }
     }
 
     public class FavoriteGame : Game
@@ -125,22 +129,5 @@ namespace RBX_Alt_Manager
         public Game Game { get; set; }
 
         public GameArgs(Game Game) => this.Game = Game;
-    }
-
-    public class GameList
-    {
-        public List<PageGame> games { get; set; }
-        public object suggestedKeyword { get; set; }
-        public object correctedKeyword { get; set; }
-        public object filteredKeyword { get; set; }
-        public bool hasMoreRows { get; set; }
-        public object nextPageExclusiveStartId { get; set; }
-        public object featuredSearchUniverseId { get; set; }
-        public bool emphasis { get; set; }
-        public object cutOffIndex { get; set; }
-        public string algorithm { get; set; }
-        public string algorithmQueryType { get; set; }
-        public string suggestionAlgorithm { get; set; }
-        public List<object> relatedGames { get; set; }
     }
 }

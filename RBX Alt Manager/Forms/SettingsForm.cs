@@ -1,7 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -30,6 +30,7 @@ namespace RBX_Alt_Manager.Forms
             HideMRobloxCB.Checked = AccountManager.General.Get<bool>("HideRbxAlert");
             DisableImagesCB.Checked = AccountManager.General.Get<bool>("DisableImages");
             ShuffleLowestServerCB.Checked = AccountManager.General.Get<bool>("ShuffleChoosesLowestServer");
+            MultiRobloxCB.Checked = AccountManager.General.Get<bool>("EnableMultiRbx");
             RegionFormatTB.Text = AccountManager.General.Get<string>("ServerRegionFormat");
             MaxRecentGamesNumber.Value = AccountManager.General.Get<int>("MaxRecentGames");
 
@@ -43,6 +44,17 @@ namespace RBX_Alt_Manager.Forms
             AllowExternalConnectionsCB.Checked = AccountManager.WebServer.Get<bool>("AllowExternalConnections");
             PasswordTextBox.Text = AccountManager.WebServer.Get("Password");
             PortNumber.Value = AccountManager.WebServer.Get<decimal>("WebServerPort");
+
+            PresenceCB.Checked = AccountManager.General.Get<bool>("ShowPresence");
+            PresenceUpdateRateNum .Value = AccountManager.General.Get<int>("PresenceUpdateRate");
+            UnlockFPSCB.Checked = AccountManager.General.Get<bool>("UnlockFPS");
+            MaxFPSValue.Value = AccountManager.General.Get<int>("MaxFPSValue");
+
+            if (AccountManager.General.Exists("CustomClientSettings") && File.Exists(AccountManager.General.Get<string>("CustomClientSettings")))
+            {
+                OverrideWithCustomCB.Checked = true;
+                UnlockFPSCB.Enabled = false;
+            }
 
             try { StartupKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true); } catch { }
 
@@ -145,6 +157,24 @@ namespace RBX_Alt_Manager.Forms
             AccountManager.IniSettings.Save("RAMSettings.ini");
         }
 
+        private void MultiRobloxCB_CheckedChanged(object sender, EventArgs e)
+        {
+            AccountManager.General.Set("EnableMultiRbx", MultiRobloxCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+
+            if (!AccountManager.Instance.UpdateMultiRoblox())
+                MessageBox.Show("Roblox is currently running, multi roblox will not work if roblox is open.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        private void AutoCookieRefreshCB_CheckedChanged(object sender, EventArgs e)
+        {
+            AccountManager.General.Set("AutoCookieRefresh", AutoCookieRefreshCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+
+            if (AccountManager.Instance.AutoCookieRefresh != null)
+                AccountManager.Instance.AutoCookieRefresh.Enabled = AutoCookieRefreshCB.Checked;
+        }
+
         private void StartOnPCStartup_CheckedChanged(object sender, EventArgs e)
         {
             if (!SettingsLoaded) return;
@@ -153,6 +183,12 @@ namespace RBX_Alt_Manager.Forms
                 StartupKey?.SetValue(Application.ProductName, Application.ExecutablePath);
             else
                 StartupKey?.DeleteValue(Application.ProductName);
+        }
+
+        private void EncryptionSelectionButton_Click(object sender, EventArgs e)
+        {
+            if (Utilities.YesNoPrompt("Settings", "Change Encryption Method", "Are you sure you want to change how your data is encrypted?", false))
+                AccountManager.Instance.ResetEncryption(true);
         }
 
         #endregion
@@ -245,8 +281,78 @@ namespace RBX_Alt_Manager.Forms
             AccountManager.IniSettings.Save("RAMSettings.ini");
         }
 
-        private void DecryptAC_Click(object sender, EventArgs e) =>
-            Process.Start("https://github.com/ic3w0lf22/RAMDecrypt/releases/tag/1.0");
+        #endregion
+
+        #region Miscellaneous
+
+        private void PresenceCB_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!SettingsLoaded) return;
+
+            AccountManager.General.Set("ShowPresence", PresenceCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void PresenceUpdateRateNum_ValueChanged(object sender, EventArgs e)
+        {
+            if (!SettingsLoaded) return;
+
+            AccountManager.General.Set("PresenceUpdateRate", PresenceUpdateRateNum.Value.ToString());
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void UnlockFPSCB_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!SettingsLoaded) return;
+
+            AccountManager.General.Set("UnlockFPS", UnlockFPSCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void MaxFPSValue_ValueChanged(object sender, EventArgs e)
+        {
+            if (!SettingsLoaded) return;
+
+            AccountManager.General.Set("MaxFPSValue", MaxFPSValue.Value.ToString());
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void OverrideWithCustomCB_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!SettingsLoaded) return;
+
+            UnlockFPSCB.Enabled = !OverrideWithCustomCB.Checked;
+
+            void Remove()
+            {
+                AccountManager.General.RemoveProperty("CustomClientSettings");
+                OverrideWithCustomCB.Checked = false;
+            }
+
+            if (OverrideWithCustomCB.Checked)
+            {
+                if (CustomClientSettingsDialog.ShowDialog() == DialogResult.OK)
+                {
+                    MessageBox.Show(CustomClientSettingsDialog.FileName);
+
+                    if (File.Exists(CustomClientSettingsDialog.FileName) && File.ReadAllText(CustomClientSettingsDialog.FileName).TryParseJson<object>(out _))
+                    {
+                        string FileName = Path.Combine(Environment.CurrentDirectory, "CustomClientAppSettings.json");
+
+                        File.Copy(CustomClientSettingsDialog.FileName, FileName);
+                        AccountManager.General.Set("CustomClientSettings", FileName);
+                    }
+                    else
+                        MessageBox.Show("Invalid file selected, make sure it contains valid JSON", "Settings", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                    Remove();
+            }
+            else
+                Remove();
+            
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
 
         #endregion
 

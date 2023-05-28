@@ -69,7 +69,7 @@ namespace RBX_Alt_Manager.Classes
 
                 var Request = new RestRequest($"v2/assets/{AssetId}/details");
 
-                Request.AddCookie(".ROBLOSECURITY", AccountManager.SelectedAccount?.SecurityToken ?? AccountManager.LastValidAccount?.SecurityToken ?? "");
+                Request.AddCookie(".ROBLOSECURITY", AccountManager.SelectedAccount?.SecurityToken ?? AccountManager.LastValidAccount?.SecurityToken ?? "", "/", ".roblox.com");
 
                 var Response = await AccountManager.EconClient.ExecuteAsync(Request);
 
@@ -102,10 +102,10 @@ namespace RBX_Alt_Manager.Classes
                 BuyButton.Enabled = false;
                 BuyButton.BackColor = ControlPaint.Dark(BuyButton.BackColor, 0.06f);
 
-                var Request = new RestRequest($"v1/purchases/products/{Asset["ProductId"].Value<long>()}", Method.POST);
+                var Request = new RestRequest($"v1/purchases/products/{Asset["ProductId"].Value<long>()}", Method.Post);
                 Request.AddJsonBody(new { expectedCurrency = 1, expectedPrice = Asset["PriceInRobux"].Value<long>(), expectedSellerId = Asset["Creator"]["Id"].Value<long>() });
                 Request.AddHeader("X-CSRF-Token", CSRF);
-                Request.AddCookie(".ROBLOSECURITY", MA.account.SecurityToken);
+                Request.AddCookie(".ROBLOSECURITY", MA.account.SecurityToken, "/", ".roblox.com");
 
                 var Response = await AccountManager.EconClient.ExecuteAsync(Request);
 

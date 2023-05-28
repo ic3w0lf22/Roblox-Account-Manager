@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.WindowsAPICodePack.Dialogs;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RBX_Alt_Manager.Classes;
 using RBX_Alt_Manager.Forms;
 using RestSharp;
 using System;
@@ -8,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -27,10 +30,12 @@ namespace RBX_Alt_Manager
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public string Group { get; set; } = "Default";
         public long UserID;
         public Dictionary<string, string> Fields = new Dictionary<string, string>();
+        [JsonIgnore] public DateTime LastAttemptedRefresh;
         [JsonIgnore] public DateTime PinUnlocked;
         [JsonIgnore] public DateTime TokenSet;
         [JsonIgnore] public DateTime LastAppLaunch;
         [JsonIgnore] public string CSRFToken;
+        [JsonIgnore] public UserPresence Presence;
 
         public int CompareTo(Account compareTo)
         {
@@ -81,21 +86,18 @@ namespace RBX_Alt_Manager
 
         public Account() { }
 
-        public Account(string Cookie)
+        public Account(string Cookie, string AccountJSON = null)
         {
-            RestRequest DataRequest = new RestRequest("my/account/json", Method.GET);
+            SecurityToken = Cookie;
+            
+            AccountJSON ??= AccountManager.MainClient.Execute(MakeRequest("my/account/json", Method.Get)).Content;
 
-            DataRequest.AddCookie(".ROBLOSECURITY", Cookie);
-
-            IRestResponse response = AccountManager.MainClient.Execute(DataRequest);
-
-            if (response.StatusCode == HttpStatusCode.OK && Utilities.TryParseJson(response.Content, out AccountJson Data))
+            if (!string.IsNullOrEmpty(AccountJSON) && Utilities.TryParseJson(AccountJSON, out AccountJson Data))
             {
                 Username = Data.Name;
                 UserID = Data.UserId;
 
                 Valid = true;
-                SecurityToken = Cookie;
 
                 LastUse = DateTime.Now;
 
@@ -103,18 +105,17 @@ namespace RBX_Alt_Manager
             }
         }
 
+        public RestRequest MakeRequest(string url, Method method = Method.Get) => new RestRequest(url, method).AddCookie(".ROBLOSECURITY", SecurityToken, "/", ".roblox.com");
+
         public bool GetAuthTicket(out string Ticket)
         {
             Ticket = string.Empty;
 
             if (!GetCSRFToken(out string Token)) return false;
 
-            RestRequest request = new RestRequest("/v1/authentication-ticket/", Method.POST);
-            request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Referer", "https://www.roblox.com/games/185655149/Welcome-to-Bloxburg");
+            RestRequest request = MakeRequest("/v1/authentication-ticket/", Method.Post).AddHeader("X-CSRF-TOKEN", Token).AddHeader("Referer", "https://www.roblox.com/games/4924922222/Brookhaven-RP");
 
-            IRestResponse response = AccountManager.AuthClient.Execute(request);
+            RestResponse response = AccountManager.AuthClient.Execute(request);
 
             Parameter TicketHeader = response.Headers.FirstOrDefault(x => x.Name == "rbx-authentication-ticket");
 
@@ -130,12 +131,9 @@ namespace RBX_Alt_Manager
 
         public bool GetCSRFToken(out string Result)
         {
-            RestRequest request = new RestRequest("v1/authentication-ticket/", Method.POST);
+            RestRequest request = MakeRequest("v1/authentication-ticket/", Method.Post).AddHeader("Referer", "https://www.roblox.com/games/4924922222/Brookhaven-RP");
 
-            request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/games/185655149/Welcome-to-Bloxburg");
-
-            IRestResponse response = AccountManager.AuthClient.Execute(request);
+            RestResponse response = AccountManager.AuthClient.Execute(request);
 
             if (response.StatusCode != HttpStatusCode.Forbidden)
             {
@@ -175,12 +173,9 @@ namespace RBX_Alt_Manager
             if (DateTime.Now < PinUnlocked)
                 return true;
 
-            RestRequest request = new RestRequest("v1/account/pin/", Method.GET);
+            RestRequest request = MakeRequest("v1/account/pin/", Method.Get).AddHeader("Referer", "https://www.roblox.com/");
 
-            request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/");
-
-            IRestResponse response = AccountManager.AuthClient.Execute(request);
+            RestResponse response = AccountManager.AuthClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
@@ -201,15 +196,13 @@ namespace RBX_Alt_Manager
 
             if (!GetCSRFToken(out string Token)) return false;
 
-            RestRequest request = new RestRequest("v1/account/pin/unlock", Method.POST);
+            RestRequest request = MakeRequest("v1/account/pin/unlock", Method.Post)
+                .AddHeader("Referer", "https://www.roblox.com/")
+                .AddHeader("X-CSRF-TOKEN", Token)
+                .AddHeader("Content-Type", "application/x-www-form-urlencoded")
+                .AddParameter("pin", Pin);
 
-            request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/");
-            request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
-            request.AddParameter("pin", Pin);
-
-            IRestResponse response = AccountManager.AuthClient.Execute(request);
+            RestResponse response = AccountManager.AuthClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
@@ -231,22 +224,18 @@ namespace RBX_Alt_Manager
 
         public async Task<string> GetEmailJSON()
         {
-            RestRequest DataRequest = new RestRequest("v1/email", Method.GET);
+            RestRequest DataRequest = MakeRequest("v1/email", Method.Get);
 
-            DataRequest.AddCookie(".ROBLOSECURITY", SecurityToken);
-
-            IRestResponse response = await AccountManager.AccountClient.ExecuteAsync(DataRequest);
+            RestResponse response = await AccountManager.AccountClient.ExecuteAsync(DataRequest);
 
             return response.Content;
         }
 
         public async Task<JToken> GetMobileInfo()
         {
-            RestRequest DataRequest = new RestRequest("mobileapi/userinfo", Method.GET);
+            RestRequest DataRequest = MakeRequest("mobileapi/userinfo", Method.Get);
 
-            DataRequest.AddCookie(".ROBLOSECURITY", SecurityToken);
-
-            IRestResponse response = await AccountManager.MainClient.ExecuteAsync(DataRequest);
+            RestResponse response = await AccountManager.MainClient.ExecuteAsync(DataRequest);
 
             if (response.StatusCode == HttpStatusCode.OK && Utilities.TryParseJson(response.Content, out JToken Data))
                 return Data;
@@ -256,11 +245,9 @@ namespace RBX_Alt_Manager
 
         public async Task<JToken> GetUserInfo()
         {
-            RestRequest DataRequest = new RestRequest($"v1/users/{UserID}", Method.GET);
+            RestRequest DataRequest = MakeRequest($"v1/users/{UserID}", Method.Get);
 
-            DataRequest.AddCookie(".ROBLOSECURITY", SecurityToken);
-
-            IRestResponse response = await AccountManager.UsersClient.ExecuteAsync(DataRequest);
+            RestResponse response = await AccountManager.UsersClient.ExecuteAsync(DataRequest);
 
             if (response.StatusCode == HttpStatusCode.OK && Utilities.TryParseJson(response.Content, out JToken Data))
                 return Data;
@@ -275,12 +262,10 @@ namespace RBX_Alt_Manager
             if (!CheckPin()) return false;
             if (!GetCSRFToken(out string Token)) return false;
 
-            RestRequest request = new RestRequest("account/settings/follow-me-privacy", Method.POST);
-
-            request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/my/account");
-            request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+            RestRequest request = MakeRequest("account/settings/follow-me-privacy", Method.Post)
+                .AddHeader("Referer", "https://www.roblox.com/my/account")
+                .AddHeader("X-CSRF-TOKEN", Token)
+                .AddHeader("Content-Type", "application/x-www-form-urlencoded");
 
             switch (Privacy)
             {
@@ -301,7 +286,7 @@ namespace RBX_Alt_Manager
                     break;
             }
 
-            IRestResponse response = AccountManager.MainClient.Execute(request);
+            RestResponse response = AccountManager.MainClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK) return true;
 
@@ -313,22 +298,20 @@ namespace RBX_Alt_Manager
             if (!CheckPin()) return false;
             if (!GetCSRFToken(out string Token)) return false;
 
-            RestRequest request = new RestRequest("v2/user/passwords/change", Method.POST);
+            RestRequest request = MakeRequest("v2/user/passwords/change", Method.Post)
+                .AddHeader("Referer", "https://www.roblox.com/")
+                .AddHeader("X-CSRF-TOKEN", Token)
+                .AddHeader("Content-Type", "application/x-www-form-urlencoded")
+                .AddParameter("currentPassword", Current)
+                .AddParameter("newPassword", New);
 
-            request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/");
-            request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
-            request.AddParameter("currentPassword", Current);
-            request.AddParameter("newPassword", New);
-
-            IRestResponse response = AccountManager.AuthClient.Execute(request);
+            RestResponse response = AccountManager.AuthClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
                 Password = New;
 
-                RestResponseCookie SToken = response.Cookies.FirstOrDefault(x => x.Name == ".ROBLOSECURITY");
+                var SToken = response.Cookies[".ROBLOSECURITY"];
 
                 if (SToken != null)
                 {
@@ -353,16 +336,14 @@ namespace RBX_Alt_Manager
             if (!CheckPin()) return false;
             if (!GetCSRFToken(out string Token)) return false;
 
-            RestRequest request = new RestRequest("v1/email", Method.POST);
+            RestRequest request = MakeRequest("v1/email", Method.Post)
+                .AddHeader("Referer", "https://www.roblox.com/")
+                .AddHeader("X-CSRF-TOKEN", Token)
+                .AddHeader("Content-Type", "application/x-www-form-urlencoded")
+                .AddParameter("password", Password)
+                .AddParameter("emailAddress", NewEmail);
 
-            request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/");
-            request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
-            request.AddParameter("password", Password);
-            request.AddParameter("emailAddress", NewEmail);
-
-            IRestResponse response = AccountManager.AccountClient.Execute(request);
+            RestResponse response = AccountManager.AccountClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
@@ -376,38 +357,36 @@ namespace RBX_Alt_Manager
             return false;
         }
 
-        public bool LogOutOfOtherSessions()
+        public bool LogOutOfOtherSessions(bool Internal = false)
         {
-            if (!CheckPin()) return false;
+            if (!CheckPin(Internal)) return false;
             if (!GetCSRFToken(out string Token)) return false;
 
-            RestRequest request = new RestRequest("authentication/signoutfromallsessionsandreauthenticate", Method.POST);
+            RestRequest request = MakeRequest("authentication/signoutfromallsessionsandreauthenticate", Method.Post)
+                .AddHeader("Referer", "https://www.roblox.com/")
+                .AddHeader("X-CSRF-TOKEN", Token)
+                .AddHeader("Content-Type", "application/x-www-form-urlencoded");
 
-            request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("Referer", "https://www.roblox.com/");
-            request.AddHeader("X-CSRF-TOKEN", Token);
-            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
-
-            IRestResponse response = AccountManager.MainClient.Execute(request);
+            RestResponse response = AccountManager.MainClient.Execute(request);
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
-                RestResponseCookie SToken = response.Cookies.FirstOrDefault(x => x.Name == ".ROBLOSECURITY");
+                var SToken = response.Cookies[".ROBLOSECURITY"];
 
                 if (SToken != null)
                 {
                     SecurityToken = SToken.Value;
-                    AccountManager.SaveAccounts();
+                    AccountManager.SaveAccounts(true);
                 }
-                else
+                else if (!Internal)
                     MessageBox.Show("An error occured, you will need to re-login!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-                MessageBox.Show("Signed out of all other sessions!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (!Internal) MessageBox.Show("Signed out of all other sessions!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 return true;
             }
 
-            MessageBox.Show("Failed to log out of other sessions!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (!Internal) MessageBox.Show("Failed to log out of other sessions!", "Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             return false;
         }
@@ -415,9 +394,9 @@ namespace RBX_Alt_Manager
         public bool TogglePlayerBlocked(string Username, ref bool Unblocked)
         {
             if (!CheckPin()) throw new Exception("Pin is Locked!");
-            if (!AccountManager.GetUserID(Username, out long BlockeeID)) throw new Exception($"Failed to obtain UserId of {Username}!");
+            if (!AccountManager.GetUserID(Username, out long BlockeeID, out _)) throw new Exception($"Failed to obtain UserId of {Username}!");
 
-            IRestResponse BlockedResponse = GetBlockedList();
+            RestResponse BlockedResponse = GetBlockedList();
 
             if (!BlockedResponse.IsSuccessful) throw new Exception("Failed to obtain blocked users list!");
 
@@ -431,18 +410,15 @@ namespace RBX_Alt_Manager
             return BlockUserId($"{BlockeeID}", Unblock: true).IsSuccessful;
         }
 
-        public IRestResponse BlockUserId(string UserID, bool SkipPinCheck = false, HttpListenerContext Context = null, bool Unblock = false)
+        public RestResponse BlockUserId(string UserID, bool SkipPinCheck = false, HttpListenerContext Context = null, bool Unblock = false)
         {
             if (Context != null) Context.Response.StatusCode = 401;
             if (!SkipPinCheck && !CheckPin(true)) throw new Exception("Pin Locked");
             if (!GetCSRFToken(out string Token)) throw new Exception("Invalid X-CSRF-Token");
 
-            RestRequest blockReq = new RestRequest($"v1/users/{UserID}/{(Unblock ? "unblock" : "block")}", Method.POST);
+            RestRequest blockReq = MakeRequest($"v1/users/{UserID}/{(Unblock ? "unblock" : "block")}", Method.Post).AddHeader("X-CSRF-TOKEN", Token);
 
-            blockReq.AddCookie(".ROBLOSECURITY", SecurityToken);
-            blockReq.AddHeader("X-CSRF-TOKEN", Token);
-
-            IRestResponse blockRes = AccountManager.AccountClient.Execute(blockReq);
+            RestResponse blockRes = AccountManager.AccountClient.Execute(blockReq);
 
             Program.Logger.Info($"Block Response for {UserID} | Unblocking: {Unblock}: [{blockRes.StatusCode}] {blockRes.Content}");
 
@@ -452,20 +428,16 @@ namespace RBX_Alt_Manager
             return blockRes;
         }
 
-        public IRestResponse UnblockUserId(string UserID, bool SkipPinCheck = false, HttpListenerContext Context = null) => BlockUserId(UserID, SkipPinCheck, Context, true);
+        public RestResponse UnblockUserId(string UserID, bool SkipPinCheck = false, HttpListenerContext Context = null) => BlockUserId(UserID, SkipPinCheck, Context, true);
 
-        public string UnblockEveryone(HttpListenerContext Context = null)
+        public bool UnblockEveryone(out string Response)
         {
-            if (Context != null) Context.Response.StatusCode = 401;
+            if (!CheckPin(true)) { Response = "Pin is Locked"; return false; }
 
-            if (!CheckPin(true)) return "Pin is Locked";
-
-            IRestResponse response = GetBlockedList();
+            RestResponse response = GetBlockedList();
 
             if (response.IsSuccessful && response.StatusCode == HttpStatusCode.OK)
             {
-                if (Context != null) Context.Response.StatusCode = 200;
-
                 Task.Run(async () =>
                 {
                     JObject List = JObject.Parse(response.Content);
@@ -487,32 +459,32 @@ namespace RBX_Alt_Manager
                     }
                 });
 
-                return "Unblocking Everyone";
+                Response = "Unblocking Everyone";
+
+                return true; 
             }
 
-            if (Context != null) Context.Response.StatusCode = 400;
+            Response = "Failed to unblock everyone";
 
-            return "Failed to unblock everyone";
+            return false;
         }
 
-        public IRestResponse GetBlockedList(HttpListenerContext Context = null)
+        public RestResponse GetBlockedList(HttpListenerContext Context = null)
         {
             if (Context != null) Context.Response.StatusCode = 401;
 
             if (!CheckPin(true)) throw new Exception("Pin is Locked");
 
-            RestRequest request = new RestRequest($"v1/users/get-detailed-blocked-users", Method.GET);
+            RestRequest request = MakeRequest($"v1/users/get-detailed-blocked-users", Method.Get);
 
-            request.AddCookie(".ROBLOSECURITY", SecurityToken);
-
-            IRestResponse response = AccountManager.AccountClient.Execute(request);
+            RestResponse response = AccountManager.AccountClient.Execute(request);
 
             if (Context != null) Context.Response.StatusCode = (int)response.StatusCode;
 
             return response;
         }
 
-        public bool ParseAccessCode(IRestResponse response, out string Code)
+        public bool ParseAccessCode(RestResponse response, out string Code)
         {
             Code = "";
 
@@ -528,7 +500,7 @@ namespace RBX_Alt_Manager
             return false;
         }
 
-        public async Task<string> JoinServer(long PlaceID, string JobID = "", bool FollowUser = false, bool JoinVIP = false) // oh god i am not refactoring everything to be async im sorry
+        public async Task<string> JoinServer(long PlaceID, string JobID = "", bool FollowUser = false, bool JoinVIP = false, bool Internal = false) // oh god i am not refactoring everything to be async im sorry
         {
             if (string.IsNullOrEmpty(BrowserTrackerID))
             {
@@ -537,6 +509,8 @@ namespace RBX_Alt_Manager
                 BrowserTrackerID = r.Next(100000, 175000).ToString() + r.Next(100000, 900000).ToString(); // oh god this is ugly
             }
 
+            try { ClientSettingsPatcher.PatchSettings(); } catch (Exception Ex) { Program.Logger.Error($"Failed to patch ClientAppSettings: {Ex}"); }
+
             if (!GetCSRFToken(out string Token)) return $"ERROR: Account Session Expired, re-add the account or try again. (Invalid X-CSRF-Token)\n{Token}";
 
             if (AccountManager.ShuffleJobID && string.IsNullOrEmpty(JobID))
@@ -544,17 +518,40 @@ namespace RBX_Alt_Manager
 
             if (GetAuthTicket(out string Ticket))
             {
+                if (AccountManager.General.Get<bool>("AutoCloseLastProcess"))
+                {
+                    try
+                    {
+                        foreach(Process proc in Process.GetProcessesByName("RobloxPlayerBeta"))
+                        {
+                            var TrackerMatch = Regex.Match(proc.GetCommandLine(), @"\-b (\d+)");
+                            string TrackerID = TrackerMatch.Success ? TrackerMatch.Groups[1].Value : string.Empty;
+
+                            if (TrackerID == BrowserTrackerID)
+                            {
+                                try // ignore ObjectDisposedExceptions
+                                {
+                                    proc.CloseMainWindow();
+                                    await Task.Delay(250);
+                                    proc.CloseMainWindow(); // Allows Roblox to disconnect from the server so we don't get the "Same account launched" error
+                                    await Task.Delay(250);
+                                    proc.Kill();
+                                }
+                                catch { }
+                            }
+                        }
+                    }
+                    catch (Exception x) { Program.Logger.Error($"An error occured attempting to close {Username}'s last process(es): {x}"); }
+                }
+
                 string LinkCode = string.IsNullOrEmpty(JobID) ? string.Empty : Regex.Match(JobID, "privateServerLinkCode=(.+)")?.Groups[1]?.Value;
                 string AccessCode = JobID;
 
                 if (!string.IsNullOrEmpty(LinkCode))
                 {
-                    RestRequest request = new RestRequest(string.Format("/games/{0}?privateServerLinkCode={1}", PlaceID, LinkCode), Method.GET);
-                    request.AddCookie(".ROBLOSECURITY", SecurityToken);
-                    request.AddHeader("X-CSRF-TOKEN", Token);
-                    request.AddHeader("Referer", "https://www.roblox.com/games/185655149/Welcome-to-Bloxburg");
+                    RestRequest request = MakeRequest(string.Format("/games/{0}?privateServerLinkCode={1}", PlaceID, LinkCode), Method.Get).AddHeader("X-CSRF-TOKEN", Token).AddHeader("Referer", "https://www.roblox.com/games/4924922222/Brookhaven-RP");
 
-                    IRestResponse response = await AccountManager.MainClient.ExecuteAsync(request);
+                    RestResponse response = await AccountManager.MainClient.ExecuteAsync(request);
 
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
@@ -566,13 +563,9 @@ namespace RBX_Alt_Manager
                     }
                     else if (response.StatusCode == HttpStatusCode.Redirect) // thx wally (p.s. i hate wally)
                     {
-                        request = new RestRequest(string.Format("/games/{0}?privateServerLinkCode={1}", PlaceID, LinkCode), Method.GET);
+                        request = MakeRequest(string.Format("/games/{0}?privateServerLinkCode={1}", PlaceID, LinkCode), Method.Get).AddHeader("X-CSRF-TOKEN", Token).AddHeader("Referer", "https://www.roblox.com/games/4924922222/Brookhaven-RP");
 
-                        request.AddCookie(".ROBLOSECURITY", SecurityToken);
-                        request.AddHeader("X-CSRF-TOKEN", Token);
-                        request.AddHeader("Referer", "https://www.roblox.com/games/185655149/Welcome-to-Bloxburg");
-
-                        IRestResponse result = await AccountManager.Web13Client.ExecuteAsync(request);
+                        RestResponse result = await AccountManager.Web13Client.ExecuteAsync(request);
 
                         if (result.StatusCode == HttpStatusCode.OK)
                         {
@@ -587,13 +580,9 @@ namespace RBX_Alt_Manager
 
                 if (JoinVIP)
                 {
-                    var request = new RestRequest("/account/settings/private-server-invite-privacy");
+                    var request = MakeRequest("/account/settings/private-server-invite-privacy").AddHeader("X-CSRF-TOKEN", Token).AddHeader("Referer", "https://www.roblox.com/my/account");
 
-                    request.AddCookie(".ROBLOSECURITY", SecurityToken);
-                    request.AddHeader("X-CSRF-TOKEN", Token);
-                    request.AddHeader("Referer", "https://www.roblox.com/my/account");
-
-                    IRestResponse result = await AccountManager.MainClient.ExecuteAsync(request);
+                    RestResponse result = await AccountManager.MainClient.ExecuteAsync(request);
 
                     if (result.IsSuccessful && !result.Content.Contains("\"AllUsers\""))
                     {
@@ -603,9 +592,7 @@ namespace RBX_Alt_Manager
                             {
                                 if (!CheckPin(true)) return;
 
-                                var setRequest = new RestRequest("/account/settings/private-server-invite-privacy", Method.POST);
-
-                                setRequest.AddCookie(".ROBLOSECURITY", SecurityToken);
+                                var setRequest = MakeRequest("/account/settings/private-server-invite-privacy", Method.Post);
 
                                 setRequest.AddHeader("X-CSRF-TOKEN", Token);
                                 setRequest.AddHeader("Referer", "https://www.roblox.com/my/account");
@@ -638,15 +625,13 @@ namespace RBX_Alt_Manager
                     await Task.Run(() =>
                     {
                         ProcessStartInfo Roblox = new ProcessStartInfo(RPath);
-
+                        
                         if (JoinVIP)
                             Roblox.Arguments = string.Format("--app -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode={3}\"", Ticket, PlaceID, AccessCode, LinkCode);
                         else if (FollowUser)
                             Roblox.Arguments = string.Format("--app -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={1}\"", Ticket, PlaceID);
                         else
                             Roblox.Arguments = string.Format("--app -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}&isPlayTogetherGame=false\"", Ticket, PlaceID, "&gameId=" + JobID, string.IsNullOrEmpty(JobID) ? "" : "Job");
-
-                        Process.Start(Roblox);
                     });
 
                     return "Success";
@@ -657,18 +642,23 @@ namespace RBX_Alt_Manager
                     {
                         try
                         {
+                            ProcessStartInfo LaunchInfo = new ProcessStartInfo();
+
                             if (JoinVIP)
-                                Process.Start($"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode($"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={PlaceID}&accessCode={AccessCode}&linkCode={LinkCode}")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp").WaitForExit();
+                                LaunchInfo.FileName = $"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode($"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={PlaceID}&accessCode={AccessCode}&linkCode={LinkCode}")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp";
                             else if (FollowUser)
-                                Process.Start($"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode($"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={PlaceID}")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp").WaitForExit();
+                                LaunchInfo.FileName = $"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode($"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestFollowUser&userId={PlaceID}")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp";
                             else
-                                Process.Start($"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode($"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{(string.IsNullOrEmpty(JobID) ? "" : "Job")}&browserTrackerId={BrowserTrackerID}&placeId={PlaceID}{(string.IsNullOrEmpty(JobID) ? "" : ("&gameId=" + JobID))}&isPlayTogetherGame=false{(AccountManager.IsTeleport ? "&isTeleport=true" : "")}")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp").WaitForExit();
+                                LaunchInfo.FileName = $"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode($"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{(string.IsNullOrEmpty(JobID) ? "" : "Job")}&browserTrackerId={BrowserTrackerID}&placeId={PlaceID}{(string.IsNullOrEmpty(JobID) ? "" : ("&gameId=" + JobID))}&isPlayTogetherGame=false{(AccountManager.IsTeleport ? "&isTeleport=true" : "")}")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp";
+                            Process Launcher = Process.Start(LaunchInfo);
+                            
+                            Launcher.WaitForExit();
 
                             AccountManager.Instance.NextAccount();
                         }
                         catch (Exception x)
                         {
-                            Utilities.InvokeIfRequired(AccountManager.Instance, () => MessageBox.Show($"ERROR: Failed to launch roblox! Try re-installing Roblox.\n\n{x.Message} {x.StackTrace}", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error));
+                            Utilities.InvokeIfRequired(AccountManager.Instance, () => MessageBox.Show($"ERROR: Failed to launch roblox! Try re-installing Roblox.\n\n{x.Message}{x.StackTrace}", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error));
                             AccountManager.Instance.CancelLaunching();
                             AccountManager.Instance.NextAccount();
                         }
@@ -690,14 +680,9 @@ namespace RBX_Alt_Manager
             if (string.IsNullOrEmpty(Token))
                 return "ERROR: Account Session Expired, re-add the account or try again. (Invalid X-CSRF-Token)";
 
-            RestRequest request = new RestRequest("v1/join-game-instance", Method.POST);
-            request.AddCookie(".ROBLOSECURITY", SecurityToken);
-            request.AddHeader("Content-Type", "application/json");
-            request.AddJsonBody(new { gameId = JobID, placeId = PlaceID });
+            RestRequest request = MakeRequest("v1/join-game-instance", Method.Post).AddHeader("Content-Type", "application/json").AddJsonBody(new { gameId = JobID, placeId = PlaceID });
 
-            AccountManager.GameJoinClient.UserAgent = "Roblox/WinInet";
-
-            IRestResponse response = AccountManager.GameJoinClient.Execute(request);
+            RestResponse response = AccountManager.GameJoinClient.Execute(request);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
@@ -708,39 +693,14 @@ namespace RBX_Alt_Manager
                 return $"Failed {response.StatusCode}: {response.Content} {response.ErrorMessage}";
         }
 
-        public string LaunchApp()
-        {
-            if ((DateTime.Now - LastAppLaunch).TotalSeconds < 15)
-                return "Woah slow down";
-
-            if (string.IsNullOrEmpty(BrowserTrackerID))
-            {
-                Random r = new Random();
-                BrowserTrackerID = r.Next(100000, 120000).ToString() + r.Next(100000, 900000).ToString();
-            }
-
-            if (GetAuthTicket(out string Ticket))
-            {
-                double LaunchTime = Math.Floor((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds * 1000);
-
-                Process.Start($"roblox-player:1+launchmode:app+gameinfo:{Ticket}+launchtime:{LaunchTime}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us");
-
-                return "Success";
-            }
-            else
-                return "ERROR: Invalid Authentication Ticket, re-add the account or try again\n(Failed to get Authentication Ticket, Roblox has probably signed you out)";
-        }
-
         public bool SendFriendRequest(string Username)
         {
-            if (!AccountManager.GetUserID(Username, out long UserId)) return false;
+            if (!AccountManager.GetUserID(Username, out long UserId, out _)) return false;
             if (!GetCSRFToken(out string Token)) return false;
 
-            RestRequest friendRequest = new RestRequest($"/v1/users/{UserId}/request-friendship", Method.POST);
-            friendRequest.AddCookie(".ROBLOSECURITY", SecurityToken);
-            friendRequest.AddHeader("X-CSRF-TOKEN", Token);
+            RestRequest friendRequest = MakeRequest($"/v1/users/{UserId}/request-friendship", Method.Post).AddHeader("X-CSRF-TOKEN", Token);
 
-            IRestResponse friendResponse = AccountManager.FriendsClient.Execute(friendRequest);
+            RestResponse friendResponse = AccountManager.FriendsClient.Execute(friendRequest);
 
             return friendResponse.IsSuccessful && friendResponse.StatusCode == HttpStatusCode.OK;
         }
@@ -749,12 +709,9 @@ namespace RBX_Alt_Manager
         {
             if (!GetCSRFToken(out string Token)) return;
 
-            RestRequest dpRequest = new RestRequest($"/v1/users/{UserID}/display-names", Method.PATCH);
-            dpRequest.AddCookie(".ROBLOSECURITY", SecurityToken);
-            dpRequest.AddHeader("X-CSRF-TOKEN", Token);
-            dpRequest.AddJsonBody(new { newDisplayName = DisplayName });
+            RestRequest dpRequest = MakeRequest($"/v1/users/{UserID}/display-names", Method.Patch).AddHeader("X-CSRF-TOKEN", Token).AddJsonBody(new { newDisplayName = DisplayName });
 
-            IRestResponse dpResponse = AccountManager.UsersClient.Execute(dpRequest);
+            RestResponse dpResponse = AccountManager.UsersClient.Execute(dpRequest);
 
             if (dpResponse.StatusCode != HttpStatusCode.OK)
                 throw new Exception(JObject.Parse(dpResponse.Content)?["errors"]?[0]?["message"].Value<string>() ?? $"Something went wrong\n{dpResponse.StatusCode}: {dpResponse.Content}");
@@ -771,10 +728,7 @@ namespace RBX_Alt_Manager
 
             if (Avatar.ContainsKey("playerAvatarType"))
             {
-                request = new RestRequest("v1/avatar/set-player-avatar-type", Method.POST);
-                request.AddCookie(".ROBLOSECURITY", SecurityToken);
-                request.AddHeader("X-CSRF-TOKEN", Token);
-                request.AddJsonBody(new { playerAvatarType = Avatar["playerAvatarType"].Value<string>() });
+                request = MakeRequest("v1/avatar/set-player-avatar-type", Method.Post).AddHeader("X-CSRF-TOKEN", Token).AddJsonBody(new { playerAvatarType = Avatar["playerAvatarType"].Value<string>() });
 
                 AccountManager.AvatarClient.Execute(request);
             }
@@ -783,32 +737,23 @@ namespace RBX_Alt_Manager
 
             if (ScaleObject != null)
             {
-                request = new RestRequest("v1/avatar/set-scales", Method.POST);
-                request.AddCookie(".ROBLOSECURITY", SecurityToken);
-                request.AddHeader("X-CSRF-TOKEN", Token);
-                request.AddJsonBody(ScaleObject.ToString());
+                request = MakeRequest("v1/avatar/set-scales", Method.Post).AddHeader("X-CSRF-TOKEN", Token).AddJsonBody(ScaleObject.ToString());
 
                 AccountManager.AvatarClient.Execute(request);
             }
 
             if (Avatar.ContainsKey("bodyColors"))
             {
-                request = new RestRequest("v1/avatar/set-body-colors", Method.POST);
-                request.AddCookie(".ROBLOSECURITY", SecurityToken);
-                request.AddHeader("X-CSRF-TOKEN", Token);
-                request.AddJsonBody(Avatar["bodyColors"].ToString());
+                request = MakeRequest("v1/avatar/set-body-colors", Method.Post).AddHeader("X-CSRF-TOKEN", Token).AddJsonBody(Avatar["bodyColors"].ToString());
 
                 AccountManager.AvatarClient.Execute(request);
             }
 
             if (Avatar.ContainsKey("assets"))
             {
-                request = new RestRequest("v2/avatar/set-wearing-assets", Method.POST);
-                request.AddCookie(".ROBLOSECURITY", SecurityToken);
-                request.AddHeader("X-CSRF-TOKEN", Token);
-                request.AddJsonBody($"{{\"assets\":{Avatar["assets"]}}}");
+                request = MakeRequest("v2/avatar/set-wearing-assets", Method.Post).AddHeader("X-CSRF-TOKEN", Token).AddJsonBody($"{{\"assets\":{Avatar["assets"]}}}");
 
-                IRestResponse Response = AccountManager.AvatarClient.Execute(request);
+                RestResponse Response = AccountManager.AvatarClient.Execute(request);
 
                 if (Response.IsSuccessful)
                 {
@@ -820,7 +765,22 @@ namespace RBX_Alt_Manager
             }
         }
 
-        public string GetField(string Name) => Fields.ContainsKey(Name) ? Fields[Name] : "";
+        public async Task<bool> QuickLogIn(string Code)
+        {
+            if (string.IsNullOrEmpty(Code) || Code.Length != 6) return false;
+            if (!GetCSRFToken(out string Token)) return false;
+
+            using var API = new RestClient("https://apis.roblox.com/");
+            var Response = await API.PostAsync(MakeRequest("auth-token-service/v1/login/enterCode").AddHeader("X-CSRF-TOKEN", Token).AddJsonBody(new { code = Code }));
+
+            if (Response.IsSuccessful && Response.Content.TryParseJson(out dynamic Info))
+                if (Utilities.YesNoPrompt("Quick Log In", "Please confirm you are logging in with this device", $"Device: {Info?.deviceInfo ?? "Unknown"}\nLocation: {Info?.location ?? "Unknown"}"))
+                    return (await API.PostAsync(MakeRequest("auth-token-service/v1/login/validateCode").AddHeader("X-CSRF-TOKEN", Token).AddJsonBody(new { code = Code }))).IsSuccessful;
+
+            return false;
+        }
+
+        public string GetField(string Name) => Fields.ContainsKey(Name) ? Fields[Name] : string.Empty;
         public void SetField(string Name, string Value) { Fields[Name] = Value; AccountManager.SaveAccounts(); }
         public void RemoveField(string Name) { Fields.Remove(Name); AccountManager.SaveAccounts(); }
     }

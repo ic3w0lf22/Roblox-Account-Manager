@@ -72,9 +72,11 @@ namespace RBX_Alt_Manager.Forms
             this.copyJobIdToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SettingsTab = new System.Windows.Forms.TabPage();
-            this.flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
+            this.SettingsLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.StartOnLaunch = new System.Windows.Forms.CheckBox();
             this.AllowExternalConnectionsCB = new System.Windows.Forms.CheckBox();
+            this.InternetCheckCB = new System.Windows.Forms.CheckBox();
+            this.UsePresenceCB = new System.Windows.Forms.CheckBox();
             this.RLLabel = new System.Windows.Forms.Label();
             this.RelaunchDelayNumber = new System.Windows.Forms.NumericUpDown();
             this.LDLabel = new System.Windows.Forms.Label();
@@ -86,10 +88,13 @@ namespace RBX_Alt_Manager.Forms
             this.label8 = new System.Windows.Forms.Label();
             this.AutoMinIntervalNum = new System.Windows.Forms.NumericUpDown();
             this.CloseRoblox = new System.Windows.Forms.Button();
-            this.AutoCloseCB = new System.Windows.Forms.CheckBox();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.AutoCloseType = new System.Windows.Forms.ComboBox();
             this.ACLabel = new System.Windows.Forms.Label();
             this.AutoCloseIntervalNum = new System.Windows.Forms.NumericUpDown();
-            this.AutoCloseType = new System.Windows.Forms.ComboBox();
+            this.MaxInstanceLabel = new System.Windows.Forms.Label();
+            this.MaxInstancesNum = new System.Windows.Forms.NumericUpDown();
+            this.AutoCloseCB = new System.Windows.Forms.CheckBox();
             this.HelpPage = new System.Windows.Forms.TabPage();
             this.label7 = new System.Windows.Forms.Label();
             this.NexusDocsButton = new System.Windows.Forms.Button();
@@ -100,6 +105,7 @@ namespace RBX_Alt_Manager.Forms
             this.AutoRelaunchTimer = new System.Windows.Forms.Timer(this.components);
             this.MinimzeTimer = new System.Windows.Forms.Timer(this.components);
             this.CloseTimer = new System.Windows.Forms.Timer(this.components);
+            this.Helper = new System.Windows.Forms.ToolTip(this.components);
             this.ControlsPanel.SuspendLayout();
             this.ScriptLayoutPanel.SuspendLayout();
             this.ScriptTabs.SuspendLayout();
@@ -114,12 +120,14 @@ namespace RBX_Alt_Manager.Forms
             ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).BeginInit();
             this.ACStrip.SuspendLayout();
             this.SettingsTab.SuspendLayout();
-            this.flowLayoutPanel2.SuspendLayout();
+            this.SettingsLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RelaunchDelayNumber)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.LauncherDelayNumber)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PortNumber)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.AutoMinIntervalNum)).BeginInit();
+            this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AutoCloseIntervalNum)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxInstancesNum)).BeginInit();
             this.HelpPage.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -285,7 +293,7 @@ namespace RBX_Alt_Manager.Forms
         '\'',
         '\''};
             this.ScriptBox.AutoIndentCharsPatterns = "\r\n^\\s*[\\w\\.]+(\\s\\w+)?\\s*(?<range>=)\\s*(?<range>.+)\r\n";
-            this.ScriptBox.AutoScrollMinSize = new System.Drawing.Size(195, 14);
+            this.ScriptBox.AutoScrollMinSize = new System.Drawing.Size(267, 98);
             this.ScriptBox.BackBrush = null;
             this.ScriptBox.BracketsHighlightStrategy = FastColoredTextBoxNS.BracketsHighlightStrategy.Strategy2;
             this.ScriptBox.CharHeight = 14;
@@ -294,6 +302,7 @@ namespace RBX_Alt_Manager.Forms
             this.ScriptBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.ScriptBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.ScriptBox.Dock = System.Windows.Forms.DockStyle.Top;
+            this.ScriptBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.ScriptBox.IsReplaceMode = false;
             this.ScriptBox.Language = FastColoredTextBoxNS.Language.Lua;
             this.ScriptBox.LeftBracket = '(';
@@ -309,7 +318,9 @@ namespace RBX_Alt_Manager.Forms
             this.ScriptBox.Size = new System.Drawing.Size(248, 136);
             this.ScriptBox.TabIndex = 8;
             this.ScriptBox.Tag = "UseControlFont";
-            this.ScriptBox.Text = "print(\"Hello World!\")";
+            this.ScriptBox.Text = "print(\"Hello World!\")\r\n\r\n-- THIS IS NOT A BUILT-IN\r\n-- EXECUTOR, ONLY A PROXY.\r\n-" +
+    "- YOU MUST CONNECT YOUR\r\n-- OWN EXECUTOR TO THIS\r\n-- WITH NEXUS (Click Help Tab)" +
+    "";
             this.ScriptBox.Zoom = 100;
             // 
             // ClearButton
@@ -369,6 +380,7 @@ namespace RBX_Alt_Manager.Forms
             this.AutoExecuteScriptBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.AutoExecuteScriptBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.AutoExecuteScriptBox.Dock = System.Windows.Forms.DockStyle.Top;
+            this.AutoExecuteScriptBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.AutoExecuteScriptBox.IsReplaceMode = false;
             this.AutoExecuteScriptBox.Language = FastColoredTextBoxNS.Language.Lua;
             this.AutoExecuteScriptBox.LeftBracket = '(';
@@ -584,7 +596,7 @@ namespace RBX_Alt_Manager.Forms
             // 
             // SettingsTab
             // 
-            this.SettingsTab.Controls.Add(this.flowLayoutPanel2);
+            this.SettingsTab.Controls.Add(this.SettingsLayoutPanel);
             this.SettingsTab.Location = new System.Drawing.Point(4, 25);
             this.SettingsTab.Name = "SettingsTab";
             this.SettingsTab.Padding = new System.Windows.Forms.Padding(3);
@@ -593,36 +605,35 @@ namespace RBX_Alt_Manager.Forms
             this.SettingsTab.Text = "Settings";
             this.SettingsTab.UseVisualStyleBackColor = true;
             // 
-            // flowLayoutPanel2
+            // SettingsLayoutPanel
             // 
-            this.flowLayoutPanel2.Controls.Add(this.StartOnLaunch);
-            this.flowLayoutPanel2.Controls.Add(this.AllowExternalConnectionsCB);
-            this.flowLayoutPanel2.Controls.Add(this.RLLabel);
-            this.flowLayoutPanel2.Controls.Add(this.RelaunchDelayNumber);
-            this.flowLayoutPanel2.Controls.Add(this.LDLabel);
-            this.flowLayoutPanel2.Controls.Add(this.LauncherDelayNumber);
-            this.flowLayoutPanel2.Controls.Add(this.PortLabel);
-            this.flowLayoutPanel2.Controls.Add(this.PortNumber);
-            this.flowLayoutPanel2.Controls.Add(this.MinimizeRoblox);
-            this.flowLayoutPanel2.Controls.Add(this.AutoMinimizeCB);
-            this.flowLayoutPanel2.Controls.Add(this.label8);
-            this.flowLayoutPanel2.Controls.Add(this.AutoMinIntervalNum);
-            this.flowLayoutPanel2.Controls.Add(this.CloseRoblox);
-            this.flowLayoutPanel2.Controls.Add(this.AutoCloseCB);
-            this.flowLayoutPanel2.Controls.Add(this.ACLabel);
-            this.flowLayoutPanel2.Controls.Add(this.AutoCloseIntervalNum);
-            this.flowLayoutPanel2.Controls.Add(this.AutoCloseType);
-            this.flowLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanel2.Location = new System.Drawing.Point(3, 3);
-            this.flowLayoutPanel2.Name = "flowLayoutPanel2";
-            this.flowLayoutPanel2.Padding = new System.Windows.Forms.Padding(12);
-            this.flowLayoutPanel2.Size = new System.Drawing.Size(579, 359);
-            this.flowLayoutPanel2.TabIndex = 2;
+            this.SettingsLayoutPanel.Controls.Add(this.StartOnLaunch);
+            this.SettingsLayoutPanel.Controls.Add(this.AllowExternalConnectionsCB);
+            this.SettingsLayoutPanel.Controls.Add(this.InternetCheckCB);
+            this.SettingsLayoutPanel.Controls.Add(this.UsePresenceCB);
+            this.SettingsLayoutPanel.Controls.Add(this.RLLabel);
+            this.SettingsLayoutPanel.Controls.Add(this.RelaunchDelayNumber);
+            this.SettingsLayoutPanel.Controls.Add(this.LDLabel);
+            this.SettingsLayoutPanel.Controls.Add(this.LauncherDelayNumber);
+            this.SettingsLayoutPanel.Controls.Add(this.PortLabel);
+            this.SettingsLayoutPanel.Controls.Add(this.PortNumber);
+            this.SettingsLayoutPanel.Controls.Add(this.MinimizeRoblox);
+            this.SettingsLayoutPanel.Controls.Add(this.AutoMinimizeCB);
+            this.SettingsLayoutPanel.Controls.Add(this.label8);
+            this.SettingsLayoutPanel.Controls.Add(this.AutoMinIntervalNum);
+            this.SettingsLayoutPanel.Controls.Add(this.CloseRoblox);
+            this.SettingsLayoutPanel.Controls.Add(this.tableLayoutPanel1);
+            this.SettingsLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SettingsLayoutPanel.Location = new System.Drawing.Point(3, 3);
+            this.SettingsLayoutPanel.Name = "SettingsLayoutPanel";
+            this.SettingsLayoutPanel.Padding = new System.Windows.Forms.Padding(12);
+            this.SettingsLayoutPanel.Size = new System.Drawing.Size(579, 359);
+            this.SettingsLayoutPanel.TabIndex = 2;
             // 
             // StartOnLaunch
             // 
             this.StartOnLaunch.AutoSize = true;
-            this.flowLayoutPanel2.SetFlowBreak(this.StartOnLaunch, true);
+            this.SettingsLayoutPanel.SetFlowBreak(this.StartOnLaunch, true);
             this.StartOnLaunch.Location = new System.Drawing.Point(15, 15);
             this.StartOnLaunch.Name = "StartOnLaunch";
             this.StartOnLaunch.Size = new System.Drawing.Size(223, 17);
@@ -634,7 +645,7 @@ namespace RBX_Alt_Manager.Forms
             // AllowExternalConnectionsCB
             // 
             this.AllowExternalConnectionsCB.AutoSize = true;
-            this.flowLayoutPanel2.SetFlowBreak(this.AllowExternalConnectionsCB, true);
+            this.SettingsLayoutPanel.SetFlowBreak(this.AllowExternalConnectionsCB, true);
             this.AllowExternalConnectionsCB.Location = new System.Drawing.Point(15, 38);
             this.AllowExternalConnectionsCB.Name = "AllowExternalConnectionsCB";
             this.AllowExternalConnectionsCB.Size = new System.Drawing.Size(154, 17);
@@ -643,10 +654,37 @@ namespace RBX_Alt_Manager.Forms
             this.AllowExternalConnectionsCB.UseVisualStyleBackColor = true;
             this.AllowExternalConnectionsCB.CheckedChanged += new System.EventHandler(this.AllowExternalConnectionsCB_CheckedChanged);
             // 
+            // InternetCheckCB
+            // 
+            this.InternetCheckCB.AutoSize = true;
+            this.SettingsLayoutPanel.SetFlowBreak(this.InternetCheckCB, true);
+            this.InternetCheckCB.Location = new System.Drawing.Point(15, 61);
+            this.InternetCheckCB.Name = "InternetCheckCB";
+            this.InternetCheckCB.Size = new System.Drawing.Size(184, 17);
+            this.InternetCheckCB.TabIndex = 24;
+            this.InternetCheckCB.Text = "Check for Internet Before Launch";
+            this.InternetCheckCB.UseVisualStyleBackColor = true;
+            this.InternetCheckCB.CheckedChanged += new System.EventHandler(this.InternetCheckCB_CheckedChanged);
+            // 
+            // UsePresenceCB
+            // 
+            this.UsePresenceCB.AutoSize = true;
+            this.UsePresenceCB.Cursor = System.Windows.Forms.Cursors.Help;
+            this.SettingsLayoutPanel.SetFlowBreak(this.UsePresenceCB, true);
+            this.UsePresenceCB.Location = new System.Drawing.Point(15, 84);
+            this.UsePresenceCB.Name = "UsePresenceCB";
+            this.UsePresenceCB.Size = new System.Drawing.Size(113, 17);
+            this.UsePresenceCB.TabIndex = 25;
+            this.UsePresenceCB.Text = "Use Presence API";
+            this.Helper.SetToolTip(this.UsePresenceCB, "Uses Roblox\'s presence API to check if an\r\naccount is online instead of having Ne" +
+        "xus\r\nconnect to the program when re-launching");
+            this.UsePresenceCB.UseVisualStyleBackColor = true;
+            this.UsePresenceCB.CheckedChanged += new System.EventHandler(this.UsePresenceCB_CheckedChanged);
+            // 
             // RLLabel
             // 
             this.RLLabel.AutoSize = true;
-            this.RLLabel.Location = new System.Drawing.Point(15, 62);
+            this.RLLabel.Location = new System.Drawing.Point(15, 108);
             this.RLLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
             this.RLLabel.Name = "RLLabel";
             this.RLLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
@@ -656,8 +694,8 @@ namespace RBX_Alt_Manager.Forms
             // 
             // RelaunchDelayNumber
             // 
-            this.flowLayoutPanel2.SetFlowBreak(this.RelaunchDelayNumber, true);
-            this.RelaunchDelayNumber.Location = new System.Drawing.Point(192, 59);
+            this.SettingsLayoutPanel.SetFlowBreak(this.RelaunchDelayNumber, true);
+            this.RelaunchDelayNumber.Location = new System.Drawing.Point(192, 105);
             this.RelaunchDelayNumber.Margin = new System.Windows.Forms.Padding(3, 1, 3, 0);
             this.RelaunchDelayNumber.Maximum = new decimal(new int[] {
             3600,
@@ -681,7 +719,7 @@ namespace RBX_Alt_Manager.Forms
             // 
             // LDLabel
             // 
-            this.LDLabel.Location = new System.Drawing.Point(15, 83);
+            this.LDLabel.Location = new System.Drawing.Point(15, 129);
             this.LDLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
             this.LDLabel.Name = "LDLabel";
             this.LDLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
@@ -691,8 +729,8 @@ namespace RBX_Alt_Manager.Forms
             // 
             // LauncherDelayNumber
             // 
-            this.flowLayoutPanel2.SetFlowBreak(this.LauncherDelayNumber, true);
-            this.LauncherDelayNumber.Location = new System.Drawing.Point(192, 80);
+            this.SettingsLayoutPanel.SetFlowBreak(this.LauncherDelayNumber, true);
+            this.LauncherDelayNumber.Location = new System.Drawing.Point(192, 126);
             this.LauncherDelayNumber.Margin = new System.Windows.Forms.Padding(3, 1, 3, 0);
             this.LauncherDelayNumber.Maximum = new decimal(new int[] {
             3600,
@@ -716,7 +754,7 @@ namespace RBX_Alt_Manager.Forms
             // 
             // PortLabel
             // 
-            this.PortLabel.Location = new System.Drawing.Point(15, 104);
+            this.PortLabel.Location = new System.Drawing.Point(15, 150);
             this.PortLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
             this.PortLabel.Name = "PortLabel";
             this.PortLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
@@ -726,8 +764,8 @@ namespace RBX_Alt_Manager.Forms
             // 
             // PortNumber
             // 
-            this.flowLayoutPanel2.SetFlowBreak(this.PortNumber, true);
-            this.PortNumber.Location = new System.Drawing.Point(192, 101);
+            this.SettingsLayoutPanel.SetFlowBreak(this.PortNumber, true);
+            this.PortNumber.Location = new System.Drawing.Point(192, 147);
             this.PortNumber.Margin = new System.Windows.Forms.Padding(3, 1, 3, 0);
             this.PortNumber.Maximum = new decimal(new int[] {
             65535,
@@ -751,7 +789,7 @@ namespace RBX_Alt_Manager.Forms
             // 
             // MinimizeRoblox
             // 
-            this.MinimizeRoblox.Location = new System.Drawing.Point(15, 124);
+            this.MinimizeRoblox.Location = new System.Drawing.Point(15, 170);
             this.MinimizeRoblox.Name = "MinimizeRoblox";
             this.MinimizeRoblox.Size = new System.Drawing.Size(145, 23);
             this.MinimizeRoblox.TabIndex = 12;
@@ -761,7 +799,7 @@ namespace RBX_Alt_Manager.Forms
             // 
             // AutoMinimizeCB
             // 
-            this.AutoMinimizeCB.Location = new System.Drawing.Point(166, 128);
+            this.AutoMinimizeCB.Location = new System.Drawing.Point(166, 174);
             this.AutoMinimizeCB.Margin = new System.Windows.Forms.Padding(3, 7, 3, 3);
             this.AutoMinimizeCB.Name = "AutoMinimizeCB";
             this.AutoMinimizeCB.Size = new System.Drawing.Size(91, 17);
@@ -773,7 +811,7 @@ namespace RBX_Alt_Manager.Forms
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(263, 121);
+            this.label8.Location = new System.Drawing.Point(263, 167);
             this.label8.Name = "label8";
             this.label8.Padding = new System.Windows.Forms.Padding(0, 8, 0, 0);
             this.label8.Size = new System.Drawing.Size(68, 21);
@@ -782,10 +820,10 @@ namespace RBX_Alt_Manager.Forms
             // 
             // AutoMinIntervalNum
             // 
-            this.flowLayoutPanel2.SetFlowBreak(this.AutoMinIntervalNum, true);
-            this.AutoMinIntervalNum.Location = new System.Drawing.Point(337, 124);
+            this.SettingsLayoutPanel.SetFlowBreak(this.AutoMinIntervalNum, true);
+            this.AutoMinIntervalNum.Location = new System.Drawing.Point(337, 170);
             this.AutoMinIntervalNum.Maximum = new decimal(new int[] {
-            120,
+            3000,
             0,
             0,
             0});
@@ -806,7 +844,7 @@ namespace RBX_Alt_Manager.Forms
             // 
             // CloseRoblox
             // 
-            this.CloseRoblox.Location = new System.Drawing.Point(15, 153);
+            this.CloseRoblox.Location = new System.Drawing.Point(15, 199);
             this.CloseRoblox.Name = "CloseRoblox";
             this.CloseRoblox.Size = new System.Drawing.Size(145, 23);
             this.CloseRoblox.TabIndex = 13;
@@ -814,32 +852,57 @@ namespace RBX_Alt_Manager.Forms
             this.CloseRoblox.UseVisualStyleBackColor = true;
             this.CloseRoblox.Click += new System.EventHandler(this.CloseRoblox_Click);
             // 
-            // AutoCloseCB
+            // tableLayoutPanel1
             // 
-            this.AutoCloseCB.Location = new System.Drawing.Point(166, 157);
-            this.AutoCloseCB.Margin = new System.Windows.Forms.Padding(3, 7, 3, 3);
-            this.AutoCloseCB.Name = "AutoCloseCB";
-            this.AutoCloseCB.Size = new System.Drawing.Size(91, 17);
-            this.AutoCloseCB.TabIndex = 16;
-            this.AutoCloseCB.Text = "Auto Close";
-            this.AutoCloseCB.UseVisualStyleBackColor = true;
-            this.AutoCloseCB.CheckedChanged += new System.EventHandler(this.AutoCloseCB_CheckedChanged);
+            this.tableLayoutPanel1.AutoSize = true;
+            this.tableLayoutPanel1.ColumnCount = 2;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel1.Controls.Add(this.AutoCloseType, 1, 0);
+            this.tableLayoutPanel1.Controls.Add(this.ACLabel, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.AutoCloseIntervalNum, 1, 1);
+            this.tableLayoutPanel1.Controls.Add(this.MaxInstanceLabel, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.MaxInstancesNum, 1, 2);
+            this.tableLayoutPanel1.Controls.Add(this.AutoCloseCB, 0, 0);
+            this.tableLayoutPanel1.GrowStyle = System.Windows.Forms.TableLayoutPanelGrowStyle.FixedSize;
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(166, 199);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            this.tableLayoutPanel1.RowCount = 3;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(194, 79);
+            this.tableLayoutPanel1.TabIndex = 0;
+            // 
+            // AutoCloseType
+            // 
+            this.AutoCloseType.FormattingEnabled = true;
+            this.AutoCloseType.ItemHeight = 13;
+            this.AutoCloseType.Items.AddRange(new object[] {
+            "Per Instance",
+            "Global"});
+            this.AutoCloseType.Location = new System.Drawing.Point(100, 3);
+            this.AutoCloseType.Name = "AutoCloseType";
+            this.AutoCloseType.Size = new System.Drawing.Size(90, 21);
+            this.AutoCloseType.TabIndex = 21;
+            this.AutoCloseType.Text = "Per Instance";
+            this.AutoCloseType.SelectedIndexChanged += new System.EventHandler(this.AutoCloseType_SelectedIndexChanged);
             // 
             // ACLabel
             // 
             this.ACLabel.AutoSize = true;
-            this.ACLabel.Location = new System.Drawing.Point(263, 150);
+            this.ACLabel.Location = new System.Drawing.Point(3, 27);
             this.ACLabel.Name = "ACLabel";
-            this.ACLabel.Padding = new System.Windows.Forms.Padding(0, 8, 0, 0);
-            this.ACLabel.Size = new System.Drawing.Size(67, 21);
+            this.ACLabel.Padding = new System.Windows.Forms.Padding(0, 4, 0, 0);
+            this.ACLabel.Size = new System.Drawing.Size(67, 17);
             this.ACLabel.TabIndex = 17;
             this.ACLabel.Text = "Interval (min)";
             // 
             // AutoCloseIntervalNum
             // 
-            this.AutoCloseIntervalNum.Location = new System.Drawing.Point(336, 153);
+            this.AutoCloseIntervalNum.Location = new System.Drawing.Point(100, 30);
             this.AutoCloseIntervalNum.Maximum = new decimal(new int[] {
-            1440,
+            6000,
             0,
             0,
             0});
@@ -858,19 +921,51 @@ namespace RBX_Alt_Manager.Forms
             0});
             this.AutoCloseIntervalNum.ValueChanged += new System.EventHandler(this.AutoCloseIntervalNum_ValueChanged);
             // 
-            // AutoCloseType
+            // MaxInstanceLabel
             // 
-            this.flowLayoutPanel2.SetFlowBreak(this.AutoCloseType, true);
-            this.AutoCloseType.FormattingEnabled = true;
-            this.AutoCloseType.Items.AddRange(new object[] {
-            "Per Instance",
-            "Global"});
-            this.AutoCloseType.Location = new System.Drawing.Point(411, 153);
-            this.AutoCloseType.Name = "AutoCloseType";
-            this.AutoCloseType.Size = new System.Drawing.Size(90, 21);
-            this.AutoCloseType.TabIndex = 21;
-            this.AutoCloseType.Text = "Per Instance";
-            this.AutoCloseType.SelectedIndexChanged += new System.EventHandler(this.AutoCloseType_SelectedIndexChanged);
+            this.MaxInstanceLabel.AutoSize = true;
+            this.MaxInstanceLabel.Location = new System.Drawing.Point(3, 53);
+            this.MaxInstanceLabel.Name = "MaxInstanceLabel";
+            this.MaxInstanceLabel.Padding = new System.Windows.Forms.Padding(0, 4, 0, 0);
+            this.MaxInstanceLabel.Size = new System.Drawing.Size(76, 17);
+            this.MaxInstanceLabel.TabIndex = 27;
+            this.MaxInstanceLabel.Text = "Max Instances";
+            this.Helper.SetToolTip(this.MaxInstanceLabel, "Will close every single Roblox process if there\r\nare over a specified amount of i" +
+        "nstances open");
+            // 
+            // MaxInstancesNum
+            // 
+            this.MaxInstancesNum.Location = new System.Drawing.Point(100, 56);
+            this.MaxInstancesNum.Maximum = new decimal(new int[] {
+            500,
+            0,
+            0,
+            0});
+            this.MaxInstancesNum.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.MaxInstancesNum.Name = "MaxInstancesNum";
+            this.MaxInstancesNum.Size = new System.Drawing.Size(69, 20);
+            this.MaxInstancesNum.TabIndex = 28;
+            this.MaxInstancesNum.Value = new decimal(new int[] {
+            25,
+            0,
+            0,
+            0});
+            this.MaxInstancesNum.ValueChanged += new System.EventHandler(this.MaxInstancesNum_ValueChanged);
+            // 
+            // AutoCloseCB
+            // 
+            this.AutoCloseCB.Location = new System.Drawing.Point(3, 7);
+            this.AutoCloseCB.Margin = new System.Windows.Forms.Padding(3, 7, 3, 3);
+            this.AutoCloseCB.Name = "AutoCloseCB";
+            this.AutoCloseCB.Size = new System.Drawing.Size(91, 17);
+            this.AutoCloseCB.TabIndex = 16;
+            this.AutoCloseCB.Text = "Auto Close";
+            this.AutoCloseCB.UseVisualStyleBackColor = true;
+            this.AutoCloseCB.CheckedChanged += new System.EventHandler(this.AutoCloseCB_CheckedChanged);
             // 
             // HelpPage
             // 
@@ -992,13 +1087,16 @@ namespace RBX_Alt_Manager.Forms
             ((System.ComponentModel.ISupportInitialize)(this.AccountsView)).EndInit();
             this.ACStrip.ResumeLayout(false);
             this.SettingsTab.ResumeLayout(false);
-            this.flowLayoutPanel2.ResumeLayout(false);
-            this.flowLayoutPanel2.PerformLayout();
+            this.SettingsLayoutPanel.ResumeLayout(false);
+            this.SettingsLayoutPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RelaunchDelayNumber)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.LauncherDelayNumber)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PortNumber)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.AutoMinIntervalNum)).EndInit();
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AutoCloseIntervalNum)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxInstancesNum)).EndInit();
             this.HelpPage.ResumeLayout(false);
             this.HelpPage.PerformLayout();
             this.ResumeLayout(false);
@@ -1046,7 +1144,7 @@ namespace RBX_Alt_Manager.Forms
         private System.Windows.Forms.ContextMenuStrip ACStrip;
         private System.Windows.Forms.ToolStripMenuItem removeToolStripMenuItem;
         private System.Windows.Forms.TabPage SettingsTab;
-        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel2;
+        private System.Windows.Forms.FlowLayoutPanel SettingsLayoutPanel;
         private System.Windows.Forms.Label RLLabel;
         private System.Windows.Forms.NumericUpDown RelaunchDelayNumber;
         private System.Windows.Forms.Label PortLabel;
@@ -1072,5 +1170,11 @@ namespace RBX_Alt_Manager.Forms
         private Timer CloseTimer;
         private Label LDLabel;
         private NumericUpDown LauncherDelayNumber;
+        private CheckBox InternetCheckCB;
+        private CheckBox UsePresenceCB;
+        private ToolTip Helper;
+        private Label MaxInstanceLabel;
+        private NumericUpDown MaxInstancesNum;
+        private TableLayoutPanel tableLayoutPanel1;
     }
 }

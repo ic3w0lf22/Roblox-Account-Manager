@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -90,7 +91,7 @@ namespace RBX_Alt_Manager
         public T Get<T>(string name)
         {
             if (_properties.ContainsKey(name))
-                return (T)Convert.ChangeType(_properties[name].Value, typeof(T));
+                return (T)Convert.ChangeType(_properties[name].Value, typeof(T), CultureInfo.InvariantCulture);
 
             return default(T);
         }
@@ -207,6 +208,7 @@ namespace RBX_Alt_Manager
                 if (line.StartsWith("[") && line.EndsWith("]"))
                 {
                     var sectionName = line.Substring(1, line.Length - 2);
+                    if (sectionName == "RBX Alt Manager") sectionName = "Roblox Account Manager"; // support old themes
                     if (!_sections.ContainsKey(sectionName))
                     {
                         section = new IniSection(sectionName);

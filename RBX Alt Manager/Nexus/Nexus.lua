@@ -19,9 +19,17 @@ if not game:IsLoaded() then
 end
 
 local Nexus = {}
-local WSConnect = syn and syn.websocket.connect or Krnl and Krnl.WebSocket.connect or WebSocket and WebSocket.connect
+local WSConnect = syn and syn.websocket.connect or
+    (Krnl and (function() repeat task.wait() until Krnl.WebSocket and Krnl.WebSocket.connect return Krnl.WebSocket.connect)()) or
+    WebSocket and WebSocket.connect
 
-if not WSConnect then return end
+if not WSConnect then
+    if messagebox then
+        messagebox(('Nexus encountered an error while launching!\n\n%s'):format('Your exploit (' .. (identifyexecutor and identifyexecutor() or 'UNKNOWN') .. ') is not supported'), 'Roblox Account Manager', 0)
+    end
+    
+    return
+end
 
 local TeleportService = game:GetService'TeleportService'
 local InputService = game:GetService'UserInputService'
@@ -199,7 +207,9 @@ do -- Nexus
         return Message:sub(#Header + 1)
     end
 
-    function Nexus:Connect(Host)
+    function Nexus:Connect(Host, Bypass)
+        if not Bypass and self.IsConnected then return 'Ignoring connection request, Nexus is already connected' end
+
         while true do
             for Index, Connection in pairs(self.Connections) do
                 Connection:Disconnect()
@@ -312,6 +322,8 @@ do -- Default Commands
                 Nexus:Log(table.concat(T, ' '))
             end
 
+            if newcclosure then Env.print = newcclosure(Env.print) end
+
             local S, E = pcall(Function)
 
             if not S then
@@ -404,5 +416,4 @@ GEnv.performance = Nexus.Commands.performance -- fix the sirmeme error so that p
 
 if not Nexus_Version then
     Nexus:Connect()
-    Nexus.Connected:Wait()
 end

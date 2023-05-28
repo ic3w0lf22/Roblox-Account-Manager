@@ -37,7 +37,7 @@ namespace RBX_Alt_Manager.Nexus
             LinkedAccount = account;
             Username = LinkedAccount?.Username;
             Status = AccountStatus.Offline;
-            LastPing = DateTime.Now;
+            LastPing = DateTime.Now.AddSeconds(-20);
         }
 
         public void Connect(WebSocketContext Context)
@@ -49,6 +49,7 @@ namespace RBX_Alt_Manager.Nexus
             }
 
             Status = AccountStatus.Online;
+            LastPing = DateTime.Now;
 
             this.Context = Context;
 
@@ -62,7 +63,7 @@ namespace RBX_Alt_Manager.Nexus
                 if (!string.IsNullOrEmpty(AutoExecute))
                 {
                     while (!ClientCanReceive)
-                        Task.Delay(50);
+                        Task.Delay(80);
 
                     SendMessage("execute " + AutoExecute);
                 }

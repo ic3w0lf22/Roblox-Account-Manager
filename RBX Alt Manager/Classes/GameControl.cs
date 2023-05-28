@@ -74,7 +74,7 @@ namespace RBX_Alt_Manager.Classes
             }
 
             RestRequest DetailsRequest = new RestRequest($"v1/games/multiget-place-details?placeIds={Game.Details.placeId}");
-            DetailsRequest.AddCookie(".ROBLOSECURITY", AccountManager.LastValidAccount?.SecurityToken);
+            DetailsRequest.AddCookie(".ROBLOSECURITY", AccountManager.LastValidAccount?.SecurityToken, "/", ".roblox.com");
 
             Clipboard.SetText(ServerList.GamesClient.Execute(DetailsRequest).Content);
         });

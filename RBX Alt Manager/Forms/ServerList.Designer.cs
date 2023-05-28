@@ -59,6 +59,8 @@ namespace RBX_Alt_Manager
             this.Username = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.Favorite = new System.Windows.Forms.Button();
             this.VerifyDataModelCB = new System.Windows.Forms.CheckBox();
+            this.WatcherTimer = new System.Windows.Forms.Timer(this.components);
+            this.OpenLogsButton = new System.Windows.Forms.Button();
             this.Tabs = new RBX_Alt_Manager.Classes.NBTabControl();
             this.ServersTab = new System.Windows.Forms.TabPage();
             this.ServerListView = new BrightIdeasSoftware.ObjectListView();
@@ -107,13 +109,15 @@ namespace RBX_Alt_Manager
             this.label2 = new System.Windows.Forms.Label();
             this.ReadIntervalN = new System.Windows.Forms.NumericUpDown();
             this.ExitIfBetaDetectedCB = new System.Windows.Forms.CheckBox();
+            this.ExitIfNoConnectionCB = new System.Windows.Forms.CheckBox();
+            this.TimeoutNum = new System.Windows.Forms.NumericUpDown();
+            this.ConnectionSecondsLabel = new System.Windows.Forms.Label();
             this.IgnoreExistingProcesses = new System.Windows.Forms.CheckBox();
             this.RbxMemoryCB = new System.Windows.Forms.CheckBox();
             this.RbxMemoryLTNum = new System.Windows.Forms.NumericUpDown();
             this.MBLabel = new System.Windows.Forms.Label();
             this.CloseRbxWindowTitleCB = new System.Windows.Forms.CheckBox();
             this.RbxWindowNameTB = new System.Windows.Forms.TextBox();
-            this.WatcherTimer = new System.Windows.Forms.Timer(this.components);
             this.ServerListStrip.SuspendLayout();
             this.GamesStrip.SuspendLayout();
             this.FavoritesStrip.SuspendLayout();
@@ -131,6 +135,7 @@ namespace RBX_Alt_Manager
             this.WatcherPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ScanIntervalN)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ReadIntervalN)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.TimeoutNum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.RbxMemoryLTNum)).BeginInit();
             this.SuspendLayout();
             // 
@@ -319,7 +324,7 @@ namespace RBX_Alt_Manager
             // 
             this.VerifyDataModelCB.AutoSize = true;
             this.WatcherPanel.SetFlowBreak(this.VerifyDataModelCB, true);
-            this.VerifyDataModelCB.Location = new System.Drawing.Point(11, 109);
+            this.VerifyDataModelCB.Location = new System.Drawing.Point(11, 135);
             this.VerifyDataModelCB.Name = "VerifyDataModelCB";
             this.VerifyDataModelCB.Size = new System.Drawing.Size(136, 17);
             this.VerifyDataModelCB.TabIndex = 6;
@@ -329,6 +334,26 @@ namespace RBX_Alt_Manager
         "app.");
             this.VerifyDataModelCB.UseVisualStyleBackColor = true;
             this.VerifyDataModelCB.CheckedChanged += new System.EventHandler(this.VerifyDataModelCB_CheckedChanged);
+            // 
+            // WatcherTimer
+            // 
+            this.WatcherTimer.Interval = 12000;
+            this.WatcherTimer.Tick += new System.EventHandler(this.WatcherTimer_Tick);
+            // 
+            // OpenLogsButton
+            // 
+            this.OpenLogsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.OpenLogsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.OpenLogsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F);
+            this.OpenLogsButton.Location = new System.Drawing.Point(475, 283);
+            this.OpenLogsButton.Name = "OpenLogsButton";
+            this.OpenLogsButton.Size = new System.Drawing.Size(16, 16);
+            this.OpenLogsButton.TabIndex = 16;
+            this.OpenLogsButton.Tag = "NoScaling";
+            this.OpenLogsButton.Text = "L";
+            this.OpenLogsButton.UseVisualStyleBackColor = true;
+            this.OpenLogsButton.Visible = false;
+            this.OpenLogsButton.Click += new System.EventHandler(this.OpenLogsButton_Click);
             // 
             // Tabs
             // 
@@ -344,6 +369,7 @@ namespace RBX_Alt_Manager
             this.Tabs.SelectedIndex = 0;
             this.Tabs.Size = new System.Drawing.Size(499, 307);
             this.Tabs.TabIndex = 6;
+            this.Tabs.SelectedIndexChanged += new System.EventHandler(this.Tabs_SelectedIndexChanged);
             // 
             // ServersTab
             // 
@@ -518,6 +544,7 @@ namespace RBX_Alt_Manager
             this.Term.Name = "Term";
             this.Term.Size = new System.Drawing.Size(254, 20);
             this.Term.TabIndex = 7;
+            this.Term.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Term_KeyPress);
             // 
             // GameListPanel
             // 
@@ -562,18 +589,18 @@ namespace RBX_Alt_Manager
             // 
             // name
             // 
-            this.name.AspectName = "name";
+            this.name.AspectName = "Name";
             this.name.Text = "Game Name";
             this.name.Width = 310;
             // 
             // playerCount
             // 
-            this.playerCount.AspectName = "playerCount";
+            this.playerCount.AspectName = "PlayerCount";
             this.playerCount.Text = "Players";
             // 
             // likeRatio
             // 
-            this.likeRatio.AspectName = "likeRatio";
+            this.likeRatio.AspectName = "LikeRatio";
             this.likeRatio.Text = "Like %";
             // 
             // FavoritesPage
@@ -809,6 +836,9 @@ namespace RBX_Alt_Manager
             this.WatcherPanel.Controls.Add(this.label2);
             this.WatcherPanel.Controls.Add(this.ReadIntervalN);
             this.WatcherPanel.Controls.Add(this.ExitIfBetaDetectedCB);
+            this.WatcherPanel.Controls.Add(this.ExitIfNoConnectionCB);
+            this.WatcherPanel.Controls.Add(this.TimeoutNum);
+            this.WatcherPanel.Controls.Add(this.ConnectionSecondsLabel);
             this.WatcherPanel.Controls.Add(this.VerifyDataModelCB);
             this.WatcherPanel.Controls.Add(this.IgnoreExistingProcesses);
             this.WatcherPanel.Controls.Add(this.RbxMemoryCB);
@@ -915,11 +945,56 @@ namespace RBX_Alt_Manager
             this.ExitIfBetaDetectedCB.UseVisualStyleBackColor = true;
             this.ExitIfBetaDetectedCB.CheckedChanged += new System.EventHandler(this.ExitIfBetaDetectedCB_CheckedChanged);
             // 
+            // ExitIfNoConnectionCB
+            // 
+            this.ExitIfNoConnectionCB.AutoSize = true;
+            this.ExitIfNoConnectionCB.Location = new System.Drawing.Point(11, 109);
+            this.ExitIfNoConnectionCB.Name = "ExitIfNoConnectionCB";
+            this.ExitIfNoConnectionCB.Size = new System.Drawing.Size(186, 17);
+            this.ExitIfNoConnectionCB.TabIndex = 13;
+            this.ExitIfNoConnectionCB.Text = "Exit if No Connection to Server for";
+            this.ExitIfNoConnectionCB.UseVisualStyleBackColor = true;
+            this.ExitIfNoConnectionCB.CheckedChanged += new System.EventHandler(this.ExitIfNoConnectionCB_CheckedChanged);
+            // 
+            // TimeoutNum
+            // 
+            this.TimeoutNum.Location = new System.Drawing.Point(203, 109);
+            this.TimeoutNum.Maximum = new decimal(new int[] {
+            3600,
+            0,
+            0,
+            0});
+            this.TimeoutNum.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.TimeoutNum.Name = "TimeoutNum";
+            this.TimeoutNum.Size = new System.Drawing.Size(52, 20);
+            this.TimeoutNum.TabIndex = 14;
+            this.TimeoutNum.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.TimeoutNum.ValueChanged += new System.EventHandler(this.TimeoutNum_ValueChanged);
+            // 
+            // ConnectionSecondsLabel
+            // 
+            this.ConnectionSecondsLabel.AutoSize = true;
+            this.WatcherPanel.SetFlowBreak(this.ConnectionSecondsLabel, true);
+            this.ConnectionSecondsLabel.Location = new System.Drawing.Point(261, 112);
+            this.ConnectionSecondsLabel.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
+            this.ConnectionSecondsLabel.Name = "ConnectionSecondsLabel";
+            this.ConnectionSecondsLabel.Size = new System.Drawing.Size(49, 13);
+            this.ConnectionSecondsLabel.TabIndex = 15;
+            this.ConnectionSecondsLabel.Text = "Seconds";
+            // 
             // IgnoreExistingProcesses
             // 
             this.IgnoreExistingProcesses.AutoSize = true;
             this.WatcherPanel.SetFlowBreak(this.IgnoreExistingProcesses, true);
-            this.IgnoreExistingProcesses.Location = new System.Drawing.Point(11, 132);
+            this.IgnoreExistingProcesses.Location = new System.Drawing.Point(11, 158);
             this.IgnoreExistingProcesses.Name = "IgnoreExistingProcesses";
             this.IgnoreExistingProcesses.Size = new System.Drawing.Size(218, 17);
             this.IgnoreExistingProcesses.TabIndex = 7;
@@ -930,7 +1005,7 @@ namespace RBX_Alt_Manager
             // RbxMemoryCB
             // 
             this.RbxMemoryCB.AutoSize = true;
-            this.RbxMemoryCB.Location = new System.Drawing.Point(11, 155);
+            this.RbxMemoryCB.Location = new System.Drawing.Point(11, 181);
             this.RbxMemoryCB.Margin = new System.Windows.Forms.Padding(3, 3, 0, 3);
             this.RbxMemoryCB.Name = "RbxMemoryCB";
             this.RbxMemoryCB.Size = new System.Drawing.Size(199, 17);
@@ -941,7 +1016,7 @@ namespace RBX_Alt_Manager
             // 
             // RbxMemoryLTNum
             // 
-            this.RbxMemoryLTNum.Location = new System.Drawing.Point(213, 155);
+            this.RbxMemoryLTNum.Location = new System.Drawing.Point(213, 181);
             this.RbxMemoryLTNum.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -966,7 +1041,7 @@ namespace RBX_Alt_Manager
             // 
             this.MBLabel.AutoSize = true;
             this.WatcherPanel.SetFlowBreak(this.MBLabel, true);
-            this.MBLabel.Location = new System.Drawing.Point(271, 158);
+            this.MBLabel.Location = new System.Drawing.Point(271, 184);
             this.MBLabel.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.MBLabel.Name = "MBLabel";
             this.MBLabel.Size = new System.Drawing.Size(23, 13);
@@ -976,7 +1051,7 @@ namespace RBX_Alt_Manager
             // CloseRbxWindowTitleCB
             // 
             this.CloseRbxWindowTitleCB.AutoSize = true;
-            this.CloseRbxWindowTitleCB.Location = new System.Drawing.Point(11, 181);
+            this.CloseRbxWindowTitleCB.Location = new System.Drawing.Point(11, 207);
             this.CloseRbxWindowTitleCB.Margin = new System.Windows.Forms.Padding(3, 3, 0, 3);
             this.CloseRbxWindowTitleCB.Name = "CloseRbxWindowTitleCB";
             this.CloseRbxWindowTitleCB.Size = new System.Drawing.Size(180, 17);
@@ -991,23 +1066,19 @@ namespace RBX_Alt_Manager
             "Roblox"});
             this.RbxWindowNameTB.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
             this.WatcherPanel.SetFlowBreak(this.RbxWindowNameTB, true);
-            this.RbxWindowNameTB.Location = new System.Drawing.Point(194, 181);
+            this.RbxWindowNameTB.Location = new System.Drawing.Point(194, 207);
             this.RbxWindowNameTB.Name = "RbxWindowNameTB";
             this.RbxWindowNameTB.Size = new System.Drawing.Size(52, 20);
             this.RbxWindowNameTB.TabIndex = 12;
             this.RbxWindowNameTB.Text = "Roblox";
             this.RbxWindowNameTB.TextChanged += new System.EventHandler(this.RbxWindowNameTB_TextChanged);
             // 
-            // WatcherTimer
-            // 
-            this.WatcherTimer.Interval = 12000;
-            this.WatcherTimer.Tick += new System.EventHandler(this.WatcherTimer_Tick);
-            // 
             // ServerList
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(499, 307);
+            this.Controls.Add(this.OpenLogsButton);
             this.Controls.Add(this.Tabs);
             this.HelpButton = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -1040,6 +1111,7 @@ namespace RBX_Alt_Manager
             this.WatcherPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ScanIntervalN)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ReadIntervalN)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.TimeoutNum)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.RbxMemoryLTNum)).EndInit();
             this.ResumeLayout(false);
 
@@ -1127,5 +1199,9 @@ namespace RBX_Alt_Manager
         private System.Windows.Forms.Label MBLabel;
         private System.Windows.Forms.CheckBox CloseRbxWindowTitleCB;
         private System.Windows.Forms.TextBox RbxWindowNameTB;
+        private System.Windows.Forms.CheckBox ExitIfNoConnectionCB;
+        private System.Windows.Forms.NumericUpDown TimeoutNum;
+        private System.Windows.Forms.Label ConnectionSecondsLabel;
+        private System.Windows.Forms.Button OpenLogsButton;
     }
 }
