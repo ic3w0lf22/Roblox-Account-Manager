@@ -1,4 +1,5 @@
 ﻿using BrightIdeasSoftware;
+using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
@@ -21,7 +22,6 @@ using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -65,6 +65,7 @@ namespace RBX_Alt_Manager
         public static bool IsTeleport = false;
         public static bool UseOldJoin = false;
         public static bool ShuffleJobID = false;
+        private static bool PuppeteerSupported;
         public static string CurrentVersion;
         public OLVListItem SelectedAccountItem { get; private set; }
         private WebServer AltManagerWS;
@@ -144,6 +145,7 @@ namespace RBX_Alt_Manager
             if (!General.Exists("PresenceUpdateRate")) General.Set("PresenceUpdateRate", "5");
             if (!General.Exists("UnlockFPS")) General.Set("UnlockFPS", "false");
             if (!General.Exists("MaxFPSValue")) General.Set("MaxFPSValue", "120");
+            if (!General.Exists("UseCefSharpBrowser")) General.Set("UseCefSharpBrowser", "false");
 
             if (!Developer.Exists("DevMode")) Developer.Set("DevMode", "false");
             if (!Developer.Exists("EnableWebServer")) Developer.Set("EnableWebServer", "false");
@@ -629,6 +631,8 @@ namespace RBX_Alt_Manager
 
         private void AccountManager_Load(object sender, EventArgs e)
         {
+            PasswordPanel.Dock = DockStyle.Fill;
+
             string AFN = Path.Combine(Directory.GetCurrentDirectory(), "Auto Update.exe");
             string AU2FN = Path.Combine(Directory.GetCurrentDirectory(), "AU.exe");
 
@@ -1147,16 +1151,100 @@ namespace RBX_Alt_Manager
             if (!UpdateMultiRoblox() && !General.Get<bool>("HideRbxAlert"))
                 MessageBox.Show("WARNING: Roblox is currently running, multi roblox will not work until you restart the account manager with roblox closed.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
-            if (!Directory.Exists(AccountBrowser.Fetcher.DownloadsFolder) || Directory.GetDirectories(AccountBrowser.Fetcher.DownloadsFolder).Length == 0)
+            int Major = Environment.OSVersion.Version.Major, Minor = Environment.OSVersion.Version.Minor;
+
+            PuppeteerSupported = !(Major < 6 || (Major == 6 && Minor <= 1));
+
+            if (General.Get<bool>("UseCefSharpBrowser")) PuppeteerSupported = false;
+
+            if (!PuppeteerSupported)
             {
+                AddAccountsStrip.Items.Remove(bulkUserPassToolStripMenuItem);
+                AddAccountsStrip.Items.Remove(customURLJSToolStripMenuItem);
+                OpenBrowserStrip.Items.Remove(URLJSToolStripMenuItem);
+                OpenBrowserStrip.Items.Remove(joinGroupToolStripMenuItem);
+            }
+
+            if (PuppeteerSupported && (!Directory.Exists(AccountBrowser.Fetcher.DownloadsFolder) || Directory.GetDirectories(AccountBrowser.Fetcher.DownloadsFolder).Length == 0))
+            {
+                Add.Visible = false;
+                Remove.Visible = false;
+                DownloadProgressBar.Visible = true;
+                DLChromiumLabel.Visible = true;
+
                 Task.Run(async () =>
                 {
+                    IsDownloadingChromium = true;
+
+                    void DownloadProgressChanged(object s, DownloadProgressChangedEventArgs e) => DownloadProgressBar.InvokeIfRequired(() => { DownloadProgressBar.Value = e.ProgressPercentage; });
+
+                    AccountBrowser.Fetcher.DownloadProgressChanged += DownloadProgressChanged;
                     await AccountBrowser.Fetcher.DownloadAsync(BrowserFetcher.DefaultChromiumRevision);
+                    AccountBrowser.Fetcher.DownloadProgressChanged -= DownloadProgressChanged;
 
                     IsDownloadingChromium = false;
-                });
 
-                MessageBox.Show("Chromium needs to be downloaded, you may have to wait a while before adding an account.", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    this.InvokeIfRequired(() =>
+                    {
+                        Add.Visible = true;
+                        Remove.Visible = true;
+                        DownloadProgressBar.Visible = false;
+                        DLChromiumLabel.Visible = false;
+                    });
+                });
+            }
+            else if (!PuppeteerSupported)
+            {
+                FileInfo Cef = new FileInfo(Path.Combine(Environment.CurrentDirectory, "x86", "CefSharp.dll"));
+
+                if (Cef.Exists)
+                {
+                    FileVersionInfo Info = FileVersionInfo.GetVersionInfo(Cef.FullName);
+
+                    if (Info.ProductMajorPart != 109)
+                        try { Directory.GetParent(Cef.FullName).RecursiveDelete(); } catch { }
+                }
+
+                if (!Directory.Exists(Path.Combine(Environment.CurrentDirectory, "x86")))
+                {
+                    var Existing = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "x86"));
+
+                    DLChromiumLabel.Text = "Downloading CefSharp...";
+
+                    Add.Visible = false;
+                    Remove.Visible = false;
+                    DownloadProgressBar.Visible = true;
+                    DLChromiumLabel.Visible = true;
+
+                    Task.Run(async () =>
+                    {
+                        IsDownloadingChromium = true;
+
+                        using HttpClient client = new HttpClient();
+
+                        string FileName = Path.GetTempFileName(), DownloadUrl = Resources.CefSharpDownload;
+
+                        var TotalDownloadSize = (await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, DownloadUrl))).Content.Headers.ContentLength.Value;
+                        Progress<float> progress = new Progress<float>(progress => DownloadProgressBar.InvokeIfRequired(() => DownloadProgressBar.Value = (int)(progress * 100)));
+
+                        using (var file = new FileStream(FileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                            await client.DownloadAsync(DownloadUrl, file, progress);
+
+                        if (Existing.Exists) Existing.RecursiveDelete();
+
+                        System.IO.Compression.ZipFile.ExtractToDirectory(FileName, Environment.CurrentDirectory);
+
+                        IsDownloadingChromium = false;
+
+                        this.InvokeIfRequired(() =>
+                        {
+                            Add.Visible = true;
+                            Remove.Visible = true;
+                            DownloadProgressBar.Visible = false;
+                            DLChromiumLabel.Visible = false;
+                        });
+                    });
+                }
             }
 
             if (AccountControl.Get<bool>("StartOnLaunch"))
@@ -1181,7 +1269,6 @@ namespace RBX_Alt_Manager
                 rbxMultiMutex.Close();
                 rbxMultiMutex = null;
             }
-
 
             return true;
         }
@@ -1219,59 +1306,81 @@ namespace RBX_Alt_Manager
 
         private async void Add_Click(object sender, EventArgs e)
         {
-            if (IsDownloadingChromium)
+            if (PuppeteerSupported)
             {
-                static void ShowManualInstallInstructions()
+                Add.Enabled = false;
+
+                try { await new AccountBrowser().Login(); }
+                catch (Exception x)
                 {
-                    string Temp = Path.Combine(Path.GetTempPath(), "manual install instructions.html");
-                    string DownloadLink = (string)typeof(BrowserFetcher).GetMethod("GetDownloadURL", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[] { AccountBrowser.Fetcher.Product, AccountBrowser.Fetcher.Platform, AccountBrowser.Fetcher.DownloadHost, BrowserFetcher.DefaultChromiumRevision });
-                    string Directory = Path.Combine(AccountBrowser.Fetcher.DownloadsFolder, $"{AccountBrowser.Fetcher.Platform}-{BrowserFetcher.DefaultChromiumRevision}");
+                    Program.Logger.Error($"[Add_Click] An error was encountered attempting to login: {x}");
 
-                    File.WriteAllText(Temp, string.Format(Resources.ManualInstallHTML, DownloadLink, Directory));
+                    if (Utilities.YesNoPrompt($"An error was encountered attempting to login", "You may have a corrupted chromium installation", "Would you like to re-install chromium?", false))
+                    {
+                        MessageBox.Show("Roblox Account Manager will now close since it can't delete the folder while it's in use.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                    Process.Start(new ProcessStartInfo(Temp) { UseShellExecute = true });
-                    Process.Start(new ProcessStartInfo("cmd") { Arguments = $"/c mkdir \"{Directory}\"", CreateNoWindow = true });
+                        if (Directory.GetFiles(AccountBrowser.Fetcher.DownloadsFolder).Length <= 1 && Directory.GetDirectories(AccountBrowser.Fetcher.DownloadsFolder).Length <= 1)
+                            Process.Start("cmd.exe", $"/c rmdir /s /q \"{AccountBrowser.Fetcher.DownloadsFolder}\"");
+                        else
+                            Process.Start("explorer.exe", "/select, " + AccountBrowser.Fetcher.DownloadsFolder);
+
+                        Environment.Exit(0);
+                    }
                 }
 
-                if (TaskDialog.IsPlatformSupported)
-                {
-                    TaskDialog Dialog = new TaskDialog()
-                    {
-                        Caption = "Add Account",
-                        InstructionText = "Chromium is still being downloaded",
-                        Text = "If this is not working for you, you can choose to manually install",
-                        Icon = TaskDialogStandardIcon.Information
-                    };
+                Add.Enabled = true;
+            }
+            else
+                CefBrowser.Instance.Login();
+        }
 
-                    TaskDialogButton Manual = new TaskDialogButton("Manual", "Download Manually");
-                    TaskDialogButton Wait = new TaskDialogButton("Wait", "Wait");
+        private void DownloadProgressBar_Click(object sender, EventArgs e)
+        {
+            static void ShowManualInstallInstructions()
+            {
+                string Temp = Path.Combine(Path.GetTempPath(), "manual install instructions.html");
 
-                    Wait.Click += (s, e) => Dialog.Close();
-                    Manual.Click += (s, e) =>
-                    {
-                        Dialog.Close();
+                string DownloadLink = PuppeteerSupported ? (string)typeof(BrowserFetcher).GetMethod("GetDownloadURL", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[] { AccountBrowser.Fetcher.Product, AccountBrowser.Fetcher.Platform, AccountBrowser.Fetcher.DownloadHost, BrowserFetcher.DefaultChromiumRevision }) : Resources.CefSharpDownload;
+                string Directory = PuppeteerSupported ? Path.Combine(AccountBrowser.Fetcher.DownloadsFolder, $"{AccountBrowser.Fetcher.Platform}-{BrowserFetcher.DefaultChromiumRevision}") : Path.Combine(Environment.CurrentDirectory);
 
-                        ShowManualInstallInstructions();
-                    };
+                File.WriteAllText(Temp, string.Format(Resources.ManualInstallHTML, PuppeteerSupported ? "Chromium" : "CefSharp", DownloadLink, PuppeteerSupported ? "chrome-win" : "x86", Directory));
 
-                    Dialog.Controls.Add(Manual);
-                    Dialog.Controls.Add(Wait);
-                    Wait.Default = true;
-
-                    Dialog.Show();
-                }
-                else if (MessageBox.Show("Chromium is still downloading, you may have to wait a while before adding an account.\n\nNot working? You can choose to manually install by pressing \"Yes\"", "Roblox Account Manager", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information) == DialogResult.Yes)
-                    ShowManualInstallInstructions();
-
-                return;
+                Process.Start(new ProcessStartInfo(Temp) { UseShellExecute = true });
+                Process.Start(new ProcessStartInfo("cmd") { Arguments = $"/c mkdir \"{Directory}\"", CreateNoWindow = true });
             }
 
-            Add.Enabled = false;
+            if (TaskDialog.IsPlatformSupported)
+            {
+                TaskDialog Dialog = new TaskDialog()
+                {
+                    Caption = "Add Account",
+                    InstructionText = $"{(PuppeteerSupported ? "Chromium" : "CefSharp")} is still being downloaded",
+                    Text = "If this is not working for you, you can choose to manually install",
+                    Icon = TaskDialogStandardIcon.Information
+                };
 
-            try { await new AccountBrowser().Login(); } catch (Exception x) { Program.Logger.Error($"[Add_Click] An error was encountered attempting to login: {x}"); } // incase the user closes the browser for some reason during launch
+                TaskDialogButton Manual = new TaskDialogButton("Manual", "Download Manually");
+                TaskDialogButton Wait = new TaskDialogButton("Wait", "Wait");
 
-            Add.Enabled = true;
+                Wait.Click += (s, e) => Dialog.Close();
+                Manual.Click += (s, e) =>
+                {
+                    Dialog.Close();
+
+                    ShowManualInstallInstructions();
+                };
+
+                Dialog.Controls.Add(Manual);
+                Dialog.Controls.Add(Wait);
+                Wait.Default = true;
+
+                Dialog.Show();
+            }
+            else if (MessageBox.Show($"{(PuppeteerSupported ? "Chromium" : "CefSharp")} is still downloading, you may have to wait a while before adding an account.\n\nNot working? You can choose to manually install by pressing \"Yes\"", "Roblox Account Manager", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information) == DialogResult.Yes)
+                ShowManualInstallInstructions();
         }
+
+        private void DLChromiumLabel_Click(object sender, EventArgs e) => DownloadProgressBar_Click(sender, e);
 
         private void manualToolStripMenuItem_Click(object sender, EventArgs e) => Add.PerformClick();
 
@@ -1483,6 +1592,13 @@ namespace RBX_Alt_Manager
 
         private void AccountManager_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (IsDownloadingChromium && !Utilities.YesNoPrompt("Roblox Account Manager", $"{(PuppeteerSupported ? "Chromium" : "CefSharp")} is still being downloaded, exiting may corrupt your chromium installation and prevent account manager from working", "Exit anyways?", false))
+            {
+                e.Cancel = true;
+
+                return;
+            }
+
             AltManagerWS?.Stop();
 
             if (PlaceID == null || string.IsNullOrEmpty(PlaceID.Text)) return;
@@ -1662,15 +1778,21 @@ namespace RBX_Alt_Manager
 
         private void OpenBrowser_Click(object sender, EventArgs e)
         {
-            foreach (Account account in AccountsView.SelectedObjects)
-                new AccountBrowser(account);
+            if (PuppeteerSupported)
+                foreach (Account account in AccountsView.SelectedObjects)
+                    new AccountBrowser(account);
+            else if (!PuppeteerSupported && SelectedAccount != null)
+                CefBrowser.Instance.EnterBrowserMode(SelectedAccount);
         }
 
         private void customURLToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Uri.TryCreate(ShowDialog("URL", "Open Browser"), UriKind.Absolute, out Uri Link))
-                foreach (Account account in AccountsView.SelectedObjects)
-                    new AccountBrowser(account, Link.ToString(), string.Empty);
+                if (PuppeteerSupported)
+                    foreach (Account account in AccountsView.SelectedObjects)
+                        new AccountBrowser(account, Link.ToString(), string.Empty);
+                else if (!PuppeteerSupported && SelectedAccount != null)
+                    CefBrowser.Instance.EnterBrowserMode(SelectedAccount, Link.ToString());
         }
 
         private void URLJSToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1693,7 +1815,7 @@ namespace RBX_Alt_Manager
                 foreach (Account account in AccountsView.SelectedObjects)
                     new AccountBrowser(account, Link.ToString(), PostNavigation: async (page) =>
                     {
-                        await (await page.WaitForSelectorAsync("#group-join-button", new PuppeteerSharp.WaitForSelectorOptions() { Timeout = 12000 })).ClickAsync();
+                        await (await page.WaitForSelectorAsync("#group-join-button", new WaitForSelectorOptions() { Timeout = 12000 })).ClickAsync();
                     });
             }
         }
@@ -2044,7 +2166,7 @@ namespace RBX_Alt_Manager
                     VisibleAccounts.Add(account);
             }
 
-            await Presence.UpdatePresence(VisibleAccounts.Select(account => account.UserID).ToArray());
+            try { await Presence.UpdatePresence(VisibleAccounts.Select(account => account.UserID).ToArray()); } catch { }
         }
     }
 }

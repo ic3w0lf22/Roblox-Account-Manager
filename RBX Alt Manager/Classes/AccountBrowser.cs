@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using CefSharp;
+using CefSharp.WinForms;
+using Newtonsoft.Json.Linq;
 using PuppeteerExtraSharp;
 using PuppeteerExtraSharp.Plugins.ExtraStealth;
 using PuppeteerSharp;
@@ -15,7 +17,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using WebSocketSharp;
 using Yove.Proxy;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace RBX_Alt_Manager.Classes
 {
@@ -163,7 +164,7 @@ namespace RBX_Alt_Manager.Classes
 
             if (PostPageCreation != null) try { await PostPageCreation(); } catch { }
 
-            await page.GoToAsync(Url, new NavigationOptions { Referer = "https://google.com/" });
+            try { await page.GoToAsync(Url, new NavigationOptions { Referer = "https://google.com/", Timeout = 300000 }); } catch { }
 
             if (!string.IsNullOrEmpty(Script)) await page.EvaluateExpressionAsync(Script);
 
@@ -307,7 +308,7 @@ namespace RBX_Alt_Manager.Classes
             {
                 if ((Url.AbsolutePath == "/v2/login" || Url.AbsolutePath == "/v2/signup") && e.Request.PostData != null && Utilities.TryParseJson((string)e.Request.PostData, out dynamic LoginData))
                 {
-                    if (LoginData?.password is string password && !string.IsNullOrEmpty(password))
+                    if (LoginData?.password is string password && !string.IsNullOrEmpty(password) && LoginData?.ctype is string loginType && loginType.ToLowerInvariant() == "username")
                         Password = (string)LoginData.password;
 
                     if ((await page.GetCookiesAsync("https://roblox.com/")).FirstOrDefault(Cookie => Cookie.Name == ".ROBLOSECURITY") is CookieParam Cookie)
@@ -340,6 +341,132 @@ namespace RBX_Alt_Manager.Classes
             for (int x = 0; x < SystemInformation.VirtualScreen.Width; x += (int)Size.X)
                 for (int y = 0; y < SystemInformation.VirtualScreen.Height - (Size.Y / 2); y += (int)Size.Y)
                     ScreenGrid.Add(ScreenGrid.Count, new Vector2(x, y));
+        }
+    }
+
+    internal class CefBrowser : Form
+    {
+        public static CefBrowser Instance
+        {
+            get
+            {
+                BrowserForm ??= new CefBrowser();
+
+                return BrowserForm;
+            }
+        }
+        private static CefBrowser BrowserForm;
+        public ChromiumWebBrowser browser { get; private set; }
+        public bool BrowserMode = false;
+        private string Password;
+
+        private CefBrowser(string Url = "https://roblox.com/")
+        {
+            if (!Directory.Exists(Path.Combine(Environment.CurrentDirectory, "x86"))) throw new DirectoryNotFoundException("Unable to locate CefSharp dependency folder");
+            if (!File.Exists(Path.Combine(Environment.CurrentDirectory, "x86", "CefSharp.dll"))) throw new FileNotFoundException("Unable to locate CefSharp.dll");
+
+            Size = new System.Drawing.Size(880, 740);
+
+            FormClosing += (s, e) =>
+            {
+                e.Cancel = true;
+                Hide();
+                Cef.GetGlobalCookieManager().DeleteCookies();
+            };
+
+            AccountManager.SetDarkBar(Handle);
+
+            browser = new ChromiumWebBrowser(Url);
+            browser.AddressChanged += OnNavigated;
+            browser.FrameLoadEnd += OnPageLoaded;
+
+            Controls.Add(browser);
+        }
+
+        public void Login()
+        {
+            Cef.GetGlobalCookieManager().DeleteCookies();
+            
+            BrowserMode = false;
+
+            browser.Load("https://roblox.com/login");
+
+            Show();
+        }
+
+        public void EnterBrowserMode(Account account, string URL = null)
+        {
+            Cef.GetGlobalCookieManager().SetCookie("https://roblox.com", new CefSharp.Cookie()
+            {
+                Name = ".ROBLOSECURITY",
+                Domain = ".roblox.com",
+                Expires = DateTime.Now.AddYears(1),
+                HttpOnly = true,
+                Secure = true,
+                Value = account.SecurityToken
+            });
+
+            BrowserMode = true;
+
+            browser.Load(URL ?? "https://roblox.com/home");
+
+            Show();
+        }
+
+        private async void OnNavigated(object sender, AddressChangedEventArgs args)
+        {
+            Program.Logger.Info($"Browser Navigated to {args.Address}"); // someone has an issue where they land on a home page and nothing happens
+
+            string url = args.Address;
+
+            if (url.Contains("/home") && !BrowserMode)
+            {
+                var cookieManager = Cef.GetGlobalCookieManager();
+
+                await cookieManager.VisitAllCookiesAsync().ContinueWith(t =>
+                {
+                    if (t.Status == TaskStatus.RanToCompletion)
+                    {
+                        List<CefSharp.Cookie> cookies = t.Result;
+
+                        CefSharp.Cookie RSec = cookies.Find(x => x.Name == ".ROBLOSECURITY");
+
+                        if (RSec != null)
+                        {
+                            AccountManager.AddAccount(RSec.Value, Password);
+
+                            Cef.GetGlobalCookieManager().DeleteCookies();
+
+                            this.InvokeIfRequired(() => Hide());
+                        }
+
+                        Password = string.Empty;
+                    }
+                });
+            }
+        }
+
+        private void OnPageLoaded(object sender, FrameLoadEndEventArgs args)
+        {
+            Task.Factory.StartNew(async () =>
+            {
+                await Task.Delay(200);
+
+                while (Visible && args.Url == browser.Address)
+                {
+                    JavascriptResponse response = await browser.EvaluateScriptAsync("document.getElementById('login-password').value");
+
+                    if (!response.Success)
+                        response = await browser.EvaluateScriptAsync("document.getElementById('signup-password').value");
+
+                    if (response.Success)
+                        Password = (string)response.Result;
+
+                    await Task.Delay(50);
+                }
+            });
+
+            browser.ExecuteScriptAsyncWhenPageLoaded(@"document.body.classList.remove(""light-theme"");document.body.classList.add(""dark-theme"");");
         }
     }
 

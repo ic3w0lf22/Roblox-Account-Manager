@@ -3,12 +3,30 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Timers;
 
 namespace RBX_Alt_Manager.Classes
 {
     internal class RobloxWatcher
     {
+        [DllImport("user32.dll")]
+        static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
         public static readonly string HandlePath = Path.Combine(Environment.CurrentDirectory, "handle.bin");
 
         public static HashSet<int> Seen = new HashSet<int>();
@@ -17,6 +35,7 @@ namespace RBX_Alt_Manager.Classes
         public static bool IgnoreExistingProcesses = true;
         public static bool CloseIfMemoryLow = false;
         public static bool CloseIfWindowTitle = false;
+        public static bool RememberWindowPositions = false;
         public static int MemoryLowValue = 200;
         public static string ExpectedWindowTitle = "Roblox";
 
@@ -39,8 +58,12 @@ namespace RBX_Alt_Manager.Classes
 
         public static void CheckProcesses()
         {
+            IntPtr Focused = GetForegroundWindow();
+
             foreach (var process in Process.GetProcessesByName("RobloxPlayerBeta"))
             {
+                if (process.MainWindowHandle == Focused) continue; // Entirely ignore focused windows
+
                 void Kill(string Reason) { Program.Logger.Info($"Attempting to kill process {process.Id}, reason: {Reason}"); try { process.Kill(); } catch { } }
 
                 string CommandLine = process.GetCommandLine();
@@ -62,6 +85,24 @@ namespace RBX_Alt_Manager.Classes
                     }
                 }
                 catch (Exception x) { Program.Logger.Error($"Error with checking for Memory & Window Title: {x.Message}\n{x.StackTrace}"); }
+
+                if (RememberWindowPositions && (DateTime.Now - process.StartTime).TotalSeconds > 30)
+                {
+                    var TrackerMatch = Regex.Match(CommandLine, @"\-b (\d+)");
+                    string TrackerID = TrackerMatch.Success ? TrackerMatch.Groups[1].Value : string.Empty;
+
+                    if (AccountManager.AccountsList.FirstOrDefault(Account => Account.BrowserTrackerID == TrackerID) is Account account)
+                        try
+                        {
+                            GetWindowRect(process.MainWindowHandle, out RECT rect);
+
+                            account.SetField("Window_Position_X", $"{rect.Left:0}");
+                            account.SetField("Window_Position_Y", $"{rect.Top:0}");
+                            account.SetField("Window_Width", $"{rect.Right - rect.Left:0}");
+                            account.SetField("Window_Height", $"{rect.Bottom - rect.Top:0}");
+                        }
+                        catch { }
+                }
 
                 if (Seen.Contains(process.Id)) continue;
 

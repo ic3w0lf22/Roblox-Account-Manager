@@ -48,6 +48,7 @@ namespace RBX_Alt_Manager
             RobloxScannerCB.Checked = AccountManager.Watcher.Get<bool>("Enabled");
             ExitIfBetaDetectedCB.Checked = AccountManager.Watcher.Get<bool>("ExitOnBeta");
             ExitIfNoConnectionCB.Checked = AccountManager.Watcher.Get<bool>("ExitIfNoConnection");
+            SaveWindowPositionsCB.Checked = AccountManager.Watcher.Get<bool>("SaveWindowPositions");
             VerifyDataModelCB.Checked = AccountManager.Watcher.Get<bool>("VerifyDataModel");
             IgnoreExistingProcesses.Checked = AccountManager.Watcher.Get<bool>("IgnoreExistingProcesses");
             CloseRbxWindowTitleCB.Checked = AccountManager.Watcher.Get<bool>("CloseRbxWindowTitle");
@@ -625,7 +626,7 @@ namespace RBX_Alt_Manager
 
         private void loadRegionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Account acc = AccountManager.LastValidAccount ?? AccountManager.SelectedAccount;
+            Account acc = AccountManager.SelectedAccount ?? AccountManager.LastValidAccount;
 
             if (acc == null) return;
             if (!acc.GetCSRFToken(out string Token)) return;
@@ -654,6 +655,13 @@ namespace RBX_Alt_Manager
                 var RNG = new Random();
                 var pinger = new Ping();
                 int t = 0;
+                bool IsUniversePlace = false;
+
+                // Assume the PlaceId in the main window is the universe's lobby place id
+                if (long.TryParse(AccountManager.Instance.PlaceID.Text, out long PlaceId))
+                    IsUniversePlace = PlaceId != CurrentPlaceID;
+
+                if (IsUniversePlace) await AccountManager.GameJoinClient.ExecuteAsync(acc.MakeRequest("v1/join-game", Method.Post).AddHeader("Content-Type", "application/json").AddJsonBody(new { placeId = PlaceId }));
 
                 foreach (ServerData server in Servers)
                 {
@@ -692,7 +700,11 @@ namespace RBX_Alt_Manager
                     RestRequest request = new RestRequest("v1/join-game-instance", Method.Post);
                     request.AddCookie(".ROBLOSECURITY", acc.SecurityToken, "/", ".roblox.com");
                     request.AddHeader("Content-Type", "application/json");
-                    request.AddJsonBody(new { gameId = server.id, placeId = CurrentPlaceID });
+
+                    if (IsUniversePlace)
+                        request.AddJsonBody(new { gameId = server.id, placeId = CurrentPlaceID, isTeleport = true });
+                    else
+                        request.AddJsonBody(new { gameId = server.id, placeId = CurrentPlaceID });
 
                     RestResponse response = await AccountManager.GameJoinClient.ExecuteAsync(request);
 
@@ -937,6 +949,14 @@ namespace RBX_Alt_Manager
 
             if (AvatarJSON.TryParseJson(out object _))
                 AccountManager.SelectedAccount.SetAvatar(AvatarJSON);
+        }
+
+        private void SaveWindowPositionsCB_CheckedChanged(object sender, EventArgs e)
+        {
+            RobloxWatcher.RememberWindowPositions = SaveWindowPositionsCB.Checked;
+
+            AccountManager.Watcher.Set("SaveWindowPositions", SaveWindowPositionsCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
         }
 
         private void VerifyDataModelCB_CheckedChanged(object sender, EventArgs e)

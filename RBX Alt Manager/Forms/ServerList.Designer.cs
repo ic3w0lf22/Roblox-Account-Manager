@@ -118,6 +118,7 @@ namespace RBX_Alt_Manager
             this.MBLabel = new System.Windows.Forms.Label();
             this.CloseRbxWindowTitleCB = new System.Windows.Forms.CheckBox();
             this.RbxWindowNameTB = new System.Windows.Forms.TextBox();
+            this.SaveWindowPositionsCB = new System.Windows.Forms.CheckBox();
             this.ServerListStrip.SuspendLayout();
             this.GamesStrip.SuspendLayout();
             this.FavoritesStrip.SuspendLayout();
@@ -324,7 +325,7 @@ namespace RBX_Alt_Manager
             // 
             this.VerifyDataModelCB.AutoSize = true;
             this.WatcherPanel.SetFlowBreak(this.VerifyDataModelCB, true);
-            this.VerifyDataModelCB.Location = new System.Drawing.Point(11, 135);
+            this.VerifyDataModelCB.Location = new System.Drawing.Point(11, 158);
             this.VerifyDataModelCB.Name = "VerifyDataModelCB";
             this.VerifyDataModelCB.Size = new System.Drawing.Size(136, 17);
             this.VerifyDataModelCB.TabIndex = 6;
@@ -839,6 +840,7 @@ namespace RBX_Alt_Manager
             this.WatcherPanel.Controls.Add(this.ExitIfNoConnectionCB);
             this.WatcherPanel.Controls.Add(this.TimeoutNum);
             this.WatcherPanel.Controls.Add(this.ConnectionSecondsLabel);
+            this.WatcherPanel.Controls.Add(this.SaveWindowPositionsCB);
             this.WatcherPanel.Controls.Add(this.VerifyDataModelCB);
             this.WatcherPanel.Controls.Add(this.IgnoreExistingProcesses);
             this.WatcherPanel.Controls.Add(this.RbxMemoryCB);
@@ -994,7 +996,7 @@ namespace RBX_Alt_Manager
             // 
             this.IgnoreExistingProcesses.AutoSize = true;
             this.WatcherPanel.SetFlowBreak(this.IgnoreExistingProcesses, true);
-            this.IgnoreExistingProcesses.Location = new System.Drawing.Point(11, 158);
+            this.IgnoreExistingProcesses.Location = new System.Drawing.Point(11, 181);
             this.IgnoreExistingProcesses.Name = "IgnoreExistingProcesses";
             this.IgnoreExistingProcesses.Size = new System.Drawing.Size(218, 17);
             this.IgnoreExistingProcesses.TabIndex = 7;
@@ -1005,7 +1007,7 @@ namespace RBX_Alt_Manager
             // RbxMemoryCB
             // 
             this.RbxMemoryCB.AutoSize = true;
-            this.RbxMemoryCB.Location = new System.Drawing.Point(11, 181);
+            this.RbxMemoryCB.Location = new System.Drawing.Point(11, 204);
             this.RbxMemoryCB.Margin = new System.Windows.Forms.Padding(3, 3, 0, 3);
             this.RbxMemoryCB.Name = "RbxMemoryCB";
             this.RbxMemoryCB.Size = new System.Drawing.Size(199, 17);
@@ -1016,7 +1018,7 @@ namespace RBX_Alt_Manager
             // 
             // RbxMemoryLTNum
             // 
-            this.RbxMemoryLTNum.Location = new System.Drawing.Point(213, 181);
+            this.RbxMemoryLTNum.Location = new System.Drawing.Point(213, 204);
             this.RbxMemoryLTNum.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -1041,7 +1043,7 @@ namespace RBX_Alt_Manager
             // 
             this.MBLabel.AutoSize = true;
             this.WatcherPanel.SetFlowBreak(this.MBLabel, true);
-            this.MBLabel.Location = new System.Drawing.Point(271, 184);
+            this.MBLabel.Location = new System.Drawing.Point(271, 207);
             this.MBLabel.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.MBLabel.Name = "MBLabel";
             this.MBLabel.Size = new System.Drawing.Size(23, 13);
@@ -1051,7 +1053,7 @@ namespace RBX_Alt_Manager
             // CloseRbxWindowTitleCB
             // 
             this.CloseRbxWindowTitleCB.AutoSize = true;
-            this.CloseRbxWindowTitleCB.Location = new System.Drawing.Point(11, 207);
+            this.CloseRbxWindowTitleCB.Location = new System.Drawing.Point(11, 230);
             this.CloseRbxWindowTitleCB.Margin = new System.Windows.Forms.Padding(3, 3, 0, 3);
             this.CloseRbxWindowTitleCB.Name = "CloseRbxWindowTitleCB";
             this.CloseRbxWindowTitleCB.Size = new System.Drawing.Size(180, 17);
@@ -1066,12 +1068,27 @@ namespace RBX_Alt_Manager
             "Roblox"});
             this.RbxWindowNameTB.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
             this.WatcherPanel.SetFlowBreak(this.RbxWindowNameTB, true);
-            this.RbxWindowNameTB.Location = new System.Drawing.Point(194, 207);
+            this.RbxWindowNameTB.Location = new System.Drawing.Point(194, 230);
             this.RbxWindowNameTB.Name = "RbxWindowNameTB";
             this.RbxWindowNameTB.Size = new System.Drawing.Size(52, 20);
             this.RbxWindowNameTB.TabIndex = 12;
             this.RbxWindowNameTB.Text = "Roblox";
             this.RbxWindowNameTB.TextChanged += new System.EventHandler(this.RbxWindowNameTB_TextChanged);
+            // 
+            // SaveWindowPositionsCB
+            // 
+            this.SaveWindowPositionsCB.AutoSize = true;
+            this.WatcherPanel.SetFlowBreak(this.SaveWindowPositionsCB, true);
+            this.SaveWindowPositionsCB.Location = new System.Drawing.Point(11, 135);
+            this.SaveWindowPositionsCB.Name = "SaveWindowPositionsCB";
+            this.SaveWindowPositionsCB.Size = new System.Drawing.Size(138, 17);
+            this.SaveWindowPositionsCB.TabIndex = 16;
+            this.SaveWindowPositionsCB.Text = "Save Window Positions";
+            this.OPITip.SetToolTip(this.SaveWindowPositionsCB, "Verifies that the closing signal is valid.\r\nThis was added because games can prin" +
+        "t anything to roblox\'s logs including the text RAM scans for to detect the beta " +
+        "app.");
+            this.SaveWindowPositionsCB.UseVisualStyleBackColor = true;
+            this.SaveWindowPositionsCB.CheckedChanged += new System.EventHandler(this.SaveWindowPositionsCB_CheckedChanged);
             // 
             // ServerList
             // 
@@ -1203,5 +1220,6 @@ namespace RBX_Alt_Manager
         private System.Windows.Forms.NumericUpDown TimeoutNum;
         private System.Windows.Forms.Label ConnectionSecondsLabel;
         private System.Windows.Forms.Button OpenLogsButton;
+        private System.Windows.Forms.CheckBox SaveWindowPositionsCB;
     }
 }

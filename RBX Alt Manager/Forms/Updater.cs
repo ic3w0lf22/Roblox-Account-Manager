@@ -3,11 +3,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using File = System.IO.File;
@@ -76,34 +74,29 @@ namespace Auto_Update
 #if DEBUG
             await Task.Run(Extract);
 #else
-            WebClient WC = new WebClient();
-            WC.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36";
-            string Releases = WC.DownloadString("https://api.github.com/repos/ic3w0lf22/Roblox-Account-Manager/releases/tags/0.0");
+            using var client = new HttpClient() { Timeout = TimeSpan.FromMinutes(20) };
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36");
+            string Releases = await client.GetStringAsync("https://api.github.com/repos/ic3w0lf22/Roblox-Account-Manager/releases/tags/0.0");
             Match match = Regex.Match(Releases, @"""browser_download_url"":\s*""?([^""]+)");
 
             if (match.Success && match.Groups.Count >= 2)
             {
                 if (match.Groups[1].Value.Contains(".rar"))
                 {
-                    Environment.Exit(0);
+                    Environment.Exit(247);
                     return;
                 }
 
-                using (var client = new HttpClient())
-                {
-                    client.Timeout = TimeSpan.FromMinutes(20);
+                string DownloadUrl = match.Groups[1].Value;
 
-                    string DownloadUrl = match.Groups[1].Value;
+                TotalDownloadSize = (await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, DownloadUrl))).Content.Headers.ContentLength.Value;
 
-                    TotalDownloadSize = (await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, DownloadUrl))).Content.Headers.ContentLength.Value;
+                Progress<float> progress = new Progress<float>(progressChanged);
 
-                    Progress<float> progress = new Progress<float>(progressChanged);
+                using (var file = new FileStream(FileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                    await client.DownloadAsync(DownloadUrl, file, progress);
 
-                    using (var file = new FileStream(FileName, FileMode.Create, FileAccess.Write, FileShare.None))
-                        await client.DownloadAsync(DownloadUrl, file, progress);
-
-                    await Task.Run(Extract);
-                }
+                await Task.Run(Extract);
             }
 #endif
         }
@@ -436,56 +429,4 @@ namespace Auto_Update
 
         #endregion
     }
-
-    #region Extensions
-    public static class Extensions
-    {
-        // https://stackoverflow.com/a/46497896
-        public static async Task DownloadAsync(this HttpClient client, string requestUri, Stream destination, IProgress<float> progress = null, CancellationToken cancellationToken = default)
-        {
-            // Get the http headers first to examine the content length
-            using var response = await client.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead);
-            var contentLength = response.Content.Headers.ContentLength;
-
-            using var download = await response.Content.ReadAsStreamAsync();
-            // Ignore progress reporting when no progress reporter was 
-            // passed or when the content length is unknown
-            if (progress == null || !contentLength.HasValue)
-            {
-                await download.CopyToAsync(destination);
-                return;
-            }
-
-            // Convert absolute progress (bytes downloaded) into relative progress (0% - 100%)
-            var relativeProgress = new Progress<long>(totalBytes => progress.Report((float)totalBytes / contentLength.Value));
-            // Use extension method to report progress while downloading
-            await CopyToAsync(download, destination, 81920, relativeProgress, cancellationToken);
-            progress.Report(1);
-        }
-
-        public static async Task CopyToAsync(Stream source, Stream destination, int bufferSize, IProgress<long> progress = null, CancellationToken cancellationToken = default)
-        {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-            if (!source.CanRead)
-                throw new ArgumentException("Has to be readable", nameof(source));
-            if (destination == null)
-                throw new ArgumentNullException(nameof(destination));
-            if (!destination.CanWrite)
-                throw new ArgumentException("Has to be writable", nameof(destination));
-            if (bufferSize < 0)
-                throw new ArgumentOutOfRangeException(nameof(bufferSize));
-
-            var buffer = new byte[bufferSize];
-            long totalBytesRead = 0;
-            int bytesRead;
-            while ((bytesRead = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
-            {
-                await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
-                totalBytesRead += bytesRead;
-                progress?.Report(totalBytesRead);
-            }
-        }
-    }
-    #endregion
 }

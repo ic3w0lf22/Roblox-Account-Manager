@@ -1,5 +1,4 @@
-﻿using Microsoft.WindowsAPICodePack.Dialogs;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RBX_Alt_Manager.Classes;
 using RBX_Alt_Manager.Forms;
@@ -37,6 +36,9 @@ namespace RBX_Alt_Manager
         [JsonIgnore] public string CSRFToken;
         [JsonIgnore] public UserPresence Presence;
 
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+
         public int CompareTo(Account compareTo)
         {
             if (compareTo == null)
@@ -45,7 +47,7 @@ namespace RBX_Alt_Manager
                 return Group.CompareTo(compareTo.Group);
         }
 
-        private string BrowserTrackerID;
+        public string BrowserTrackerID;
 
         public string Alias
         {
@@ -634,6 +636,8 @@ namespace RBX_Alt_Manager
                             Roblox.Arguments = string.Format("--app -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{3}&placeId={1}{2}&isPlayTogetherGame=false\"", Ticket, PlaceID, "&gameId=" + JobID, string.IsNullOrEmpty(JobID) ? "" : "Job");
                     });
 
+                    _ = Task.Run(AdjustWindowPosition);
+
                     return "Success";
                 }
                 else
@@ -655,10 +659,12 @@ namespace RBX_Alt_Manager
                             Launcher.WaitForExit();
 
                             AccountManager.Instance.NextAccount();
+
+                            _ = Task.Run(AdjustWindowPosition);
                         }
                         catch (Exception x)
                         {
-                            Utilities.InvokeIfRequired(AccountManager.Instance, () => MessageBox.Show($"ERROR: Failed to launch roblox! Try re-installing Roblox.\n\n{x.Message}{x.StackTrace}", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error));
+                            Utilities.InvokeIfRequired(AccountManager.Instance, () => MessageBox.Show($"ERROR: Failed to launch Roblox! Try re-installing Roblox.\n\n{x.Message}{x.StackTrace}", "Roblox Account Manager", MessageBoxButtons.OK, MessageBoxIcon.Error));
                             AccountManager.Instance.CancelLaunching();
                             AccountManager.Instance.NextAccount();
                         }
@@ -669,6 +675,45 @@ namespace RBX_Alt_Manager
             }
             else
                 return "ERROR: Invalid Authentication Ticket, re-add the account or try again\n(Failed to get Authentication Ticket, Roblox has probably signed you out)";
+        }
+
+        public async void AdjustWindowPosition()
+        {
+            if (!RobloxWatcher.RememberWindowPositions)
+                return;
+
+            if (!(int.TryParse(GetField("Window_Position_X"), out int PosX) && int.TryParse(GetField("Window_Position_Y"), out int PosY) && int.TryParse(GetField("Window_Width"), out int Width) && int.TryParse(GetField("Window_Height"), out int Height)))
+                return;
+
+            bool Found = false;
+            DateTime Ends = DateTime.Now.AddSeconds(45);
+
+            while (true)
+            {
+                await Task.Delay(350);
+
+                foreach (var process in Process.GetProcessesByName("RobloxPlayerBeta").Reverse())
+                {
+                    if (process.MainWindowHandle == IntPtr.Zero) continue;
+
+                    string CommandLine = process.GetCommandLine();
+
+                    var TrackerMatch = Regex.Match(CommandLine, @"\-b (\d+)");
+                    string TrackerID = TrackerMatch.Success ? TrackerMatch.Groups[1].Value : string.Empty;
+
+                    if (TrackerID != BrowserTrackerID) continue;
+
+                    Found = true;
+
+                    MoveWindow(process.MainWindowHandle, PosX, PosY, Width, Height, true);
+
+                    break;
+                }
+
+                if (Found) break;
+
+                if (DateTime.Now > Ends) break;
+            }
         }
 
         public string SetServer(long PlaceID, string JobID, out bool Successful)
@@ -687,7 +732,7 @@ namespace RBX_Alt_Manager
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 Successful = true;
-                return Regex.IsMatch(response.Content, "\"joinScriptUrl\":null") ? response.Content : "Success";
+                return Regex.IsMatch(response.Content, "\"joinScriptUrl\":[%s+]?null") ? response.Content : "Success";
             }
             else
                 return $"Failed {response.StatusCode}: {response.Content} {response.ErrorMessage}";

@@ -71,11 +71,20 @@ namespace RBX_Alt_Manager.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 82CC2370C96CC50EFF498869D000563AA938F96EA4AB163C725060E5EC7ACC9D.
+        ///   Looks up a localized string similar to 5E0BA1895CF088E6D6907B8ABBD8CD41C86F39CC642351A9AB0BF458BF1F5B31.
         /// </summary>
         internal static string AppConfigHash {
             get {
                 return ResourceManager.GetString("AppConfigHash", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to https://github.com/ic3w0lf22/Roblox-Account-Manager/releases/download/3.5.2/CEF.zip.
+        /// </summary>
+        internal static string CefSharpDownload {
+            get {
+                return ResourceManager.GetString("CefSharpDownload", resourceCulture);
             }
         }
         

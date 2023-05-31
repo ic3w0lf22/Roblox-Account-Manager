@@ -83,9 +83,9 @@ namespace RBX_Alt_Manager
             this.SaveToAccount = new System.Windows.Forms.Button();
             this.SaveTooltip = new System.Windows.Forms.ToolTip(this.components);
             this.ShuffleIcon = new System.Windows.Forms.PictureBox();
-            this.JobID = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.DefaultEncryptionButton = new System.Windows.Forms.Button();
             this.PasswordEncryptionButton = new System.Windows.Forms.Button();
+            this.JobID = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.DonateButton = new System.Windows.Forms.Button();
             this.AccountsView = new BrightIdeasSoftware.ObjectListView();
             this.Username = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
@@ -109,13 +109,15 @@ namespace RBX_Alt_Manager
             this.Password2Label = new System.Windows.Forms.Label();
             this.EncryptionSelectionPanel = new System.Windows.Forms.TableLayoutPanel();
             this.EncSelectionLabel = new System.Windows.Forms.Label();
+            this.DownloadProgressBar = new System.Windows.Forms.ProgressBar();
+            this.PresenceUpdateTimer = new System.Windows.Forms.Timer(this.components);
+            this.DLChromiumLabel = new System.Windows.Forms.Label();
+            this.Add = new RBX_Alt_Manager.Classes.MenuButton();
             this.OpenBrowser = new RBX_Alt_Manager.Classes.MenuButton();
             this.UserID = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.Alias = new RBX_Alt_Manager.Classes.BorderedTextBox();
             this.DescriptionBox = new RBX_Alt_Manager.Classes.BorderedRichTextBox();
-            this.Add = new RBX_Alt_Manager.Classes.MenuButton();
             this.PlaceID = new RBX_Alt_Manager.Classes.BorderedTextBox();
-            this.PresenceUpdateTimer = new System.Windows.Forms.Timer(this.components);
             this.AddAccountsStrip.SuspendLayout();
             this.AccountsStrip.SuspendLayout();
             this.OpenBrowserStrip.SuspendLayout();
@@ -581,17 +583,6 @@ namespace RBX_Alt_Manager
         "ll be ignored if you have a JobId set");
             this.ShuffleIcon.Click += new System.EventHandler(this.ShuffleIcon_Click);
             // 
-            // JobID
-            // 
-            this.JobID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.JobID.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
-            this.JobID.Location = new System.Drawing.Point(602, 43);
-            this.JobID.Name = "JobID";
-            this.JobID.Size = new System.Drawing.Size(143, 20);
-            this.JobID.TabIndex = 2;
-            this.SaveTooltip.SetToolTip(this.JobID, "Job ID is a unique ID assigned to every roblox server.\r\nYou may also put a Privat" +
-        "e Server link in this box to join it.");
-            // 
             // DefaultEncryptionButton
             // 
             this.DefaultEncryptionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -628,6 +619,17 @@ namespace RBX_Alt_Manager
         "tored securely");
             this.PasswordEncryptionButton.UseVisualStyleBackColor = true;
             this.PasswordEncryptionButton.Click += new System.EventHandler(this.PasswordEncryptionButton_Click);
+            // 
+            // JobID
+            // 
+            this.JobID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.JobID.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))), ((int)(((byte)(122)))));
+            this.JobID.Location = new System.Drawing.Point(602, 43);
+            this.JobID.Name = "JobID";
+            this.JobID.Size = new System.Drawing.Size(143, 20);
+            this.JobID.TabIndex = 2;
+            this.SaveTooltip.SetToolTip(this.JobID, "Job ID is a unique ID assigned to every roblox server.\r\nYou may also put a Privat" +
+        "e Server link in this box to join it.");
             // 
             // DonateButton
             // 
@@ -769,8 +771,7 @@ namespace RBX_Alt_Manager
             this.PasswordPanel.Controls.Add(this.PasswordLayoutPanel);
             this.PasswordPanel.Controls.Add(this.PasswordSelectionPanel);
             this.PasswordPanel.Controls.Add(this.EncryptionSelectionPanel);
-            this.PasswordPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.PasswordPanel.Location = new System.Drawing.Point(0, 0);
+            this.PasswordPanel.Location = new System.Drawing.Point(1200, 0);
             this.PasswordPanel.Name = "PasswordPanel";
             this.PasswordPanel.Size = new System.Drawing.Size(784, 301);
             this.PasswordPanel.TabIndex = 1005;
@@ -951,6 +952,48 @@ namespace RBX_Alt_Manager
             this.EncSelectionLabel.Text = "Please select how you want your data to be secured";
             this.EncSelectionLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // DownloadProgressBar
+            // 
+            this.DownloadProgressBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.DownloadProgressBar.BackColor = System.Drawing.SystemColors.MenuText;
+            this.DownloadProgressBar.Cursor = System.Windows.Forms.Cursors.Help;
+            this.DownloadProgressBar.Location = new System.Drawing.Point(13, 277);
+            this.DownloadProgressBar.Name = "DownloadProgressBar";
+            this.DownloadProgressBar.Size = new System.Drawing.Size(196, 11);
+            this.DownloadProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
+            this.DownloadProgressBar.TabIndex = 7;
+            this.DownloadProgressBar.Visible = false;
+            this.DownloadProgressBar.Click += new System.EventHandler(this.DownloadProgressBar_Click);
+            // 
+            // PresenceUpdateTimer
+            // 
+            this.PresenceUpdateTimer.Interval = 60000;
+            // 
+            // DLChromiumLabel
+            // 
+            this.DLChromiumLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.DLChromiumLabel.AutoSize = true;
+            this.DLChromiumLabel.Cursor = System.Windows.Forms.Cursors.Help;
+            this.DLChromiumLabel.Location = new System.Drawing.Point(49, 261);
+            this.DLChromiumLabel.Name = "DLChromiumLabel";
+            this.DLChromiumLabel.Size = new System.Drawing.Size(127, 13);
+            this.DLChromiumLabel.TabIndex = 1006;
+            this.DLChromiumLabel.Text = "Downloading Chromium...";
+            this.DLChromiumLabel.Visible = false;
+            this.DLChromiumLabel.Click += new System.EventHandler(this.DLChromiumLabel_Click);
+            // 
+            // Add
+            // 
+            this.Add.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.Add.Location = new System.Drawing.Point(13, 266);
+            this.Add.Menu = this.AddAccountsStrip;
+            this.Add.Name = "Add";
+            this.Add.Size = new System.Drawing.Size(95, 23);
+            this.Add.TabIndex = 14;
+            this.Add.Text = "Add Account";
+            this.Add.UseVisualStyleBackColor = true;
+            this.Add.Click += new System.EventHandler(this.Add_Click);
+            // 
             // OpenBrowser
             // 
             this.OpenBrowser.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -993,18 +1036,6 @@ namespace RBX_Alt_Manager
             this.DescriptionBox.TabIndex = 11;
             this.DescriptionBox.Text = "Description";
             // 
-            // Add
-            // 
-            this.Add.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.Add.Location = new System.Drawing.Point(13, 266);
-            this.Add.Menu = this.AddAccountsStrip;
-            this.Add.Name = "Add";
-            this.Add.Size = new System.Drawing.Size(95, 23);
-            this.Add.TabIndex = 14;
-            this.Add.Text = "Add Account";
-            this.Add.UseVisualStyleBackColor = true;
-            this.Add.Click += new System.EventHandler(this.Add_Click);
-            // 
             // PlaceID
             // 
             this.PlaceID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -1016,16 +1047,15 @@ namespace RBX_Alt_Manager
             this.PlaceID.Text = "5315046213";
             this.PlaceID.TextChanged += new System.EventHandler(this.PlaceID_TextChanged);
             // 
-            // PresenceUpdateTimer
-            // 
-            this.PresenceUpdateTimer.Interval = 60000;
-            // 
             // AccountManager
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 301);
+            this.Controls.Add(this.Remove);
+            this.Controls.Add(this.Add);
+            this.Controls.Add(this.DLChromiumLabel);
             this.Controls.Add(this.ShuffleIcon);
             this.Controls.Add(this.HistoryIcon);
             this.Controls.Add(this.ConfigButton);
@@ -1048,14 +1078,13 @@ namespace RBX_Alt_Manager
             this.Controls.Add(this.DescriptionBox);
             this.Controls.Add(this.SetDescription);
             this.Controls.Add(this.JoinServer);
-            this.Controls.Add(this.Remove);
-            this.Controls.Add(this.Add);
             this.Controls.Add(this.LabelJobID);
             this.Controls.Add(this.LabelPlaceID);
             this.Controls.Add(this.JobID);
             this.Controls.Add(this.PlaceID);
             this.Controls.Add(this.AccountsView);
             this.Controls.Add(this.PasswordPanel);
+            this.Controls.Add(this.DownloadProgressBar);
             this.HelpButton = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
@@ -1168,5 +1197,7 @@ namespace RBX_Alt_Manager
         private System.Windows.Forms.Timer PresenceUpdateTimer;
         private System.Windows.Forms.ToolStripMenuItem quickLogInToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem customURLJSToolStripMenuItem;
+        private System.Windows.Forms.ProgressBar DownloadProgressBar;
+        private System.Windows.Forms.Label DLChromiumLabel;
     }
 }
