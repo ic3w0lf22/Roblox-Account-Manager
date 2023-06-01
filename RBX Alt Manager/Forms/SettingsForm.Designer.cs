@@ -78,6 +78,7 @@ namespace RBX_Alt_Manager.Forms
             this.MaxFPSValue = new System.Windows.Forms.NumericUpDown();
             this.OverrideWithCustomCB = new System.Windows.Forms.CheckBox();
             this.CustomClientSettingsDialog = new System.Windows.Forms.OpenFileDialog();
+            this.ForceUpdateButton = new System.Windows.Forms.Button();
             this.SettingsLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.LaunchDelayNumber)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MaxRecentGamesNumber)).BeginInit();
@@ -587,6 +588,7 @@ namespace RBX_Alt_Manager.Forms
             this.MiscellaneousFlowPanel.Controls.Add(this.FPSCapLabel);
             this.MiscellaneousFlowPanel.Controls.Add(this.MaxFPSValue);
             this.MiscellaneousFlowPanel.Controls.Add(this.OverrideWithCustomCB);
+            this.MiscellaneousFlowPanel.Controls.Add(this.ForceUpdateButton);
             this.MiscellaneousFlowPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.MiscellaneousFlowPanel.Location = new System.Drawing.Point(3, 3);
             this.MiscellaneousFlowPanel.Name = "MiscellaneousFlowPanel";
@@ -707,6 +709,16 @@ namespace RBX_Alt_Manager.Forms
             this.CustomClientSettingsDialog.FileName = "ClientAppSettings.json";
             this.CustomClientSettingsDialog.Filter = "Json Files|*.json|All Files|*.*";
             // 
+            // ForceUpdateButton
+            // 
+            this.ForceUpdateButton.Location = new System.Drawing.Point(15, 84);
+            this.ForceUpdateButton.Name = "ForceUpdateButton";
+            this.ForceUpdateButton.Size = new System.Drawing.Size(269, 23);
+            this.ForceUpdateButton.TabIndex = 16;
+            this.ForceUpdateButton.Text = "Force Update";
+            this.ForceUpdateButton.UseVisualStyleBackColor = true;
+            this.ForceUpdateButton.Click += new System.EventHandler(this.ForceUpdateButton_Click);
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -786,5 +798,6 @@ namespace RBX_Alt_Manager.Forms
         private System.Windows.Forms.NumericUpDown PresenceUpdateRateNum;
         private System.Windows.Forms.OpenFileDialog CustomClientSettingsDialog;
         private System.Windows.Forms.CheckBox AutoCookieRefreshCB;
+        private System.Windows.Forms.Button ForceUpdateButton;
     }
 }

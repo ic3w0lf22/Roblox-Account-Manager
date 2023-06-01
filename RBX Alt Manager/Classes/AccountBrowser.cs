@@ -306,10 +306,10 @@ namespace RBX_Alt_Manager.Classes
 
             if (e.Request.Response.Status == HttpStatusCode.OK && e.Request.Method == HttpMethod.Post && Url.Host == "auth.roblox.com")
             {
-                if ((Url.AbsolutePath == "/v2/login" || Url.AbsolutePath == "/v2/signup") && e.Request.PostData != null && Utilities.TryParseJson((string)e.Request.PostData, out dynamic LoginData))
+                if ((Url.AbsolutePath == "/v2/login" || Url.AbsolutePath == "/v2/signup") && e.Request.PostData != null && Utilities.TryParseJson((string)e.Request.PostData, out JObject LoginData))
                 {
-                    if (LoginData?.password is string password && !string.IsNullOrEmpty(password) && LoginData?.ctype is string loginType && loginType.ToLowerInvariant() == "username")
-                        Password = (string)LoginData.password;
+                    if (LoginData?["password"]?.Value<string>() is string password && !string.IsNullOrEmpty(password) && LoginData?["ctype"].Value<string>() is string loginType && loginType.ToLowerInvariant() == "username")
+                        Password = password;
 
                     if ((await page.GetCookiesAsync("https://roblox.com/")).FirstOrDefault(Cookie => Cookie.Name == ".ROBLOSECURITY") is CookieParam Cookie)
                         await AddAccount(Cookie);

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -333,8 +334,6 @@ namespace RBX_Alt_Manager.Forms
             {
                 if (CustomClientSettingsDialog.ShowDialog() == DialogResult.OK)
                 {
-                    MessageBox.Show(CustomClientSettingsDialog.FileName);
-
                     if (File.Exists(CustomClientSettingsDialog.FileName) && File.ReadAllText(CustomClientSettingsDialog.FileName).TryParseJson<object>(out _))
                     {
                         string FileName = Path.Combine(Environment.CurrentDirectory, "CustomClientAppSettings.json");
@@ -352,6 +351,16 @@ namespace RBX_Alt_Manager.Forms
                 Remove();
             
             AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void ForceUpdateButton_Click(object sender, EventArgs e)
+        {
+            if (!Utilities.YesNoPrompt("Auto Update", "Are you sure you want to update?", "", false)) return;
+
+            string AFN = Path.Combine(Directory.GetCurrentDirectory(), "Auto Update.exe");
+            File.WriteAllBytes(AFN, File.ReadAllBytes(Application.ExecutablePath));
+            Process.Start(AFN, "-update");
+            Environment.Exit(1);
         }
 
         #endregion

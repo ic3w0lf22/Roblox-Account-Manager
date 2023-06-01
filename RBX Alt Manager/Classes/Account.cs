@@ -29,7 +29,7 @@ namespace RBX_Alt_Manager
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public string Group { get; set; } = "Default";
         public long UserID;
         public Dictionary<string, string> Fields = new Dictionary<string, string>();
-        [JsonIgnore] public DateTime LastAttemptedRefresh;
+        public DateTime LastAttemptedRefresh;
         [JsonIgnore] public DateTime PinUnlocked;
         [JsonIgnore] public DateTime TokenSet;
         [JsonIgnore] public DateTime LastAppLaunch;

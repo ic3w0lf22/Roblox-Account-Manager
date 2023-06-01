@@ -48,8 +48,7 @@ Be careful executing random scripts when having dangerous settings enabled.
 
 ## **Q:** How do I enable multi-roblox?
 
-**A:** Close Roblox Account Manager first if you have it open, go to the folder where you have installed the account manager, open RAMSettings.ini, then add EnableMultiRbx=true under the [General] section, then restart Roblox Account Manager if you had it open.
-[Click here to watch a video showing how to enable multi-roblox](https://user-images.githubusercontent.com/11778654/236662289-c05c3a5a-10bf-434b-89cc-b185352db8a2.mp4)
+**A:** Open the settings menu by clicking the gear/cog icon in the top right, in the `General` tab, you will see a checkbox for `Multi Roblox`, make sure you have Roblox closed, then check the checkbox.
 
 
 ## **Q:** Why was multi-roblox disabled by default?

@@ -170,6 +170,8 @@ namespace RBX_Alt_Manager
             AccountsList = new List<Account>();
             SelectedAccounts = new List<Account>();
 
+            AccountsView.SetObjects(AccountsList);
+
             if (ThemeEditor.UseDarkTopBar) Icon = Properties.Resources.team_KX4_icon_white; // this has to go after or icon wont actually change
 
             AccountsView.UnfocusedHighlightBackgroundColor = Color.FromArgb(0, 150, 215);
@@ -1933,6 +1935,7 @@ namespace RBX_Alt_Manager
                 AccountsList = AccountsList.OrderByDescending(x => x.Username.All(char.IsDigit)).ThenByDescending(x => x.Username.Any(char.IsLetter)).ThenBy(x => x.Username).ToList();
 
                 AccountsView.SetObjects(AccountsList);
+                AccountsView.BuildGroups();
             }
         }
 
