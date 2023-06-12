@@ -1260,7 +1260,7 @@ namespace RBX_Alt_Manager
             if (Enabled && rbxMultiMutex == null)
                 try
                 {
-                    rbxMultiMutex = new Mutex(true, "ROBLOX_singletonMutex");
+                    rbxMultiMutex = new Mutex(true, "ROBLOX_singletonEvent");
 
                     if (!rbxMultiMutex.WaitOne(TimeSpan.Zero, true))
                         return false;
