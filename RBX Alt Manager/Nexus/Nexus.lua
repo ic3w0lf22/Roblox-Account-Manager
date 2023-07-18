@@ -20,7 +20,7 @@ end
 
 local Nexus = {}
 local WSConnect = syn and syn.websocket.connect or
-    (Krnl and (function() repeat task.wait() until Krnl.WebSocket and Krnl.WebSocket.connect return Krnl.WebSocket.connect)()) or
+    (Krnl and (function() repeat task.wait() until Krnl.WebSocket and Krnl.WebSocket.connect return Krnl.WebSocket.connect end)()) or
     WebSocket and WebSocket.connect
 
 if not WSConnect then
