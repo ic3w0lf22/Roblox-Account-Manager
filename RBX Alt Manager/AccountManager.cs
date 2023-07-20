@@ -981,6 +981,24 @@ namespace RBX_Alt_Manager
                 return Reply(Success ? "Cookie successfully imported" : "[ImportCookie] An error was encountered importing the cookie", Success, Raw: Success ? "true" : "false");
             }
 
+            if (Method == "GetAccountBrowserTrackerIDs")
+            {
+                if (!WebServer.Get<bool>("AllowGetAccountBrowserTrackerIDs")) return Reply("Method `GetAccountBrowserTrackerIDs` not allowed", false, 401, "Method not allowed");
+
+                string Names = "";
+                string GroupFilter = request.QueryString["Group"];
+
+                foreach (Account acc in AccountsList)
+                {
+                    if (!string.IsNullOrEmpty(GroupFilter) && acc.Group != GroupFilter) continue;
+
+                    Names += acc.Username + ":" + acc.BrowserTrackerID + ",";
+                }
+
+                return Reply(Names.Remove(Names.Length - 1), true, Raw: Names.Remove(Names.Length - 1));
+            }
+
+
             if (string.IsNullOrEmpty(Account)) return Reply("Empty Account", false);
 
             Account account = AccountsList.FirstOrDefault(x => x.Username == Account || x.UserID.ToString() == Account);
@@ -1144,7 +1162,6 @@ namespace RBX_Alt_Manager
 
                 return Reply($"Appended Description of {account.Username} with {Body}", true);
             }
-
             return Reply("404 not found", false, 404);
         }
 
