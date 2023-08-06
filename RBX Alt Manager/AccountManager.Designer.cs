@@ -630,6 +630,7 @@ namespace RBX_Alt_Manager
             this.JobID.TabIndex = 2;
             this.SaveTooltip.SetToolTip(this.JobID, "Job ID is a unique ID assigned to every roblox server.\r\nYou may also put a Privat" +
         "e Server link in this box to join it.");
+            this.JobID.Click += new System.EventHandler(this.JobID_Click);
             // 
             // DonateButton
             // 
@@ -1045,6 +1046,7 @@ namespace RBX_Alt_Manager
             this.PlaceID.Size = new System.Drawing.Size(78, 20);
             this.PlaceID.TabIndex = 1;
             this.PlaceID.Text = "5315046213";
+            this.PlaceID.Click += new System.EventHandler(this.PlaceID_Click);
             this.PlaceID.TextChanged += new System.EventHandler(this.PlaceID_TextChanged);
             // 
             // AccountManager
