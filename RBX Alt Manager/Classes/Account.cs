@@ -655,8 +655,9 @@ namespace RBX_Alt_Manager
                             else
                                 LaunchInfo.FileName = $"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode($"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{(string.IsNullOrEmpty(JobID) ? "" : "Job")}&browserTrackerId={BrowserTrackerID}&placeId={PlaceID}{(string.IsNullOrEmpty(JobID) ? "" : ("&gameId=" + JobID))}&isPlayTogetherGame=false{(AccountManager.IsTeleport ? "&isTeleport=true" : "")}")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp";
                             Process Launcher = Process.Start(LaunchInfo);
-                            
-                            Launcher.WaitForExit();
+
+                            // Launcher isn't exitting after launching Roblox, better to not wait for it to exit
+                            // Launcher.WaitForExit();
 
                             AccountManager.Instance.NextAccount();
 
