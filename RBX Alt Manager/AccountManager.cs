@@ -2135,7 +2135,7 @@ namespace RBX_Alt_Manager
 
         private void AccountsView_Scroll(object sender, ScrollEventArgs e)
         {
-            if (PresenceCancellationToken != null || !General.Get<bool>("ShowPresence"))
+            if (PresenceCancellationToken != null && !General.Get<bool>("ShowPresence"))
                 PresenceCancellationToken.Cancel();
 
             PresenceCancellationToken = new CancellationTokenSource();
