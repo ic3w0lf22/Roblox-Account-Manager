@@ -91,7 +91,7 @@ namespace RBX_Alt_Manager
         public Account(string Cookie, string AccountJSON = null)
         {
             SecurityToken = Cookie;
-            
+
             AccountJSON ??= AccountManager.MainClient.Execute(MakeRequest("my/account/json", Method.Get)).Content;
 
             if (!string.IsNullOrEmpty(AccountJSON) && Utilities.TryParseJson(AccountJSON, out AccountJson Data))
@@ -115,7 +115,7 @@ namespace RBX_Alt_Manager
 
             if (!GetCSRFToken(out string Token)) return false;
 
-            RestRequest request = MakeRequest("/v1/authentication-ticket/", Method.Post).AddHeader("X-CSRF-TOKEN", Token).AddHeader("Referer", "https://www.roblox.com/games/4924922222/Brookhaven-RP");
+            RestRequest request = MakeRequest("/v1/authentication-ticket/", Method.Post).AddHeader("X-CSRF-TOKEN", Token).AddHeader("Referer", "https://www.roblox.com/games/4924922222/Brookhaven-RP").AddHeader("Content-type", "application/json");
 
             RestResponse response = AccountManager.AuthClient.Execute(request);
 
@@ -133,7 +133,7 @@ namespace RBX_Alt_Manager
 
         public bool GetCSRFToken(out string Result)
         {
-            RestRequest request = MakeRequest("v1/authentication-ticket/", Method.Post).AddHeader("Referer", "https://www.roblox.com/games/4924922222/Brookhaven-RP");
+            RestRequest request = MakeRequest("v1/authentication-ticket/", Method.Post).AddHeader("Referer", "https://www.roblox.com/games/4924922222/Brookhaven-RP").AddHeader("Content-type", "application/json");
 
             RestResponse response = AccountManager.AuthClient.Execute(request);
 
@@ -463,7 +463,7 @@ namespace RBX_Alt_Manager
 
                 Response = "Unblocking Everyone";
 
-                return true; 
+                return true;
             }
 
             Response = "Failed to unblock everyone";
@@ -524,7 +524,7 @@ namespace RBX_Alt_Manager
                 {
                     try
                     {
-                        foreach(Process proc in Process.GetProcessesByName("RobloxPlayerBeta"))
+                        foreach (Process proc in Process.GetProcessesByName("RobloxPlayerBeta"))
                         {
                             var TrackerMatch = Regex.Match(proc.GetCommandLine(), @"\-b (\d+)");
                             string TrackerID = TrackerMatch.Success ? TrackerMatch.Groups[1].Value : string.Empty;
@@ -627,7 +627,7 @@ namespace RBX_Alt_Manager
                     await Task.Run(() =>
                     {
                         ProcessStartInfo Roblox = new ProcessStartInfo(RPath);
-                        
+
                         if (JoinVIP)
                             Roblox.Arguments = string.Format("--app -t {0} -j \"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&placeId={1}&accessCode={2}&linkCode={3}\"", Ticket, PlaceID, AccessCode, LinkCode);
                         else if (FollowUser)
@@ -655,7 +655,7 @@ namespace RBX_Alt_Manager
                             else
                                 LaunchInfo.FileName = $"roblox-player:1+launchmode:play+gameinfo:{Ticket}+launchtime:{LaunchTime}+placelauncherurl:{HttpUtility.UrlEncode($"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame{(string.IsNullOrEmpty(JobID) ? "" : "Job")}&browserTrackerId={BrowserTrackerID}&placeId={PlaceID}{(string.IsNullOrEmpty(JobID) ? "" : ("&gameId=" + JobID))}&isPlayTogetherGame=false{(AccountManager.IsTeleport ? "&isTeleport=true" : "")}")}+browsertrackerid:{BrowserTrackerID}+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp";
                             Process Launcher = Process.Start(LaunchInfo);
-                            
+
                             Launcher.WaitForExit();
 
                             AccountManager.Instance.NextAccount();
