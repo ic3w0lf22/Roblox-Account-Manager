@@ -921,7 +921,7 @@ namespace RBX_Alt_Manager
 
             if (WebServer.Get<bool>("EveryRequestRequiresPassword") && (WSPassword.Length < 6 || Password != WSPassword)) return Reply("Invalid Password, make sure your password contains 6 or more characters", false, 401, "Invalid Password");
 
-            if ((Method == "GetCookie" || Method == "GetAccounts" || Method == "LaunchAccount" || Method == "KillProcess") && (WSPassword.Length < 6 || Password != WSPassword)) return Reply("Invalid Password, make sure your password contains 6 or more characters", false, 401, "Invalid Password");
+            if ((Method == "GetCookie" || Method == "GetAccounts" || Method == "LaunchAccount" || Method == "FollowUser") && ((WSPassword != null && WSPassword.Length < 6) || (Password != null && Password != WSPassword))) return Reply("Invalid Password, make sure your password contains 6 or more characters", false, 401, "Invalid Password");
 
             if (Method == "GetAccounts")
             {
@@ -1004,10 +1004,9 @@ namespace RBX_Alt_Manager
                 string FollowUser = request.QueryString["FollowUser"];
                 string JoinVIP = request.QueryString["JoinVIP"];
 
-                string Res = string.Empty; account.JoinServer(PlaceId, JobID, FollowUser == "true", JoinVIP == "true").ContinueWith(result => Res = result.Result).Wait();
-                bool Success = Res == "Success";
+                account.JoinServer(PlaceId, JobID, FollowUser == "true", JoinVIP == "true");
 
-                return Reply(Success ? $"Launched {Account} to {PlaceId}" : Res, Success);
+                return Reply($"Launched {Account} to {PlaceId}", true);
             }
 
             if (Method == "FollowUser") // https://github.com/ic3w0lf22/Roblox-Account-Manager/pull/52
@@ -1019,10 +1018,9 @@ namespace RBX_Alt_Manager
                 if (!GetUserID(User, out long UserId, out var Response))
                     return Reply($"[{Response.StatusCode} {Response.StatusDescription}] Failed to get UserId: {Response.Content}", false);
 
-                string Res = string.Empty; account.JoinServer(UserId, "", true).ContinueWith(result => Res = result.Result).Wait();
-                bool Success = Res == "Success";
+                account.JoinServer(UserId, "", true);
 
-                return Reply($"Joining {User}'s game on {Account}", Success);
+                return Reply($"Joining {User}'s game on {Account}", true);
             }
 
             if (Method == "GetCSRFToken") return Reply(Token, true);
