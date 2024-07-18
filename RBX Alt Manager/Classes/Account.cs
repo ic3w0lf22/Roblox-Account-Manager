@@ -743,7 +743,7 @@ namespace RBX_Alt_Manager
             if (!AccountManager.GetUserID(Username, out long UserId, out _)) return false;
             if (!GetCSRFToken(out string Token)) return false;
 
-            RestRequest friendRequest = MakeRequest($"/v1/users/{UserId}/request-friendship", Method.Post).AddHeader("X-CSRF-TOKEN", Token);
+            RestRequest friendRequest = MakeRequest($"/v1/users/{UserId}/request-friendship", Method.Post).AddHeader("X-CSRF-TOKEN", Token).AddHeader("Content-Type", "application/json");
 
             RestResponse friendResponse = AccountManager.FriendsClient.Execute(friendRequest);
 
