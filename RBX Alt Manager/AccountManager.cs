@@ -1,4 +1,4 @@
-﻿using BrightIdeasSoftware;
+using BrightIdeasSoftware;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
@@ -2170,6 +2170,16 @@ namespace RBX_Alt_Manager
             }
 
             try { await Presence.UpdatePresence(VisibleAccounts.Select(account => account.UserID).ToArray()); } catch { }
+        }
+
+        private void JobID_Click( object sender, EventArgs e )
+        {
+            JobID.SelectAll(); // Allows quick replacing of the JobID with a click and ctrl-v.
+        }
+
+        private void PlaceID_Click( object sender, EventArgs e )
+        {
+            PlaceID.SelectAll(); // Allows quick replacing of the PlaceID with a click and ctrl-v.
         }
     }
 }
